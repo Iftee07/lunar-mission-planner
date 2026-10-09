@@ -290,9 +290,3 @@ Pipeline dependencies (`pipeline/requirements.txt`):
 | pillow | 12.3.0 | MIT-CMU |
 | requests | 2.34.2 | Apache-2.0 |
 | scipy | 1.18.1 | BSD-3-Clause |
-
-## AI assistance
-
-This project was built with Claude (Anthropic) as a development assistant: it drafted code, tests and
-documentation from a written specification, phase by phase. Each phase was reviewed and validated by the
-author against the tests and the independent references above before the next one started.
