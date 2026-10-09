@@ -1,0 +1,206 @@
+[
+{
+"name": "Scott",
+"lat": -82.3532,
+"lon": 48.5154,
+"diameter_km": 107.823
+},
+{
+"name": "Amundsen",
+"lat": -84.4398,
+"lon": 83.0691,
+"diameter_km": 103.395
+},
+{
+"name": "Cabeus",
+"lat": -85.3303,
+"lon": 317.8673,
+"diameter_km": 100.582
+},
+{
+"name": "Nobile",
+"lat": -85.2752,
+"lon": 53.2725,
+"diameter_km": 79.272
+},
+{
+"name": "Malapert",
+"lat": -84.9998,
+"lon": 11.4031,
+"diameter_km": 72.385
+},
+{
+"name": "Oberbeck",
+"lat": -83.55,
+"lon": 68.14,
+"diameter_km": 58.0
+},
+{
+"name": "Shoemaker",
+"lat": -88.137,
+"lon": 45.911,
+"diameter_km": 51.816
+},
+{
+"name": "Haworth",
+"lat": -87.45,
+"lon": 354.83,
+"diameter_km": 51.423
+},
+{
+"name": "Henson",
+"lat": -88.57,
+"lon": 229.37,
+"diameter_km": 43.0
+},
+{
+"name": "Faustini",
+"lat": -87.1832,
+"lon": 84.3099,
+"diameter_km": 42.485
+},
+{
+"name": "Wiechert",
+"lat": -84.0334,
+"lon": 164.701,
+"diameter_km": 40.823
+},
+{
+"name": "Sverdrup",
+"lat": -88.3209,
+"lon": 206.6125,
+"diameter_km": 32.827
+},
+{
+"name": "de Gerlache",
+"lat": -88.4849,
+"lon": 271.6553,
+"diameter_km": 32.705
+},
+{
+"name": "Slater",
+"lat": -88.0792,
+"lon": 111.2881,
+"diameter_km": 25.119
+},
+{
+"name": "Kocher",
+"lat": -84.4671,
+"lon": 225.9756,
+"diameter_km": 24.031
+},
+{
+"name": "Burbidge",
+"lat": -86.35,
+"lon": 48.6,
+"diameter_km": 21.0
+},
+{
+"name": "Shackleton",
+"lat": -89.67,
+"lon": 129.78,
+"diameter_km": 20.925
+},
+{
+"name": "Whitaker",
+"lat": -84.67,
+"lon": 0.69,
+"diameter_km": 20.0
+},
+{
+"name": "Cartwright",
+"lat": -87.65,
+"lon": 313.05,
+"diameter_km": 17.0
+},
+{
+"name": "Haynes",
+"lat": -88.75,
+"lon": 167.39,
+"diameter_km": 17.0
+},
+{
+"name": "Brill",
+"lat": -88.27,
+"lon": 266.59,
+"diameter_km": 17.0
+},
+{
+"name": "Stose",
+"lat": -86.38,
+"lon": 32.13,
+"diameter_km": 16.7
+},
+{
+"name": "Kuhn",
+"lat": -84.482,
+"lon": 207.5221,
+"diameter_km": 16.614
+},
+{
+"name": "Spudis",
+"lat": -89.51,
+"lon": 275.39,
+"diameter_km": 13.0
+},
+{
+"name": "Ibn Bajja",
+"lat": -86.2964,
+"lon": 284.9639,
+"diameter_km": 11.977
+},
+{
+"name": "Floss",
+"lat": -84.28,
+"lon": 42.27,
+"diameter_km": 9.0
+},
+{
+"name": "Malinkin",
+"lat": -87.2217,
+"lon": 75.9366,
+"diameter_km": 8.281
+},
+{
+"name": "Tooley",
+"lat": -88.04,
+"lon": 51.31,
+"diameter_km": 7.0
+},
+{
+"name": "Marvin",
+"lat": -89.13,
+"lon": 272.22,
+"diameter_km": 4.6
+},
+{
+"name": "Bay",
+"lat": -88.76,
+"lon": 323.15,
+"diameter_km": 3.5
+},
+{
+"name": "Jaci",
+"lat": -85.42,
+"lon": 31.23,
+"diameter_km": 1.8
+},
+{
+"name": "Lhamu",
+"lat": -85.92,
+"lon": 358.38,
+"diameter_km": 1.4
+},
+{
+"name": "Masina",
+"lat": -85.42,
+"lon": 32.15,
+"diameter_km": 1.4
+},
+{
+"name": "Dawa",
+"lat": -85.45,
+"lon": 31.66,
+"diameter_km": 0.65
+}
+]

@@ -35,9 +35,9 @@ export default function SurfacePanel({ active }) {
         s.antennaM !== prev.antennaM ||
         s.baseTimeUtcMs !== prev.baseTimeUtcMs ||
         s.sliderOffsetH !== prev.sliderOffsetH ||
-        s.utcOffsetH !== prev.utcOffsetH ||
         s.sunMode !== prev.sunMode ||
-        s.results.horizon !== prev.results.horizon
+        s.results.horizonSun !== prev.results.horizonSun ||
+        s.results.horizonEarth !== prev.results.horizonEarth
       ) {
         api.update(viewState(s), s.results)
       }

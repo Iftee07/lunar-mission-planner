@@ -4,26 +4,20 @@
 
 import { create } from "zustand"
 import { loadAll, sampleBilinear, siteAccessor } from "@/engine/data.js"
-import { azElFromSite, makeSite } from "@/engine/geometry.js"
 import { createHorizonWorker, groundAt } from "@/engine/horizon.js"
-import { computeHours } from "@/engine/hours.js"
+import { SUN_REFERENCE_HEIGHT_M, computeSiteHours } from "@/engine/hours.js"
 import { project, unproject } from "@/engine/projection.js"
 
+// UI in days, engine in hours: every duration here is in hours; only lib/format.js converts.
 export const HOUR_MS = 3600000
 export const EPHEMERIS_START_UTC_MS = Date.UTC(2026, 0, 1, 0, 0, 0)
 export const EPHEMERIS_END_UTC_MS = Date.UTC(2030, 11, 31, 23, 45, 0)
-export const WINDOW_H = 156
-export const LIGHT_GREEN_MIN_H = 156
-export const COMM_RED_MIN_FRACTION = 0.25
-export const SLOPE_GREEN_MAX_DEG = 8
-export const SLOPE_RED_MIN_DEG = 10
-export const SLOPE_TYPICAL_ERROR_DEG = 1.9
 export const LANDING_RADIUS_M = 100
-export const ANTENNA_PRESETS_M = [0, 2, 5, 10]
-export const ANTENNA_MAX_M = 20
+export const ANTENNA_PRESETS_M = [2, 5, 10, 15] // affects Earth visibility only
+export const ANTENNA_DEFAULT_M = 2
 export const TIME_SLIDER_RANGE_H = 708.7
 export const SLIDER_STEP_H = 0.25
-export const PLAY_SPEEDS_H_PER_S = [1, 6, 24, 72]
+export const PLAY_SPEEDS_H_PER_S = [6, 12, 24, 72] // shown as 0.25, 0.5, 1, 3 d/s
 export const MAP_LAT_LIMIT_DEG = -84
 
 const QUARTER_H_MS = HOUR_MS / 4
@@ -36,10 +30,11 @@ function defaultBaseTime() {
 const emptyResults = {
   status: "idle", // idle | loading-data | computing | ready | error
   error: null,
-  horizon: null, // Float32Array(720) for the current pin + antenna
+  horizonSun: null, // Float32Array(720) at SUN_REFERENCE_HEIGHT_M; recomputed on pin change only
+  horizonEarth: null, // Float32Array(720) at antennaM; recomputed on pin or antenna change
   horizonMs: null,
-  sun: null, // computeHours result or null (out of range)
-  earth: null,
+  sun: null, // computeHours result or null (out of range); Sun seen from SUN_REFERENCE_HEIGHT_M
+  earth: null, // Earth seen from antennaM
   sunNow: null, // { azDeg, elDeg, distKm }
   earthNow: null,
   slope: null, // { planeDeg, maxDeg, radiusM }
@@ -48,11 +43,11 @@ const emptyResults = {
 export const useStore = create((set) => ({
   // --- user-editable state (PRD section 4) ---
   baseTimeUtcMs: defaultBaseTime(),
-  utcOffsetH: 0,
   sliderOffsetH: 0,
-  antennaM: 2,
+  antennaM: ANTENNA_DEFAULT_M,
   sunMode: "center",
   view: "map",
+  screen: "welcome", // welcome | app (routed from Phase 10)
   pin: null,
 
   // --- computed, not user-editable ---
@@ -62,13 +57,12 @@ export const useStore = create((set) => ({
 
   // --- actions ---
   setBaseTime: (ms) => set({ baseTimeUtcMs: ms, sliderOffsetH: 0 }),
-  setUtcOffset: (h) => set({ utcOffsetH: Math.max(-12, Math.min(12, Math.round(h))) }),
   setSliderOffset: (h) => set({ sliderOffsetH: Math.max(0, Math.min(TIME_SLIDER_RANGE_H, h)) }),
   setAntenna: (m) => {
-    if (!Number.isFinite(m)) return
-    set({ antennaM: Math.max(0, Math.min(ANTENNA_MAX_M, m)) })
+    if (ANTENNA_PRESETS_M.includes(m)) set({ antennaM: m })
   },
   setView: (view) => set({ view }),
+  setScreen: (screen) => set({ screen }),
   setPin: (pin) => set({ pin }),
 }))
 
@@ -133,7 +127,7 @@ export function pickXY(x, y) {
 }
 
 // --- compute controller ---
-let horizonRequest = 0
+const latestRequest = { sun: 0, earth: 0 }
 let hoursFrame = 0
 
 function slopeAt(pin) {
@@ -145,23 +139,45 @@ function slopeAt(pin) {
   }
 }
 
-async function recomputeHorizon() {
+// Two horizons per pin (PRD v3 section 2): Sun at SUN_REFERENCE_HEIGHT_M (pin change only),
+// Earth at antennaM (pin or antenna change). `which` = { sun, earth } selects what to recompute.
+async function recomputeHorizons(which) {
   const { pin, antennaM } = useStore.getState()
-  const id = ++horizonRequest
   if (!pin || !worker) {
+    latestRequest.sun++
+    latestRequest.earth++
     useStore.setState({ results: emptyResults })
     return
   }
-  useStore.setState((s) => ({
-    results: { ...s.results, status: "computing", horizon: null, slope: slopeAt(pin) },
-  }))
+  const ids = {}
+  const patch = { status: "computing", error: null }
+  if (which.sun) {
+    ids.sun = ++latestRequest.sun
+    patch.horizonSun = null
+    patch.slope = slopeAt(pin)
+  }
+  if (which.earth) {
+    ids.earth = ++latestRequest.earth
+    patch.horizonEarth = null
+  }
+  useStore.setState((s) => ({ results: { ...s.results, ...patch } }))
+
+  const job = (heightM) => worker.compute({ x: pin.x, y: pin.y }, pin.groundM, heightM)
+  const sunJob = which.sun ? job(SUN_REFERENCE_HEIGHT_M) : null
+  // Same observer height: share the Sun horizon instead of computing it twice.
+  const earthJob = which.earth ? (sunJob && antennaM === SUN_REFERENCE_HEIGHT_M ? sunJob : job(antennaM)) : null
+  const current = () => ids.sun === latestRequest.sun || ids.earth === latestRequest.earth
   try {
-    const { horizon, ms } = await worker.compute({ x: pin.x, y: pin.y }, pin.groundM, antennaM)
-    if (id !== horizonRequest) return // a newer pin/antenna superseded this request
-    useStore.setState((s) => ({ results: { ...s.results, horizon, horizonMs: ms } }))
+    const [sunRes, earthRes] = await Promise.all([sunJob, earthJob])
+    const update = {}
+    if (sunRes && ids.sun === latestRequest.sun) update.horizonSun = sunRes.horizon
+    if (earthRes && ids.earth === latestRequest.earth) update.horizonEarth = earthRes.horizon
+    if (!Object.keys(update).length) return // a newer pin/antenna superseded this request
+    update.horizonMs = (sunRes ? sunRes.ms : 0) + (earthRes && earthRes !== sunRes ? earthRes.ms : 0)
+    useStore.setState((s) => ({ results: { ...s.results, ...update } }))
     recomputeHours()
   } catch (err) {
-    if (id !== horizonRequest) return
+    if (!current()) return
     useStore.setState((s) => ({ results: { ...s.results, status: "error", error: String(err.message || err) } }))
   }
 }
@@ -169,24 +185,18 @@ async function recomputeHorizon() {
 function recomputeHours() {
   const s = useStore.getState()
   const { pin, antennaM, sunMode } = s
-  const horizon = s.results.horizon
-  if (!pin || !horizon || !engineData) return
-  const t = selectEffectiveTimeMs(s)
-  const acc = siteAccessor(engineData.ephemeris, pin)
-  const site = makeSite(pin.lat, pin.lon, pin.groundM, antennaM)
-  const sunV = engineData.ephemeris.vectorAt("sun", t)
-  const earthV = engineData.ephemeris.vectorAt("earth", t)
-  useStore.setState((st) => ({
-    results: {
-      ...st.results,
-      status: "ready",
-      error: null,
-      sun: computeHours("sun", horizon, acc, t, antennaM, sunMode),
-      earth: computeHours("earth", horizon, acc, t, antennaM, "center"),
-      sunNow: sunV ? azElFromSite(site, sunV) : null,
-      earthNow: earthV ? azElFromSite(site, earthV) : null,
-    },
-  }))
+  const { horizonSun, horizonEarth } = s.results
+  if (!pin || !horizonSun || !horizonEarth || !engineData) return
+  const computed = computeSiteHours({
+    pin,
+    horizonSun,
+    horizonEarth,
+    antennaM,
+    tableAccessor: siteAccessor(engineData.ephemeris, pin),
+    tMs: selectEffectiveTimeMs(s),
+    sunMode,
+  })
+  useStore.setState((st) => ({ results: { ...st.results, status: "ready", error: null, ...computed } }))
 }
 
 // Coalesce rapid time changes (slider drag, Play) into one recompute per animation frame.
@@ -199,8 +209,12 @@ function scheduleHours() {
 }
 
 useStore.subscribe((s, prev) => {
-  if (s.dataReady && (s.pin !== prev.pin || s.antennaM !== prev.antennaM || s.dataReady !== prev.dataReady)) {
-    recomputeHorizon()
+  if (s.dataReady && (s.pin !== prev.pin || s.dataReady !== prev.dataReady)) {
+    recomputeHorizons({ sun: true, earth: true })
+    return
+  }
+  if (s.dataReady && s.antennaM !== prev.antennaM) {
+    recomputeHorizons({ sun: false, earth: true })
     return
   }
   if (

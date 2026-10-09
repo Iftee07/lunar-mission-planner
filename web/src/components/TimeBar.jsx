@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react"
 import { Pause, Play } from "lucide-react"
+import DatePicker from "@/components/DatePicker"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
-import { formatClock, formatOffset, fromLocalInput, toLocalInput } from "@/lib/format.js"
+import { formatClock, formatDays, formatDaysPerSecond } from "@/lib/format.js"
 import {
   PLAY_SPEEDS_H_PER_S,
   SLIDER_STEP_H,
@@ -13,19 +13,11 @@ import {
   useStore,
 } from "@/state.js"
 
-const OFFSETS = Array.from({ length: 25 }, (_, i) => i - 12)
-
-// Bottom bar: base date-time (in the chosen UTC offset), UTC offset, hours slider, Play, speed.
+// Bottom bar: start date-time (UTC, calendar popover), slider with the effective UTC time, Play, speed.
 export default function TimeBar() {
-  const baseTimeUtcMs = useStore((s) => s.baseTimeUtcMs)
-  const utcOffsetH = useStore((s) => s.utcOffsetH)
   const sliderOffsetH = useStore((s) => s.sliderOffsetH)
   const effectiveMs = useStore(selectEffectiveTimeMs)
-  const { setBaseTime, setUtcOffset, setSliderOffset } = useStore.getState()
-
-  // Draft text so partially typed dates don't fight the controlled value.
-  const [draft, setDraft] = useState(() => toLocalInput(baseTimeUtcMs, utcOffsetH))
-  useEffect(() => setDraft(toLocalInput(baseTimeUtcMs, utcOffsetH)), [baseTimeUtcMs, utcOffsetH])
+  const { setSliderOffset } = useStore.getState()
 
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState(6)
@@ -60,48 +52,22 @@ export default function TimeBar() {
 
   return (
     <footer className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border px-4 py-3 text-sm">
-      <label className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <span className="text-muted-foreground">Start</span>
-        <Input
-          type="datetime-local"
-          step={900}
-          className="w-[13.5rem]"
-          value={draft}
-          onChange={(e) => {
-            setDraft(e.target.value)
-            const ms = fromLocalInput(e.target.value, utcOffsetH)
-            if (Number.isFinite(ms)) setBaseTime(ms)
-          }}
-        />
-        <span className="text-muted-foreground" title="UTC equivalent of the start time">
-          = {formatClock(baseTimeUtcMs)} UTC
-        </span>
-      </label>
-
-      <Select value={String(utcOffsetH)} onValueChange={(v) => setUtcOffset(Number(v))}>
-        <SelectTrigger className="w-[8.5rem]" aria-label="UTC offset">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {OFFSETS.map((h) => (
-            <SelectItem key={h} value={String(h)}>
-              {formatOffset(h)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <DatePicker />
+      </div>
 
       <div className="flex min-w-[16rem] flex-1 items-center gap-3">
         <Slider
-          aria-label="Hours after start"
+          aria-label="Days after start"
           min={0}
           max={TIME_SLIDER_RANGE_H}
           step={SLIDER_STEP_H}
           value={[sliderOffsetH]}
           onValueChange={([h]) => setSliderOffset(h)}
         />
-        <span className="whitespace-nowrap tabular-nums" title="Effective time = start + slider">
-          +{sliderOffsetH.toFixed(2)} h &rarr; {formatClock(effectiveMs, utcOffsetH)} {formatOffset(utcOffsetH)}
+        <span className="font-mono whitespace-nowrap tabular-nums" title="Effective time = start + slider">
+          +{formatDays(sliderOffsetH, 2)} &rarr; {formatClock(effectiveMs)}
         </span>
       </div>
 
@@ -116,7 +82,7 @@ export default function TimeBar() {
         <SelectContent>
           {PLAY_SPEEDS_H_PER_S.map((v) => (
             <SelectItem key={v} value={String(v)}>
-              {v} h/s
+              {formatDaysPerSecond(v)}
             </SelectItem>
           ))}
         </SelectContent>

@@ -103,6 +103,12 @@ export async function loadAll(base = "/data/") {
     fetchBuffer(base + manifest.slope.max),
   ])
   const slopeGrid = g[manifest.slope.grid || "near"]
+  // Named craters (Phase 9b) are a display-only layer: if the file is missing the app still works.
+  const craters = manifest.craters
+    ? await fetch(base + manifest.craters.file)
+        .then((r) => (r.ok ? r.json() : []))
+        .catch(() => [])
+    : []
   return {
     manifest,
     ephemeris: createEphemeris(manifest.ephemeris, new Float32Array(eph)),
@@ -117,5 +123,6 @@ export async function loadAll(base = "/data/") {
       radiusM: manifest.slope.radius_m,
     },
     hillshadeUrl: base + manifest.hillshade,
+    craters, // [{ name, lat, lon (deg east), diameter_km }] from the IAU gazetteer
   }
 }

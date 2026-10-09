@@ -1,4 +1,8 @@
-// Text formatting shared by the card, time bar and map readout. All durations are in hours.
+// Text formatting shared by the card, time bar and map readout.
+// UI in days, engine in hours: durations arrive in hours and formatDays() is the ONLY place that
+// converts them to Earth days for display. Never divide by 24 anywhere else.
+
+import { LOOKAHEAD_H } from "@/engine/hours.js"
 
 export const lonEast = (lon) => ((lon % 360) + 360) % 360
 
@@ -7,29 +11,30 @@ export function formatLatLon(lat, lon) {
   return `${lat.toFixed(4)} S, ${lonEast(lon).toFixed(4)} E`
 }
 
-export const formatHours = (h) => `${h.toFixed(1)} h`
+const HOURS_PER_DAY = 24
+
+// Hours -> Earth days: 156 -> "6.5 d", 0 -> "0 d".
+// null or Infinity (no change within LOOKAHEAD_H) -> "62.5+ d", treated as continuous.
+// atLeast: the value is a lower bound (period cut off by the lookahead) -> "1.1+ d".
+export function formatDays(hours, digits = 1, atLeast = false) {
+  if (hours === null || hours === Infinity) return `${(LOOKAHEAD_H / HOURS_PER_DAY).toFixed(1)}+ d`
+  if (hours === 0 && !atLeast) return "0 d"
+  return `${(hours / HOURS_PER_DAY).toFixed(digits)}${atLeast ? "+" : ""} d`
+}
+
+// Hours of simulated time per real second -> "0.25 d/s".
+export const formatDaysPerSecond = (hPerS) => `${+(hPerS / HOURS_PER_DAY).toFixed(2)} d/s`
 
 export const formatDeg = (d, digits = 1) => `${d >= 0 ? "+" : ""}${d.toFixed(digits)}°`
 
 export const formatAz = (az) => `${az.toFixed(1).padStart(5, "0")}°`
 
-export function formatOffset(h) {
-  return `UTC${h >= 0 ? "+" : "-"}${String(Math.abs(h)).padStart(2, "0")}:00`
-}
-
 const pad = (n) => String(n).padStart(2, "0")
 
-// UTC ms -> "YYYY-MM-DDTHH:mm" wall-clock in the given UTC offset (for datetime-local inputs).
+// UTC ms -> "YYYY-MM-DDTHH:mm" wall-clock in the given UTC offset (0 = UTC; the app shows UTC only).
 export function toLocalInput(ms, offsetH) {
   const d = new Date(ms + offsetH * 3600000)
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`
-}
-
-// "YYYY-MM-DDTHH:mm" wall-clock in the given UTC offset -> UTC ms (NaN if invalid).
-export function fromLocalInput(value, offsetH) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value || "")
-  if (!m) return NaN
-  return Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]) - offsetH * 3600000
 }
 
 // UTC ms -> "YYYY-MM-DD HH:mm" in the given offset.

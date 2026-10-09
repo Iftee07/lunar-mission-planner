@@ -15,7 +15,7 @@
     ],
     "abcorr": "LT+S"
   },
-  "build_date_utc": "2026-10-09T05:05:39Z",
+  "build_date_utc": "2026-10-09T21:55:47Z",
   "proj4": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs",
   "grids": {
     "near": {
@@ -48,5 +48,14 @@
     "grid": "near"
   },
   "hillshade": "hillshade.png",
-  "terrain_source": "LDEM_80S_20MPP_ADJ.TIF"
+  "terrain_source": "LDEM_80S_20MPP_ADJ.TIF",
+  "craters": {
+    "file": "craters.json",
+    "count": 34,
+    "source": "IAU Gazetteer of Planetary Nomenclature (USGS Astrogeology), MOON_nomenclature_center_pts",
+    "source_url": "https://asc-planetarynames-data.s3.us-west-2.amazonaws.com/MOON_nomenclature_center_pts.zip",
+    "license": "Public domain (USGS metadata use constraints)",
+    "retrieved_utc": "2026-10-09",
+    "filter": "type 'Crater, craters', adopted by IAU, rim reaching lat <= -84.0"
+  }
 }

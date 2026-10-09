@@ -1,9 +1,10 @@
 // Visibility and hours (PRD section 5.5). Plain ES module, no React.
-// All durations are in hours.
+// All durations are in hours (UI in days, engine in hours: only lib/format.js converts).
 
 import { azElFromSite, makeSite } from "./geometry.js"
 import { horizonAt } from "./horizon.js"
 
+export const SUN_REFERENCE_HEIGHT_M = 2 // Sun observer height, independent of the antenna control
 export const STEP_H = 0.25
 export const LOOKAHEAD_H = 1500
 export const WINDOW_H = 156
@@ -85,5 +86,21 @@ export function computeHours(body, horizon, tableAccessor, startUtcMs, antennaM,
     windowVisibleHours,
     windowHiddenHours: counted * STEP_H - windowVisibleHours,
     lookaheadTruncated: truncated,
+  }
+}
+
+// Split observer heights (PRD v3 section 2): the Sun is always seen from SUN_REFERENCE_HEIGHT_M
+// (lander deck / solar array) with horizonSun; Earth from the antenna height with horizonEarth.
+// Returns { sun, earth, sunNow, earthNow }; hours entries are null outside the ephemeris.
+export function computeSiteHours({ pin, horizonSun, horizonEarth, antennaM, tableAccessor, tMs, sunMode }) {
+  const sunSite = makeSite(pin.lat, pin.lon, pin.groundM, SUN_REFERENCE_HEIGHT_M)
+  const earthSite = makeSite(pin.lat, pin.lon, pin.groundM, antennaM)
+  const sunV = tableAccessor.vectorAt("sun", tMs)
+  const earthV = tableAccessor.vectorAt("earth", tMs)
+  return {
+    sun: computeHours("sun", horizonSun, tableAccessor, tMs, SUN_REFERENCE_HEIGHT_M, sunMode),
+    earth: computeHours("earth", horizonEarth, tableAccessor, tMs, antennaM, "center"),
+    sunNow: sunV ? azElFromSite(sunSite, sunV) : null,
+    earthNow: earthV ? azElFromSite(earthSite, earthV) : null,
   }
 }

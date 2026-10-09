@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
+import { CircleDashed } from "lucide-react"
+import { Toggle } from "@/components/ui/toggle"
 import { createMap } from "@/map/map.js"
 import { describeXY, getEngineData, pickXY, useStore } from "@/state.js"
 
@@ -8,6 +10,8 @@ export default function MapPanel({ active }) {
   const containerRef = useRef(null)
   const apiRef = useRef(null)
   const dataReady = useStore((s) => s.dataReady)
+  // Mirrors the map module's crater visibility (the map module owns it; not part of the store).
+  const [cratersOn, setCratersOn] = useState(true)
 
   useEffect(() => {
     if (!dataReady) return
@@ -19,6 +23,8 @@ export default function MapPanel({ active }) {
       describe: describeXY,
     })
     apiRef.current = api
+    api.setCraterLayer(data.craters, true)
+    setCratersOn(api.getCratersVisible())
     api.setPin(useStore.getState().pin)
     const unsubscribe = useStore.subscribe((s, prev) => {
       if (s.pin !== prev.pin) api.setPin(s.pin)
@@ -38,6 +44,23 @@ export default function MapPanel({ active }) {
   return (
     <div className="absolute inset-0" style={{ display: active ? "block" : "none" }}>
       <div ref={containerRef} className="h-full w-full" data-testid="map-container" />
+      {dataReady && (
+        <div className="absolute top-2.5 right-14 z-[1000]">
+          <Toggle
+            variant="outline"
+            size="sm"
+            pressed={cratersOn}
+            onPressedChange={(on) => {
+              apiRef.current?.setCratersVisible(on)
+              setCratersOn(on)
+            }}
+            aria-label="Show named craters"
+            className="bg-background/90 data-[state=on]:text-lspb-crater"
+          >
+            <CircleDashed /> Craters
+          </Toggle>
+        </div>
+      )}
     </div>
   )
 }

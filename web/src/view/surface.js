@@ -6,8 +6,13 @@
 //   1. sky:     reference grid on a sphere (radius 100) centred on the camera, plus a background-coloured
 //               skirt below the skyline that hides grid lines behind the terrain
 //   2. terrain: polar grid draped on the DEM (fill in background colour + polygon offset, lines on top)
-//   3. overlay: skyline (heaviest line), Sun and Earth discs, their paths; always visible,
+//   3. overlay: skyline (heaviest line); nearer ridgelines below it (the terrain horizon limited to
+//               RIDGE_RANGES_M, so they show where closer terrain rises and give the ground depth);
+//               Sun and Earth discs, their paths; always visible,
 //               a body below the skyline is dashed in the "blocked" colour
+// Antenna model (PRD v3): the drawn skyline is the Earth/antenna-height skyline (horizonEarth). The Sun
+// is placed and tested from SUN_REFERENCE_HEIGHT_M against horizonSun, so the Sun's "(blocked)" label
+// can occasionally disagree slightly with the drawn skyline.
 // Labels and the fixed-size reticles are DOM elements positioned over the canvas.
 
 import * as THREE from "three"
@@ -15,8 +20,8 @@ import { Line2 } from "three/addons/lines/Line2.js"
 import { LineGeometry } from "three/addons/lines/LineGeometry.js"
 import { LineMaterial } from "three/addons/lines/LineMaterial.js"
 import { azElFromSite, angularRadiusDeg, enuBasis, makeSite } from "@/engine/geometry.js"
-import { groundAt, horizonAt } from "@/engine/horizon.js"
-import { SUN_SEMIDIAMETER_DEG } from "@/engine/hours.js"
+import { computeHorizon, groundAt, horizonAt } from "@/engine/horizon.js"
+import { SUN_REFERENCE_HEIGHT_M, SUN_SEMIDIAMETER_DEG } from "@/engine/hours.js"
 import { projectUnit } from "@/engine/projection.js"
 import { readTheme } from "@/lib/theme.js"
 
@@ -32,10 +37,16 @@ const PITCH_MAX = 60
 const FOV_MIN = 20
 const FOV_MAX = 90
 const SKYLINE_WIDTH_PX = 2.5
-// near-terrain polar grid
-const RING_RADII_M = [...range(500, 5000, 500), ...range(10000, 50000, 5000)]
+// nearer ridgelines: horizon limited to these ranges, drawn thinner and fainter than the skyline
+const RIDGE_RANGES_M = [8000, 3000]
+const RIDGE_WIDTH_PX = 1.5
+const RIDGE_OPACITY = [0.6, 0.4]
+// Ground polar grid. Rings close to the observer spread over the lower half of the view (from a 2 m
+// camera: 4 m is 27 deg below the horizon, 20 m is 6 deg, 100 m is 1 deg), so the grid reads as the
+// ground under the lander; far rings follow the terrain relief. Radials start 2 m from the camera.
+const RING_RADII_M = [4, 6, 9, 13, 20, 30, 45, 70, 100, 150, 250, 400, 700, 1000, 2000, 3500, 5000, 10000, 20000, 35000, 50000]
 const RADIAL_STEP_DEG = 15
-const MESH_RADII_M = [50, ...range(100, 5000, 100), ...range(5500, 50000, 500)]
+const MESH_RADII_M = [...new Set([2, ...RING_RADII_M, ...range(100, 5000, 100), ...range(5500, 50000, 500)])].sort((a, b) => a - b)
 const MESH_AZ_STEP_DEG = 1
 
 function range(a, b, step) {
@@ -154,36 +165,55 @@ export function createSurface(container, { engineData }) {
   skyGroup.children.forEach((c) => (c.renderOrder = 0))
 
   // ---------- site-dependent objects ----------
-  let site = null // { pin, antennaM, horizon, siteGeom }
+  let site = null // { pin, antennaM, horizon (Earth skyline), horizonSun, geom (antenna), sunGeom (2 m) }
   let skylineObj = null
+  let ridgeObjs = []
   let skirtObj = null
   let terrainObj = null
 
-  function buildSkyline(horizon) {
-    if (skylineObj) {
-      overlayGroup.remove(skylineObj)
-      disposeTree(skylineObj)
+  // Fat polyline along a 720-sample horizon profile, in the overlay (always visible).
+  function horizonLine(horizon, widthPx, opacity, renderOrder) {
+    const n = horizon.length
+    const pos = []
+    for (let i = 0; i <= n; i++) {
+      const p = dirFromAzEl((i % n) * (360 / n), horizon[i % n], SKY_R)
+      pos.push(p.x, p.y, p.z)
     }
+    const g = new LineGeometry()
+    g.setPositions(pos)
+    const m = new LineMaterial({ color: col(theme.line), linewidth: widthPx, depthTest: false, transparent: opacity < 1, opacity })
+    m.resolution.set(container.clientWidth || 1, container.clientHeight || 1)
+    lineMats.push(m)
+    const line = new Line2(g, m)
+    line.computeLineDistances()
+    line.renderOrder = renderOrder
+    overlayGroup.add(line)
+    return line
+  }
+
+  function removeLine(line) {
+    overlayGroup.remove(line)
+    lineMats.splice(lineMats.indexOf(line.material), 1)
+    disposeTree(line)
+  }
+
+  function buildSkyline(horizon, pin, antennaM) {
+    if (skylineObj) removeLine(skylineObj)
+    ridgeObjs.forEach(removeLine)
     if (skirtObj) {
       skyGroup.remove(skirtObj)
       disposeTree(skirtObj)
     }
     const n = horizon.length
     const step = 360 / n
-    const pos = []
-    for (let i = 0; i <= n; i++) {
-      const p = dirFromAzEl((i % n) * step, horizon[i % n], SKY_R)
-      pos.push(p.x, p.y, p.z)
-    }
-    const g = new LineGeometry()
-    g.setPositions(pos)
-    const m = new LineMaterial({ color: col(theme.line), linewidth: SKYLINE_WIDTH_PX, depthTest: false })
-    m.resolution.set(container.clientWidth || 1, container.clientHeight || 1)
-    lineMats.push(m)
-    skylineObj = new Line2(g, m)
-    skylineObj.computeLineDistances()
-    skylineObj.renderOrder = 2
-    overlayGroup.add(skylineObj)
+    skylineObj = horizonLine(horizon, SKYLINE_WIDTH_PX, 1, 2)
+    // Nearer ridgelines: same observer, terrain limited to each range (a few ms each on the main thread).
+    // A subset of the terrain can never rise above the full horizon; clamp only against float noise.
+    ridgeObjs = RIDGE_RANGES_M.map((rangeM, k) => {
+      const ridge = computeHorizon({ x: pin.x, y: pin.y }, pin.groundM, antennaM, engineData.grids, rangeM)
+      for (let i = 0; i < n; i++) ridge[i] = Math.min(ridge[i], horizon[i])
+      return horizonLine(ridge, RIDGE_WIDTH_PX, RIDGE_OPACITY[k], 1)
+    })
 
     // skirt: from the skyline down to the nadir, background colour, hides sky grid below the skyline
     const sv = []
@@ -341,19 +371,26 @@ export function createSurface(container, { engineData }) {
   }
 
   // ---------- public: update from app state ----------
-  // state: { pin, antennaM, timeMs, sunMode }, results: { horizon }
+  // state: { pin, antennaM, timeMs, sunMode }, results: { horizonSun, horizonEarth }
   function update(state, results) {
     const { pin, antennaM, timeMs, sunMode } = state
-    const horizon = results?.horizon
-    if (!pin || !horizon) {
+    const horizon = results?.horizonEarth
+    const horizonSun = results?.horizonSun
+    if (!pin || !horizon || !horizonSun) {
       hideBodies()
       return
     }
     const pinChanged = !site || site.pin !== pin
     if (pinChanged || site.horizon !== horizon || site.antennaM !== antennaM) {
-      buildSkyline(horizon)
+      buildSkyline(horizon, pin, antennaM)
       if (pinChanged) buildTerrain(pin)
-      site = { pin, antennaM, horizon, geom: makeSite(pin.lat, pin.lon, pin.groundM, antennaM) }
+      site = {
+        pin,
+        antennaM,
+        horizon,
+        geom: makeSite(pin.lat, pin.lon, pin.groundM, antennaM),
+        sunGeom: makeSite(pin.lat, pin.lon, pin.groundM, SUN_REFERENCE_HEIGHT_M),
+      }
       camera.position.set(0, antennaM, 0)
     }
     const eph = engineData.ephemeris
@@ -363,10 +400,11 @@ export function createSurface(container, { engineData }) {
       hideBodies()
       return
     }
-    const s = azElFromSite(site.geom, sv)
+    site.horizonSun = horizonSun
+    const s = azElFromSite(site.sunGeom, sv)
     const e = azElFromSite(site.geom, ev)
     const extra = sunMode === "any_part" ? SUN_SEMIDIAMETER_DEG : 0
-    const sBlocked = !(s.elDeg + extra > horizonAt(horizon, s.azDeg))
+    const sBlocked = !(s.elDeg + extra > horizonAt(horizonSun, s.azDeg))
     const eBlocked = !(e.elDeg > horizonAt(horizon, e.azDeg))
     const fmt = (b, x, blocked) =>
       `${b} el ${x.elDeg >= 0 ? "+" : ""}${x.elDeg.toFixed(1)} az ${x.azDeg.toFixed(0).padStart(3, "0")}${blocked ? " (blocked)" : ""}`
@@ -381,7 +419,7 @@ export function createSurface(container, { engineData }) {
       const a = eph.vectorAt("sun", t)
       const b = eph.vectorAt("earth", t)
       if (!a || !b) break
-      const x = azElFromSite(site.geom, a)
+      const x = azElFromSite(site.sunGeom, a)
       const y = azElFromSite(site.geom, b)
       ps.push(dirFromAzEl(x.azDeg, x.elDeg, SKY_R))
       pe.push(dirFromAzEl(y.azDeg, y.elDeg, SKY_R))
@@ -534,7 +572,7 @@ export function createSurface(container, { engineData }) {
       const drawn = azElFromDir(b.g.position)
       rows.push({
         item: `${b.name} centre`,
-        horizonDeg: +horizonAt(site.horizon, b.azEl.azDeg).toFixed(4),
+        horizonDeg: +horizonAt(b === sun ? site.horizonSun : site.horizon, b.azEl.azDeg).toFixed(4),
         drawnElDeg: +drawn.elDeg.toFixed(4),
         drawnAzDeg: +drawn.azDeg.toFixed(4),
         cardElDeg: +b.azEl.elDeg.toFixed(4),

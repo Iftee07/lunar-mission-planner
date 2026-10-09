@@ -14,7 +14,21 @@
   --lspb-ok: #4ade80;
   --lspb-warn: #fbbf24;
   --lspb-bad: #f87171;
+  --lspb-crater: #a78bfa; /* named crater outlines on the map (Phase 9b) */
+  --lspb-crater-label: #ddd6fe;
+  /* welcome-slide art (Phase 10) */
+  --lspb-art-moon: #d5dde6;
+  --lspb-art-moon-shade: #6b7c8f;
+  --lspb-art-crater: #a9b6c3;
+  --lspb-art-ground: #2b3a4b;
+  --lspb-art-ground-edge: #4a5d72;
+  --lspb-art-hull: #e8eef5;
+  --lspb-art-foil: #d4a72c;
+  --lspb-art-flame: #fb923c;
+  --lspb-art-flame-core: #fff1c2;
   --lspb-font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --lspb-font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --lspb-font-heading: "Space Grotesk Variable", "Inter Variable", ui-sans-serif, sans-serif;
 
   /* shadcn/ui variables mapped onto the same palette */
   --radius: 0.375rem;
@@ -39,7 +53,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--lspb-font-mono);
+  --font-sans: var(--lspb-font-sans);
+  --font-heading: var(--lspb-font-heading);
   --font-mono: var(--lspb-font-mono);
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
@@ -69,6 +84,7 @@
   --color-lspb-warn: var(--lspb-warn);
   --color-lspb-bad: var(--lspb-bad);
   --color-lspb-dim: var(--lspb-line-dim);
+  --color-lspb-crater: var(--lspb-crater);
 }
 
 @layer base {
@@ -81,7 +97,12 @@
     height: 100%;
   }
   body {
-    @apply bg-background text-foreground font-mono;
+    @apply bg-background text-foreground font-sans;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--lspb-font-heading);
   }
 }
 
@@ -108,6 +129,15 @@
   transform: translate(-50%, -50%);
   pointer-events: none;
   text-shadow: 0 0 3px var(--lspb-bg), 0 0 3px var(--lspb-bg);
+}
+.lspb-crater-label {
+  color: var(--lspb-crater-label);
+  font-family: var(--lspb-font-mono);
+  font-size: 11px;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  text-shadow: 0 0 3px var(--lspb-bg), 0 0 3px var(--lspb-bg), 0 0 2px var(--lspb-bg);
 }
 .lspb-map-readout {
   background: color-mix(in srgb, var(--lspb-bg) 85%, transparent);
@@ -216,4 +246,168 @@
 }
 .lspb-reticle.lspb-reticle-blocked {
   color: var(--lspb-blocked);
+}
+
+/* ---------- Welcome flow (Phase 10): looping art, transform + opacity only ---------- */
+.lspb-welcome-bg {
+  background:
+    radial-gradient(ellipse 60% 50% at 78% 18%, color-mix(in srgb, var(--lspb-earth) 9%, transparent), transparent 70%),
+    radial-gradient(ellipse 50% 45% at 12% 88%, color-mix(in srgb, var(--lspb-crater) 8%, transparent), transparent 70%),
+    var(--lspb-bg);
+}
+.lspb-art * {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.lspb-float {
+  animation: lspb-float 6s ease-in-out infinite;
+}
+@keyframes lspb-float {
+  50% {
+    transform: translateY(-14px);
+  }
+}
+.lspb-moon-spin {
+  transform-box: view-box;
+  animation: lspb-moon-spin 48s linear infinite;
+}
+@keyframes lspb-moon-spin {
+  to {
+    transform: translateX(-320px);
+  }
+}
+/* rocket: fly across (outer), bob (middle), wobble (inner), flame flicker */
+.lspb-rocket-fly {
+  transform-box: view-box;
+  animation: lspb-rocket-fly 9s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+@keyframes lspb-rocket-fly {
+  /* the rocket is drawn at the scene centre (its reduced-motion resting place) */
+  0% {
+    transform: translate(-460px, -40px);
+  }
+  100% {
+    transform: translate(480px, 30px);
+  }
+}
+.lspb-rocket-bob {
+  animation: lspb-rocket-bob 2.4s ease-in-out infinite;
+}
+@keyframes lspb-rocket-bob {
+  50% {
+    transform: translateY(-16px);
+  }
+}
+.lspb-rocket-wobble {
+  animation: lspb-rocket-wobble 0.9s ease-in-out infinite alternate;
+}
+@keyframes lspb-rocket-wobble {
+  from {
+    transform: rotate(-7deg);
+  }
+  to {
+    transform: rotate(8deg);
+  }
+}
+.lspb-flame {
+  transform-origin: right center;
+  animation: lspb-flame 0.14s ease-in-out infinite alternate;
+}
+.lspb-flame-down {
+  transform-origin: center top;
+  animation: lspb-flame-down 0.12s ease-in-out infinite alternate;
+}
+@keyframes lspb-flame {
+  from {
+    transform: scaleX(0.7);
+    opacity: 0.8;
+  }
+  to {
+    transform: scaleX(1.12);
+    opacity: 1;
+  }
+}
+@keyframes lspb-flame-down {
+  from {
+    transform: scaleY(0.7);
+    opacity: 0.8;
+  }
+  to {
+    transform: scaleY(1.12);
+    opacity: 1;
+  }
+}
+/* lander: descend, touch down, rest, repeat */
+.lspb-lander-descend {
+  transform-box: view-box;
+  animation: lspb-lander-descend 8s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+@keyframes lspb-lander-descend {
+  0% {
+    transform: translate(30px, -230px) rotate(4deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  55%,
+  92% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+}
+.lspb-lander-thrust {
+  animation: lspb-lander-thrust 8s linear infinite;
+}
+@keyframes lspb-lander-thrust {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+.lspb-lander-dust {
+  opacity: 0;
+  animation: lspb-lander-dust 8s ease-out infinite;
+}
+@keyframes lspb-lander-dust {
+  0%,
+  52% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  58% {
+    opacity: 0.7;
+  }
+  78%,
+  100% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+.lspb-twinkle {
+  animation: lspb-twinkle 3.2s ease-in-out infinite;
+}
+@keyframes lspb-twinkle {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lspb-art *,
+  .lspb-art {
+    animation: none !important;
+  }
+  .lspb-lander-thrust,
+  .lspb-lander-dust {
+    opacity: 0;
+  }
 }

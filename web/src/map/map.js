@@ -4,12 +4,14 @@
 import L from "leaflet"
 import { formatLatLon } from "@/lib/format.js"
 import { readTheme } from "@/lib/theme.js"
+import { clipRingToDisc, craterAt, rimPoints } from "@/engine/craters.js"
 import { project, rhoForLat } from "@/engine/projection.js"
 
 const UNIT_M = 100
 const RING_LATS = [-85, -86, -87, -88, -89]
 const MERIDIAN_STEP_DEG = 30
 const MAP_EDGE_LAT = -84
+const CRATER_LABEL_MIN_PX = 36 // a crater's name shows once its rim is this wide on screen
 
 const toLatLng = (x, y) => L.latLng(y / UNIT_M, x / UNIT_M)
 const fromLatLng = (ll) => ({ x: ll.lng * UNIT_M, y: ll.lat * UNIT_M })
@@ -76,9 +78,14 @@ export function createMap(container, { manifest, hillshadeUrl, onPick, describe 
   map.on("mousemove", (e) => {
     const { x, y } = fromLatLng(e.latlng)
     const d = describe(x, y)
-    readoutEl.textContent = d
-      ? `${formatLatLon(d.lat, d.lon)}   h ${Number.isFinite(d.groundM) ? `${d.groundM.toFixed(0)} m` : "-"}`
-      : "outside the map (84°S to 90°S)"
+    if (!d) {
+      readoutEl.textContent = "outside the map (84°S to 90°S)"
+      return
+    }
+    const crater = cratersVisible ? craterAt(craters, d.lat, d.lon, R / 1000) : null
+    readoutEl.textContent =
+      `${formatLatLon(d.lat, d.lon)}   h ${Number.isFinite(d.groundM) ? `${d.groundM.toFixed(0)} m` : "-"}` +
+      (crater ? `   ${crater.name}` : "")
   })
   map.on("mouseout", () => {
     readoutEl.textContent = "move the cursor over the map"
@@ -115,6 +122,61 @@ export function createMap(container, { manifest, hillshadeUrl, onPick, describe 
     }
   }
 
+  // Named craters (display only): rim outlines plus labels. Nothing here is interactive, so clicks
+  // inside a crater reach the map click handler and place the pin at the clicked point.
+  let craters = []
+  let cratersVisible = true
+  const craterGroup = L.layerGroup()
+  const craterLabels = L.layerGroup()
+  let labelMarkers = [] // [{ marker, diameterUnits }]
+
+  function setCraterLayer(list, visible = cratersVisible) {
+    craterGroup.clearLayers()
+    craterLabels.clearLayers()
+    craters = list || []
+    const edgeRho = rhoForLat(MAP_EDGE_LAT, R)
+    const style = { color: theme.crater, weight: 1.2, opacity: 0.9, interactive: false }
+    labelMarkers = craters.flatMap((c) => {
+      // Outline clipped to the map disc: only the arcs at or south of 84°S are drawn.
+      const ring = rimPoints(c, R / 1000).map((p) => project(p.lat, p.lon, R))
+      for (const part of clipRingToDisc(ring, edgeRho)) {
+        L.polyline(part.map((q) => toLatLng(q.x, q.y)), style).addTo(craterGroup)
+      }
+      const centre = project(c.lat, c.lon, R)
+      if (Math.hypot(centre.x, centre.y) > edgeRho) return [] // centre off the map: outline arc only, no label
+      const html = document.createElement("span")
+      html.textContent = c.name
+      const marker = L.marker(toLatLng(centre.x, centre.y), {
+        interactive: false,
+        keyboard: false,
+        zIndexOffset: -1000, // always under the pin
+        icon: L.divIcon({ className: "lspb-crater-label", html, iconSize: null }),
+      })
+      return [{ marker, diameterUnits: (c.diameter_km * 1000) / UNIT_M }]
+    })
+    setCratersVisible(visible)
+  }
+
+  // Declutter: in L.CRS.Simple one map unit is 2^zoom px, so bigger craters get labels first.
+  function updateCraterLabels() {
+    const pxPerUnit = 2 ** map.getZoom()
+    for (const { marker, diameterUnits } of labelMarkers) {
+      const show = diameterUnits * pxPerUnit >= CRATER_LABEL_MIN_PX
+      if (show && !craterLabels.hasLayer(marker)) craterLabels.addLayer(marker)
+      else if (!show && craterLabels.hasLayer(marker)) craterLabels.removeLayer(marker)
+    }
+  }
+  map.on("zoomend", updateCraterLabels)
+
+  function setCratersVisible(visible) {
+    cratersVisible = visible
+    for (const layer of [craterGroup, craterLabels]) {
+      if (visible) layer.addTo(map)
+      else layer.remove()
+    }
+    if (visible) updateCraterLabels()
+  }
+
   function setBounds() {
     map.fitBounds(imageBounds, { animate: false })
   }
@@ -122,6 +184,9 @@ export function createMap(container, { manifest, hillshadeUrl, onPick, describe 
 
   return {
     setPin,
+    setCraterLayer,
+    setCratersVisible,
+    getCratersVisible: () => cratersVisible,
     setBounds,
     invalidateSize: () => map.invalidateSize({ animate: false }),
     destroy: () => {
