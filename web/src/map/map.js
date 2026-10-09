@@ -189,10 +189,24 @@ export function createMap(container, { manifest, hillshadeUrl, onPick, describe 
     if (visible) updateCraterLabels()
   }
 
+  // Fit the map disc to the container, leaving room for the overlays: the view toggle on top and, below
+  // 1024 px, the ratings strip at the bottom. After a resize (e.g. phone rotation) refit, unless the user
+  // has zoomed or panned since the last fit.
+  let fitted = null
   function setBounds() {
-    map.fitBounds(imageBounds, { animate: false })
+    const narrow = window.innerWidth < 1024
+    map.fitBounds(imageBounds, {
+      animate: false,
+      paddingTopLeft: [0, narrow ? 44 : 0],
+      paddingBottomRight: [0, narrow ? 64 : 0],
+    })
+    fitted = { zoom: map.getZoom(), center: map.getCenter() }
   }
   setBounds()
+  map.on("resize", () => {
+    const untouched = fitted && map.getZoom() === fitted.zoom && map.getCenter().distanceTo(fitted.center) < 1
+    if (untouched) setBounds()
+  })
 
   return {
     setPin,

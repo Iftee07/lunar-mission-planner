@@ -71,13 +71,18 @@ Only steps 01, 03 and 09 use the network, and each caches what it downloads in `
    24-hour UTC clock (`HH:MM`). All times in the app are UTC.
 3. **Pick a site.** Click the map (or focus the map and press Enter to use its centre). Drag the pin to
    move it. Named craters are outlined; hover to see a name, or hide them with the Craters button.
+   On a phone, tap the map; a strip at the bottom of the map shows the three ratings, and tapping it
+   scrolls to the full cards.
 4. **Read the cards.** Sun, Earth and Landing each have a rating badge; the `?` next to a badge explains
    the rule with the live numbers. Antenna height (2, 5, 10 or 15 m) changes the Earth results only.
 5. **Move through time.** The slider covers 29.5 days (one synodic month) after the start time; Play runs
    it at 0.25 to 3 days per second.
 6. **Surface view.** Press `V` (or use the Map / Surface toggle) to see the sky from the pin: the terrain
    skyline, the Sun and Earth and their paths over the next 6.5 days. Drag or use the arrow keys to look
-   around, wheel or `+`/`-` to zoom.
+   around, wheel or `+`/`-` to zoom (pinch on a touch screen).
+
+The layout adapts from phones (360 px wide, portrait or landscape) to large desktops; on touch screens
+the `?` rating explanations open with a tap.
 
 Durations are shown in Earth days (`d`), for example `6.5 d`. The engine works in hours; only
 `web/src/lib/format.js` converts.

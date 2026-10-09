@@ -37,8 +37,11 @@
      --lspb-font-mono (JetBrains Mono) numbers and labels. */
   --lspb-appbar-h: 3.5rem;
   --lspb-sidebar-w: 24rem;
-  --lspb-main-h-stacked: 62svh; /* map / surface height when the sidebar stacks below (< 1024 px) */
-  --lspb-main-min-h: 22rem;
+  /* map / surface height when the sidebar stacks below (< 1024 px): about the map disc's size on
+     phones (width + room for the toggles and the ratings strip), never more than 62% of the screen */
+  --lspb-main-h-stacked: min(62svh, calc(100vw + 7rem));
+  --lspb-welcome-art-max-h: 34svh; /* welcome art height cap on phones (text comes first) */
+  --lspb-main-min-h: min(22rem, calc(100svh - var(--lspb-appbar-h))); /* fits a landscape phone */
   --lspb-z-map-ui: 1000; /* above Leaflet panes (max 700) and controls */
   --lspb-focus: var(--lspb-earth);
 
@@ -173,6 +176,12 @@
   transform: translate(-50%, -50%);
   pointer-events: none;
   text-shadow: 0 0 3px var(--lspb-bg), 0 0 3px var(--lspb-bg), 0 0 2px var(--lspb-bg);
+}
+/* the hover readout needs a mouse; phones and tablets get the ratings strip instead */
+@media (max-width: 1023.98px), (hover: none) {
+  .lspb-map-readout {
+    display: none;
+  }
 }
 .lspb-map-readout {
   background: color-mix(in srgb, var(--lspb-bg) 85%, transparent);

@@ -57,7 +57,7 @@ export default function MapPanel({ active }) {
             aria-label="Show named craters"
             className="bg-background/90 data-[state=on]:text-lspb-crater"
           >
-            <CircleDashed /> Craters
+            <CircleDashed /> <span className="hidden sm:inline">Craters</span>
           </Toggle>
         </div>
       )}

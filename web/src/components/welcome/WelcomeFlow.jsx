@@ -56,7 +56,7 @@ function Item({ icon: Icon, children }) {
 // Each slide: { art, artSide, content(next, buttonRef) }
 const SLIDES = [
   {
-    art: <MoonArt className="w-full max-w-md" />,
+    art: <MoonArt className="max-h-(--lspb-welcome-art-max-h) w-full max-w-md md:max-h-none" />,
     artSide: "left",
     content: (next, buttonRef) => (
       <>
@@ -75,7 +75,7 @@ const SLIDES = [
     ),
   },
   {
-    art: <RocketArt className="w-full max-w-xl" />,
+    art: <RocketArt className="max-h-(--lspb-welcome-art-max-h) w-full max-w-xl md:max-h-none" />,
     artSide: "right",
     content: (next, buttonRef) => (
       <>
@@ -98,7 +98,7 @@ const SLIDES = [
     ),
   },
   {
-    art: <LanderArt className="w-full max-w-md" />,
+    art: <LanderArt className="max-h-(--lspb-welcome-art-max-h) w-full max-w-md md:max-h-none" />,
     artSide: "right",
     content: (next, buttonRef) => (
       <>
@@ -123,12 +123,23 @@ const SLIDES = [
   },
 ]
 
+function devStartSlide() {
+  if (!import.meta.env.DEV || typeof location === "undefined") return 0
+  const n = Number(new URLSearchParams(location.search).get("slide"))
+  return n >= 1 && n <= SLIDES.length ? n - 1 : 0
+}
+
 // Three full-screen slides before the planner. Enter or Right goes forward, Left goes back,
 // "Skip" (every slide) and the last button open the planner (screen = "app").
 export default function WelcomeFlow() {
   const setScreen = useStore((s) => s.setScreen)
-  const [[index, dir], setPage] = useState([0, 1])
+  // Dev-only test harness: ?slide=2 opens on that slide (stripped from production builds).
+  const [[index, dir], setPage] = useState(() => [devStartSlide(), 1])
   const buttonRef = useRef(null)
+  const scrollRef = useRef(null)
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0 }) // block body: scrollTo may return a Promise, not a cleanup
+  }, [index])
 
   const finish = useCallback(() => setScreen("app"), [setScreen])
   const go = useCallback(
@@ -162,10 +173,10 @@ export default function WelcomeFlow() {
   )
 
   return (
-    <div className="lspb-welcome-bg relative h-full min-h-140 overflow-hidden">
+    <div className="lspb-welcome-bg relative h-full overflow-hidden">
       <Starfield />
 
-      <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-6 py-5 md:px-10">
+      <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between bg-linear-to-b from-background/90 to-transparent px-6 py-5 md:px-10">
         <span className="font-heading text-sm font-semibold tracking-wider text-muted-foreground uppercase">
           Lunar Mission Planner
         </span>
@@ -178,25 +189,28 @@ export default function WelcomeFlow() {
         </button>
       </header>
 
-      <AnimatePresence mode="wait" custom={dir} initial={false} onExitComplete={() => buttonRef.current?.focus()}>
-        <motion.section
-          key={index}
-          custom={dir}
-          variants={slideVariants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          aria-roledescription="slide"
-          aria-label={`${index + 1} of ${SLIDES.length}`}
-          className="relative z-0 mx-auto grid h-full max-w-6xl content-center items-center gap-10 px-6 py-24 md:grid-cols-2 md:gap-16 md:px-10"
-        >
-          {slide.artSide === "left" && art}
-          <motion.div variants={textList} className="space-y-5 font-heading">
-            {slide.content(() => go(index + 1), buttonRef)}
-          </motion.div>
-          {slide.artSide === "right" && art}
-        </motion.section>
-      </AnimatePresence>
+      {/* scrolls when a slide is taller than the screen (phones), so text never slides under the header */}
+      <div ref={scrollRef} className="absolute inset-0 overflow-y-auto">
+        <AnimatePresence mode="wait" custom={dir} initial={false} onExitComplete={() => buttonRef.current?.focus()}>
+          <motion.section
+            key={index}
+            custom={dir}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            aria-roledescription="slide"
+            aria-label={`${index + 1} of ${SLIDES.length}`}
+            className="relative z-0 mx-auto grid min-h-full max-w-6xl content-center items-center gap-8 px-6 pt-20 pb-24 md:grid-cols-2 md:gap-16 md:px-10 md:py-24"
+          >
+            {slide.artSide === "left" && art}
+            <motion.div variants={textList} className="space-y-5 font-heading">
+              {slide.content(() => go(index + 1), buttonRef)}
+            </motion.div>
+            {slide.artSide === "right" && art}
+          </motion.section>
+        </AnimatePresence>
+      </div>
 
       <nav aria-label="Slides" className="absolute inset-x-0 bottom-0 z-10 flex justify-center gap-2 pb-8">
         {SLIDES.map((_, i) => (
@@ -206,13 +220,13 @@ export default function WelcomeFlow() {
             onClick={() => go(i)}
             aria-label={`Go to slide ${i + 1}`}
             aria-current={i === index ? "step" : undefined}
-            className="relative grid h-3 w-8 place-items-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="relative grid h-6 w-8 place-items-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span className="h-2 w-2 rounded-full bg-muted-foreground/50" />
             {i === index && (
               <motion.span
                 layoutId="lspb-welcome-dot"
-                className="absolute inset-y-0.5 inset-x-0 rounded-full bg-foreground"
+                className="absolute inset-x-0 top-2 bottom-2 rounded-full bg-foreground"
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}

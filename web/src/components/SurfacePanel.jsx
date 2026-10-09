@@ -84,14 +84,14 @@ export default function SurfacePanel({ active }) {
         <p className="absolute top-16 left-1/2 -translate-x-1/2 text-sm text-lspb-warn">Date outside ephemeris range</p>
       )}
       {import.meta.env.DEV && pin && (
-        <div className="absolute right-3 bottom-3 flex items-center gap-2">
+        <div className="absolute right-3 bottom-3 hidden items-center gap-2 lg:flex">
           {debug && <span className="text-xs text-muted-foreground">{debug}</span>}
           <Button variant="outline" size="sm" onClick={runDebug} title="Check skyline vs horizon (dev build only)">
             <Bug /> Check skyline
           </Button>
         </div>
       )}
-      <p className="pointer-events-none absolute bottom-3 left-3 text-xs text-muted-foreground">
+      <p className="pointer-events-none absolute bottom-3 left-3 hidden text-xs text-muted-foreground lg:block">
         drag or arrow keys to look around &middot; wheel or +/&minus; to zoom
       </p>
     </div>

@@ -110,7 +110,8 @@ export default function DatePicker() {
       <PopoverTrigger asChild>
         <Button variant="outline" className="font-mono tabular-nums" aria-label={`Start ${formatClock(baseTimeUtcMs)} UTC. Change date and time`}>
           <CalendarDays />
-          {formatClock(baseTimeUtcMs)} UTC
+          {formatClock(baseTimeUtcMs)}
+          <span className="hidden sm:inline">UTC</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" side="top" className="w-auto p-3">

@@ -435,21 +435,36 @@ export function createSurface(container, { engineData }) {
   }
 
   // ---------- camera control ----------
-  let drag = null
+  // One pointer drags the view; two pointers (touch) pinch to zoom the field of view.
   const el = renderer.domElement
+  const pointers = new Map() // pointerId -> { x, y }
+  let pinchDist = 0
+  const spread = () => {
+    const [a, b] = [...pointers.values()]
+    return Math.hypot(a.x - b.x, a.y - b.y)
+  }
   const onDown = (e) => {
-    drag = { x: e.clientX, y: e.clientY }
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
     el.setPointerCapture(e.pointerId)
+    if (pointers.size === 2) pinchDist = spread()
   }
   const onMove = (e) => {
-    if (!drag) return
+    const prev = pointers.get(e.pointerId)
+    if (!prev) return
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    if (pointers.size >= 2) {
+      const d = spread()
+      if (pinchDist > 0 && d > 0) view.fov = Math.min(FOV_MAX, Math.max(FOV_MIN, (view.fov * pinchDist) / d))
+      pinchDist = d
+      return
+    }
     const degPerPx = view.fov / (el.clientHeight || 1)
-    view.yaw = (((view.yaw - (e.clientX - drag.x) * degPerPx) % 360) + 360) % 360
-    view.pitch = Math.min(PITCH_MAX, Math.max(PITCH_MIN, view.pitch + (e.clientY - drag.y) * degPerPx))
-    drag = { x: e.clientX, y: e.clientY }
+    view.yaw = (((view.yaw - (e.clientX - prev.x) * degPerPx) % 360) + 360) % 360
+    view.pitch = Math.min(PITCH_MAX, Math.max(PITCH_MIN, view.pitch + (e.clientY - prev.y) * degPerPx))
   }
   const onUp = (e) => {
-    drag = null
+    pointers.delete(e.pointerId)
+    pinchDist = pointers.size === 2 ? spread() : 0
     if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId)
   }
   const onWheel = (e) => {

@@ -53,16 +53,18 @@ export default function TimeBar() {
   }
 
   return (
+    // Phones: two rows (start, Play, speed; then the slider). Sticky at the bottom while the page scrolls,
+    // except on short landscape screens where it would cover the map.
     <footer
       aria-label="Time"
-      className="sticky bottom-0 z-10 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border bg-background px-4 py-3 text-sm lg:static"
+      className="sticky bottom-0 z-10 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border bg-background px-3 py-2.5 text-sm sm:gap-x-4 sm:px-4 sm:py-3 lg:static [@media(max-height:32rem)]:static"
     >
-      <div className="flex items-center gap-2">
-        <span className="text-muted-foreground">Start</span>
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none">
+        <span className="hidden text-muted-foreground sm:inline">Start</span>
         <DatePicker />
       </div>
 
-      <div className="flex min-w-64 flex-1 items-center gap-3">
+      <div className="order-last flex basis-full items-center gap-3 sm:order-none sm:min-w-64 sm:flex-1 sm:basis-auto">
         <Slider
           aria-label="Days after start"
           min={0}
@@ -71,17 +73,17 @@ export default function TimeBar() {
           value={[sliderOffsetH]}
           onValueChange={([h]) => setSliderOffset(h)}
         />
-        <span className="font-mono whitespace-nowrap tabular-nums" title="Effective time = start + slider">
+        <span className="font-mono text-xs whitespace-nowrap tabular-nums sm:text-sm" title="Effective time = start + slider">
           +{formatDays(sliderOffsetH, 2)} &rarr; {formatClock(effectiveMs)}
         </span>
       </div>
 
-      <Button variant="outline" size="sm" onClick={togglePlay} aria-label={playing ? "Pause" : "Play"}>
-        {playing ? <Pause /> : <Play />} {playing ? "Pause" : "Play"}
+      <Button variant="outline" size="sm" className="h-9 sm:h-8" onClick={togglePlay} aria-label={playing ? "Pause" : "Play"}>
+        {playing ? <Pause /> : <Play />} <span className="hidden sm:inline">{playing ? "Pause" : "Play"}</span>
       </Button>
 
       <Select value={String(speed)} onValueChange={(v) => setSpeed(Number(v))}>
-        <SelectTrigger className="w-32" aria-label="Play speed">
+        <SelectTrigger className="w-28 sm:w-32" aria-label="Play speed">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

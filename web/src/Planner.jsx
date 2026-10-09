@@ -3,6 +3,7 @@ import AppBar from "@/components/AppBar"
 import DataStatus from "@/components/DataStatus"
 import ErrorBoundary from "@/components/ErrorBoundary"
 import MapPanel from "@/components/MapPanel"
+import MobileSummary from "@/components/MobileSummary"
 import Sidebar from "@/components/sidebar/Sidebar"
 import TimeBar from "@/components/TimeBar"
 import ViewToggle from "@/components/ViewToggle"
@@ -54,9 +55,10 @@ export default function Planner() {
             <div className="absolute top-3 left-3 z-(--lspb-z-map-ui)">
               <ViewToggle />
             </div>
+            <MobileSummary />
             <DataStatus />
           </main>
-          <aside aria-label="Site ratings" className="w-full border-t lg:w-(--lspb-sidebar-w) lg:shrink-0 lg:overflow-y-auto lg:border-t-0 lg:border-l">
+          <aside id="site-ratings" aria-label="Site ratings" className="w-full scroll-mt-2 border-t lg:w-(--lspb-sidebar-w) lg:shrink-0 lg:overflow-y-auto lg:border-t-0 lg:border-l">
             <Sidebar />
           </aside>
         </div>
