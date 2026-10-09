@@ -10,8 +10,7 @@ once by a Python pipeline and served from `web/public/data/`.
 
 - Region: 84°S to the pole. Dates: 2026-01-01 to 2030-12-31 (UTC).
 - Ratings are tuned for a 6.5-day crewed-class surface stay (NASA Artemis III).
-- Licence: Apache-2.0 (see [LICENSE](LICENSE)). Developed with Claude (Anthropic) as a coding assistant; see
-  [AI assistance](#ai-assistance).
+- Licence: Apache-2.0 (see [LICENSE](LICENSE)).
 
 ## Contents
 
@@ -23,7 +22,6 @@ once by a Python pipeline and served from `web/public/data/`.
 - [Known limits](#known-limits)
 - [Data sources and citations](#data-sources-and-citations)
 - [Licences](#licences)
-- [AI assistance](#ai-assistance)
 
 ## Quick start
 
