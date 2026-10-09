@@ -1,0 +1,52 @@
+{
+  "moon_radius_m": 1737400,
+  "ephemeris": {
+    "file": "ephemeris.bin",
+    "utc_start_unix_s": 1767225600,
+    "step_s": 900,
+    "count": 175296,
+    "frame": "MOON_ME",
+    "kernels": [
+      "naif0012.tls",
+      "de440s.bsp",
+      "pck00011.tpc",
+      "moon_pa_de440_200625.bpc",
+      "moon_de440_250416.tf"
+    ],
+    "abcorr": "LT+S"
+  },
+  "build_date_utc": "2026-10-09T05:05:39Z",
+  "proj4": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs",
+  "grids": {
+    "near": {
+      "file": "dem_near.bin",
+      "width": 3038,
+      "height": 3038,
+      "pixel_m": 120.0,
+      "x_min": -182280.0,
+      "y_max": 182280.0,
+      "scale": 0.5,
+      "nodata": -32768
+    },
+    "far": {
+      "file": "dem_far.bin",
+      "width": 2532,
+      "height": 2532,
+      "pixel_m": 240.0,
+      "x_min": -303840.0,
+      "y_max": 303840.0,
+      "scale": 0.5,
+      "nodata": -32768
+    }
+  },
+  "slope": {
+    "plane": "slope_plane.bin",
+    "max": "slope_max.bin",
+    "scale": 0.25,
+    "nodata": 255,
+    "radius_m": 100.0,
+    "grid": "near"
+  },
+  "hillshade": "hillshade.png",
+  "terrain_source": "LDEM_80S_20MPP_ADJ.TIF"
+}

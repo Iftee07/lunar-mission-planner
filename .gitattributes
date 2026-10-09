@@ -1,0 +1,3 @@
+web/public/data/*.bin !text !filter !merge !diff
+web/public/data/*.png !text !filter !merge !diff
+web/public/data/*.jpg !text !filter !merge !diff

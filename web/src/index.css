@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* LSPB theme tokens: the only place colours are defined (PRD section 8).
+   Dark theme only. JS reads these through src/lib/theme.js. */
+:root {
+  --lspb-bg: #0d1b2a;
+  --lspb-line: #cfe3f5;
+  --lspb-line-dim: #6b7c8f;
+  --lspb-sun: #ffd166;
+  --lspb-earth: #4cc9f0;
+  --lspb-blocked: #6b7c8f;
+  --lspb-ok: #4ade80;
+  --lspb-warn: #fbbf24;
+  --lspb-bad: #f87171;
+  --lspb-font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* shadcn/ui variables mapped onto the same palette */
+  --radius: 0.375rem;
+  --background: var(--lspb-bg);
+  --foreground: var(--lspb-line);
+  --card: var(--lspb-bg);
+  --card-foreground: var(--lspb-line);
+  --popover: var(--lspb-bg);
+  --popover-foreground: var(--lspb-line);
+  --primary: var(--lspb-line);
+  --primary-foreground: var(--lspb-bg);
+  --secondary: var(--lspb-bg);
+  --secondary-foreground: var(--lspb-line);
+  --muted: var(--lspb-bg);
+  --muted-foreground: var(--lspb-line-dim);
+  --accent: var(--lspb-line-dim);
+  --accent-foreground: var(--lspb-line);
+  --destructive: var(--lspb-bad);
+  --border: var(--lspb-line-dim);
+  --input: var(--lspb-line-dim);
+  --ring: var(--lspb-earth);
+}
+
+@theme inline {
+  --font-sans: var(--lspb-font-mono);
+  --font-mono: var(--lspb-font-mono);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-lspb-sun: var(--lspb-sun);
+  --color-lspb-earth: var(--lspb-earth);
+  --color-lspb-ok: var(--lspb-ok);
+  --color-lspb-warn: var(--lspb-warn);
+  --color-lspb-bad: var(--lspb-bad);
+  --color-lspb-dim: var(--lspb-line-dim);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-background text-foreground font-mono;
+  }
+}

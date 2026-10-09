@@ -1,0 +1,24 @@
+# Raw downloads (SPICE kernels, LOLA DEM)
+data/raw/
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+web/dist/
+
+# Large generated outputs (rebuilt by the pipeline)
+web/public/data/*.bin
+web/public/data/*.png
+pipeline/out/
+*_preview.png
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,8 @@
+# Python 3.11+ (tested on 3.13.5, Windows 11). Exact pins.
+spiceypy==8.2.0
+numpy==2.5.3
+rasterio==1.5.2
+pyproj==3.8.0
+pillow==12.3.0
+requests==2.34.2
+scipy==1.18.1
