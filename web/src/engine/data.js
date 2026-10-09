@@ -85,23 +85,42 @@ export function hoursToMs(h) {
   return h * HOUR_MS
 }
 
-async function fetchBuffer(url) {
-  const r = await fetch(url)
+// Errors name the file, so the UI can say exactly what failed.
+async function fetchChecked(url) {
+  let r
+  try {
+    r = await fetch(url)
+  } catch {
+    throw new Error(`${url}: network error (is the dev server running?)`)
+  }
+  // A missing file comes back as 404, or (dev servers with an SPA fallback) as the app's own HTML page.
+  const missing = r.status === 404 || (r.ok && (r.headers.get("content-type") || "").includes("text/html"))
+  if (missing) throw new Error(`${url} is missing`)
   if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`)
-  return r.arrayBuffer()
+  return r
+}
+
+async function fetchBuffer(url) {
+  return (await fetchChecked(url)).arrayBuffer()
 }
 
 // Browser loader: everything the app needs, from same-origin /data/.
-export async function loadAll(base = "/data/") {
-  const manifest = await (await fetch(base + "manifest.json")).json()
+// onProgress(done, total) is called as each required file arrives (manifest + 5 binaries).
+export async function loadAll(base = "/data/", onProgress = () => {}) {
+  const total = 6
+  let done = 0
+  const tick = (x) => {
+    onProgress(++done, total)
+    return x
+  }
+  onProgress(0, total)
+  const manifest = tick(await (await fetchChecked(base + "manifest.json")).json())
   const g = manifest.grids
-  const [eph, near, far, plane, smax] = await Promise.all([
-    fetchBuffer(base + manifest.ephemeris.file),
-    fetchBuffer(base + g.near.file),
-    fetchBuffer(base + g.far.file),
-    fetchBuffer(base + manifest.slope.plane),
-    fetchBuffer(base + manifest.slope.max),
-  ])
+  const [eph, near, far, plane, smax] = await Promise.all(
+    [manifest.ephemeris.file, g.near.file, g.far.file, manifest.slope.plane, manifest.slope.max].map((f) =>
+      fetchBuffer(base + f).then(tick),
+    ),
+  )
   const slopeGrid = g[manifest.slope.grid || "near"]
   // Named craters (Phase 9b) are a display-only layer: if the file is missing the app still works.
   const craters = manifest.craters

@@ -22,7 +22,9 @@ export default function TimeBar() {
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState(6)
   const speedRef = useRef(speed)
-  speedRef.current = speed
+  useEffect(() => {
+    speedRef.current = speed
+  }, [speed])
 
   // Play: advance the slider by `speed` hours of simulated time per real second.
   useEffect(() => {
@@ -51,13 +53,16 @@ export default function TimeBar() {
   }
 
   return (
-    <footer className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border px-4 py-3 text-sm">
+    <footer
+      aria-label="Time"
+      className="sticky bottom-0 z-10 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border bg-background px-4 py-3 text-sm lg:static"
+    >
       <div className="flex items-center gap-2">
         <span className="text-muted-foreground">Start</span>
         <DatePicker />
       </div>
 
-      <div className="flex min-w-[16rem] flex-1 items-center gap-3">
+      <div className="flex min-w-64 flex-1 items-center gap-3">
         <Slider
           aria-label="Days after start"
           min={0}
@@ -76,7 +81,7 @@ export default function TimeBar() {
       </Button>
 
       <Select value={String(speed)} onValueChange={(v) => setSpeed(Number(v))}>
-        <SelectTrigger className="w-[7.5rem]" aria-label="Play speed">
+        <SelectTrigger className="w-32" aria-label="Play speed">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

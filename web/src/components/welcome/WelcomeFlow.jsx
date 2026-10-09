@@ -56,7 +56,7 @@ function Item({ icon: Icon, children }) {
 // Each slide: { art, artSide, content(next, buttonRef) }
 const SLIDES = [
   {
-    art: <MoonArt className="w-full max-w-[26rem]" />,
+    art: <MoonArt className="w-full max-w-md" />,
     artSide: "left",
     content: (next, buttonRef) => (
       <>
@@ -75,7 +75,7 @@ const SLIDES = [
     ),
   },
   {
-    art: <RocketArt className="w-full max-w-[36rem]" />,
+    art: <RocketArt className="w-full max-w-xl" />,
     artSide: "right",
     content: (next, buttonRef) => (
       <>
@@ -98,7 +98,7 @@ const SLIDES = [
     ),
   },
   {
-    art: <LanderArt className="w-full max-w-[28rem]" />,
+    art: <LanderArt className="w-full max-w-md" />,
     artSide: "right",
     content: (next, buttonRef) => (
       <>
@@ -162,7 +162,7 @@ export default function WelcomeFlow() {
   )
 
   return (
-    <div className="lspb-welcome-bg relative h-full min-h-[560px] overflow-hidden">
+    <div className="lspb-welcome-bg relative h-full min-h-140 overflow-hidden">
       <Starfield />
 
       <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-6 py-5 md:px-10">

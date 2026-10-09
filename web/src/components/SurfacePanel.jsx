@@ -58,17 +58,15 @@ export default function SurfacePanel({ active }) {
     else api.stop()
   }, [active, dataReady])
 
+  // Dev-only validation aid: skyline vs horizon and body positions. Full rows: lspb.surface.debugCheck().
   const runDebug = () => {
     const api = apiRef.current
     if (!api) return
     const rows = api.debugCheck()
     const v = api.getView()
-    console.table(rows)
-    console.log(`surface view: yaw ${v.yaw.toFixed(1)} pitch ${v.pitch.toFixed(1)} fov ${v.fov.toFixed(1)} ` +
-      `camera y ${v.cameraY} m, ${v.fps.toFixed(0)} fps`)
     const sky = rows.filter((r) => r.item.startsWith("skyline"))
     const worst = Math.max(...sky.map((r) => r.diffDeg))
-    setDebug(`skyline vs horizon: max ${worst.toFixed(5)}° at 8 azimuths; ${v.fps.toFixed(0)} fps (table in console)`)
+    setDebug(`skyline vs horizon: max ${worst.toFixed(5)}° at 8 azimuths; ${v.fps.toFixed(0)} fps`)
   }
 
   return (
@@ -85,16 +83,16 @@ export default function SurfacePanel({ active }) {
       {pin && outOfRange && (
         <p className="absolute top-16 left-1/2 -translate-x-1/2 text-sm text-lspb-warn">Date outside ephemeris range</p>
       )}
-      {pin && (
+      {import.meta.env.DEV && pin && (
         <div className="absolute right-3 bottom-3 flex items-center gap-2">
           {debug && <span className="text-xs text-muted-foreground">{debug}</span>}
-          <Button variant="outline" size="sm" onClick={runDebug} title="Log skyline vs horizon and body positions">
+          <Button variant="outline" size="sm" onClick={runDebug} title="Check skyline vs horizon (dev build only)">
             <Bug /> Check skyline
           </Button>
         </div>
       )}
       <p className="pointer-events-none absolute bottom-3 left-3 text-xs text-muted-foreground">
-        drag to look around &middot; wheel to zoom
+        drag or arrow keys to look around &middot; wheel or +/&minus; to zoom
       </p>
     </div>
   )

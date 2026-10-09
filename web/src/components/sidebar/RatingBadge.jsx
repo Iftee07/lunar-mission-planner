@@ -1,4 +1,5 @@
 import { CircleHelp } from "lucide-react"
+import { AnimatePresence, motion } from "motion/react"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
@@ -15,7 +16,19 @@ const TONE = {
 export default function RatingBadge({ rating, topic, children }) {
   return (
     <div className="flex items-center gap-1.5">
-      <Badge className={cn("rounded-sm font-semibold", TONE[rating.color])}>{rating.label}</Badge>
+      {/* pops when the level changes */}
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span
+          key={rating.label}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          className="inline-flex"
+        >
+          <Badge className={cn("rounded-sm font-semibold", TONE[rating.color])}>{rating.label}</Badge>
+        </motion.span>
+      </AnimatePresence>
       <Tooltip>
         <TooltipTrigger asChild>
           <button

@@ -5,7 +5,7 @@ import {
   rateLanding,
 } from "@/engine/ratings.js"
 import { LANDING_RADIUS_M, useStore } from "@/state.js"
-import { CardMessage, MetricCard, MetricRow } from "./MetricCard"
+import { MetricCard, MetricRow, SkeletonRows } from "./MetricCard"
 import RatingBadge, { TipLive, TipNote, TipRule } from "./RatingBadge"
 
 const deg = (d) => `${d.toFixed(1)}°`
@@ -39,7 +39,7 @@ export default function LandingCard() {
   return (
     <MetricCard title="LANDING" badge={badge} data-testid="landing-card">
       {!slope ? (
-        <CardMessage busy>Reading slope&hellip;</CardMessage>
+        <SkeletonRows rows={1} />
       ) : (
         <MetricRow label="Slope">{known ? deg(slope.planeDeg) : "no data"}</MetricRow>
       )}

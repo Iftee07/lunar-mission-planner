@@ -14,7 +14,7 @@ const CRATERS = [
 export function MoonArt({ className }) {
   const id = useId().replace(/:/g, "")
   return (
-    <svg viewBox="0 0 400 400" className={`lspb-art ${className || ""}`} role="img" aria-label="A slowly rotating Moon">
+    <svg viewBox="0 0 400 400" overflow="visible" className={`lspb-art ${className || ""}`} role="img" aria-label="A slowly rotating Moon">
       <defs>
         <radialGradient id={`${id}-body`} cx="38%" cy="34%" r="70%">
           <stop offset="0%" style={{ stopColor: v("art-moon") }} />

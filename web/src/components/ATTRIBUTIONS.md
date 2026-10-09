@@ -33,6 +33,7 @@ Nomenclature (WGPSN). Accessed 2026-10-09.
 | @fontsource-variable/space-grotesk | 5.3.0 | OFL-1.1 | Headings, welcome slides |
 | @fontsource-variable/inter | 5.3.0 | OFL-1.1 | Body text |
 | react-day-picker | 10.0.2 | MIT | Calendar (brings date-fns 4.x and @date-fns/tz, both MIT) |
+| oxlint (dev only) | 1.83.0 | MIT | `npm run lint` |
 | motion | 13.4.0 | MIT (Motion B.V.) | Welcome slide transitions and UI micro-animations (brings framer-motion, motion-dom, motion-utils 13.5.x, all MIT; exact versions in package-lock.json) |
 
 No Lottie files are used: all welcome art is inline SVG with CSS keyframes, plus a canvas starfield.

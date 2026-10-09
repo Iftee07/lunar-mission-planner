@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { CalendarDays } from "lucide-react"
 import { labelDayButton } from "react-day-picker"
 import { Button } from "@/components/ui/button"
@@ -54,8 +54,13 @@ export default function DatePicker() {
   const [month, setMonth] = useState(selected)
 
   // Draft text so a half-typed time does not fight the controlled value.
+  // Re-sync it when the start time changes elsewhere (adjusting state during render, no effect).
   const [timeDraft, setTimeDraft] = useState(() => formatHHMM(baseTimeUtcMs))
-  useEffect(() => setTimeDraft(formatHHMM(baseTimeUtcMs)), [baseTimeUtcMs])
+  const [draftFor, setDraftFor] = useState(baseTimeUtcMs)
+  if (draftFor !== baseTimeUtcMs) {
+    setDraftFor(baseTimeUtcMs)
+    setTimeDraft(formatHHMM(baseTimeUtcMs))
+  }
   const timeValid = parseHHMM(timeDraft) !== null
 
   const start = utcParts(EPHEMERIS_START_UTC_MS)

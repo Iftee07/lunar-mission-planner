@@ -6,8 +6,6 @@ import { computeHorizon } from "../src/engine/horizon.js"
 import { ANTENNA_PRESETS_M } from "../src/state.js"
 import { hasRealData, loadRealData, readFixture } from "./load.js"
 
-const HOUR_MS = 3600000
-
 describe("visibleHoursByDay (synthetic visibility)", () => {
   // Visible only on 2027-03-10 from 20:00 to 23:00 UTC.
   const from = Date.UTC(2027, 2, 10, 20)

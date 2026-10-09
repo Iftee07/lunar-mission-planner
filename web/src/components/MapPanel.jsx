@@ -45,7 +45,7 @@ export default function MapPanel({ active }) {
     <div className="absolute inset-0" style={{ display: active ? "block" : "none" }}>
       <div ref={containerRef} className="h-full w-full" data-testid="map-container" />
       {dataReady && (
-        <div className="absolute top-2.5 right-14 z-[1000]">
+        <div className="absolute top-2.5 right-14 z-(--lspb-z-map-ui)">
           <Toggle
             variant="outline"
             size="sm"

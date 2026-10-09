@@ -11,4 +11,7 @@ export default defineConfig({
   resolve: {
     alias: { "@": path.resolve(here, "./src") },
   },
+  // The three.js surface view is its own lazy chunk (~570 kB, mostly three.js itself); the welcome
+  // and planner chunks stay well under this.
+  build: { chunkSizeWarningLimit: 600 },
 })

@@ -96,6 +96,18 @@ export function createMap(container, { manifest, hillshadeUrl, onPick, describe 
     onPick(x, y)
   })
 
+  // Keyboard: Leaflet already pans (arrows) and zooms (+ / -) when the map has focus; Enter or Space
+  // places the pin at the map centre, marked by a crosshair while focused (CSS .leaflet-container:focus-visible).
+  container.setAttribute("role", "application")
+  container.setAttribute("aria-label", "Map of the lunar south pole. Arrow keys pan, plus and minus zoom, Enter places the pin at the centre.")
+  const onKey = (e) => {
+    if (e.target !== container || (e.key !== "Enter" && e.key !== " ")) return
+    e.preventDefault()
+    const { x, y } = fromLatLng(map.getCenter())
+    onPick(x, y)
+  }
+  container.addEventListener("keydown", onKey)
+
   // The single pin: a draggable crosshair marker; the store is the source of truth.
   let marker = null
   let pinLatLng = null
@@ -190,6 +202,7 @@ export function createMap(container, { manifest, hillshadeUrl, onPick, describe 
     setBounds,
     invalidateSize: () => map.invalidateSize({ animate: false }),
     destroy: () => {
+      container.removeEventListener("keydown", onKey)
       map.remove()
       marker = null
     },

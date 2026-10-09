@@ -456,6 +456,22 @@ export function createSurface(container, { engineData }) {
     e.preventDefault()
     view.fov = Math.min(FOV_MAX, Math.max(FOV_MIN, view.fov * Math.exp(e.deltaY * 0.001)))
   }
+  // Keyboard: arrows look around, + / - zoom (the canvas is focusable).
+  el.tabIndex = 0
+  el.setAttribute("role", "application")
+  el.setAttribute("aria-label", "Surface view from the pin. Arrow keys look around, plus and minus zoom.")
+  const onKey = (e) => {
+    const k = e.key
+    if (k === "ArrowLeft") view.yaw = (view.yaw + 355) % 360
+    else if (k === "ArrowRight") view.yaw = (view.yaw + 5) % 360
+    else if (k === "ArrowUp") view.pitch = Math.min(PITCH_MAX, view.pitch + 3)
+    else if (k === "ArrowDown") view.pitch = Math.max(PITCH_MIN, view.pitch - 3)
+    else if (k === "+" || k === "=") view.fov = Math.max(FOV_MIN, view.fov / 1.15)
+    else if (k === "-" || k === "_") view.fov = Math.min(FOV_MAX, view.fov * 1.15)
+    else return
+    e.preventDefault()
+  }
+  el.addEventListener("keydown", onKey)
   el.addEventListener("pointerdown", onDown)
   el.addEventListener("pointermove", onMove)
   el.addEventListener("pointerup", onUp)
@@ -586,6 +602,7 @@ export function createSurface(container, { engineData }) {
   function destroy() {
     stop()
     ro.disconnect()
+    el.removeEventListener("keydown", onKey)
     el.removeEventListener("pointerdown", onDown)
     el.removeEventListener("pointermove", onMove)
     el.removeEventListener("pointerup", onUp)

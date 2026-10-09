@@ -27,6 +27,9 @@ function defaultBaseTime() {
   return now >= EPHEMERIS_START_UTC_MS && now <= EPHEMERIS_END_UTC_MS ? now : EPHEMERIS_START_UTC_MS
 }
 
+// Dev-only test harness (stripped from production builds): ?screen=app&pin=lat,lon&t=ISO&view=surface
+const devParams = () => (import.meta.env.DEV && typeof location !== "undefined" ? new URLSearchParams(location.search) : null)
+
 const emptyResults = {
   status: "idle", // idle | loading-data | computing | ready | error
   error: null,
@@ -47,12 +50,13 @@ export const useStore = create((set) => ({
   antennaM: ANTENNA_DEFAULT_M,
   sunMode: "center",
   view: "map",
-  screen: "welcome", // welcome | app (routed from Phase 10)
+  screen: devParams()?.get("screen") === "app" ? "app" : "welcome", // welcome | app
   pin: null,
 
   // --- computed, not user-editable ---
   dataReady: false,
   dataError: null,
+  dataProgress: { done: 0, total: 0 }, // files loaded so far (first-load progress)
   results: emptyResults,
 
   // --- actions ---
@@ -82,10 +86,11 @@ export function getEngineData() {
   return engineData
 }
 
-// Load once, even under React StrictMode double effects.
+// Load once, even under React StrictMode double effects. retryData() starts over after a failure.
 export function initData() {
   if (loadPromise) return loadPromise
-  loadPromise = loadAll()
+  useStore.setState({ dataError: null })
+  loadPromise = loadAll("/data/", (done, total) => useStore.setState({ dataProgress: { done, total } }))
     .then((data) => {
       engineData = data
       worker = createHorizonWorker(data.grids)
@@ -98,6 +103,12 @@ export function initData() {
       throw err
     })
   return loadPromise
+}
+
+export function retryData() {
+  if (engineData) return Promise.resolve(engineData)
+  loadPromise = null
+  return initData().catch(() => {}) // the error is shown again if it persists
 }
 
 // Build a pin from projected map coordinates; null if outside the map disc or without terrain.
@@ -241,4 +252,8 @@ function installDevHooks() {
     },
     state: () => useStore.getState(),
   }
+  const q = devParams()
+  if (q?.get("t")) window.lspb.setTimeUtc(q.get("t"))
+  if (q?.get("pin")) window.lspb.setPinLatLon(...q.get("pin").split(",").map(Number))
+  if (q?.get("view")) useStore.getState().setView(q.get("view"))
 }

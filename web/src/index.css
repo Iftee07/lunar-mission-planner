@@ -7,7 +7,8 @@
 :root {
   --lspb-bg: #0d1b2a;
   --lspb-line: #cfe3f5;
-  --lspb-line-dim: #6b7c8f;
+  --lspb-line-dim: #6b7c8f; /* lines and borders only (4.1:1 on bg: below AA for text) */
+  --lspb-text-dim: #93a3b5; /* secondary text, 6.8:1 on bg (WCAG AA) */
   --lspb-sun: #ffd166;
   --lspb-earth: #4cc9f0;
   --lspb-blocked: #6b7c8f;
@@ -30,6 +31,17 @@
   --lspb-font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --lspb-font-heading: "Space Grotesk Variable", "Inter Variable", ui-sans-serif, sans-serif;
 
+  /* design system (Phase 10b): one place for layout sizes and stacking.
+     Spacing and type use Tailwind's default 0.25rem / text-xs..text-7xl scales; radii derive from --radius.
+     Fonts: --lspb-font-heading (Space Grotesk) headings, --lspb-font-sans (Inter) body,
+     --lspb-font-mono (JetBrains Mono) numbers and labels. */
+  --lspb-appbar-h: 3.5rem;
+  --lspb-sidebar-w: 24rem;
+  --lspb-main-h-stacked: 62svh; /* map / surface height when the sidebar stacks below (< 1024 px) */
+  --lspb-main-min-h: 22rem;
+  --lspb-z-map-ui: 1000; /* above Leaflet panes (max 700) and controls */
+  --lspb-focus: var(--lspb-earth);
+
   /* shadcn/ui variables mapped onto the same palette */
   --radius: 0.375rem;
   --background: var(--lspb-bg);
@@ -43,13 +55,13 @@
   --secondary: color-mix(in srgb, var(--lspb-line-dim) 25%, var(--lspb-bg));
   --secondary-foreground: var(--lspb-line);
   --muted: color-mix(in srgb, var(--lspb-line-dim) 25%, var(--lspb-bg));
-  --muted-foreground: var(--lspb-line-dim);
+  --muted-foreground: var(--lspb-text-dim);
   --accent: color-mix(in srgb, var(--lspb-line-dim) 40%, var(--lspb-bg));
   --accent-foreground: var(--lspb-line);
   --destructive: var(--lspb-bad);
   --border: var(--lspb-line-dim);
   --input: var(--lspb-line-dim);
-  --ring: var(--lspb-earth);
+  --ring: var(--lspb-focus);
 }
 
 @theme inline {
@@ -83,13 +95,18 @@
   --color-lspb-ok: var(--lspb-ok);
   --color-lspb-warn: var(--lspb-warn);
   --color-lspb-bad: var(--lspb-bad);
-  --color-lspb-dim: var(--lspb-line-dim);
+  --color-lspb-dim: var(--lspb-text-dim);
   --color-lspb-crater: var(--lspb-crater);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  /* visible keyboard focus everywhere (components add their own rings; this catches the rest) */
+  :focus-visible {
+    outline: 2px solid var(--lspb-focus);
+    outline-offset: 2px;
   }
   html,
   body,
@@ -112,6 +129,24 @@
   font-family: var(--lspb-font-mono);
   cursor: crosshair;
 }
+/* keyboard focus on the map: ring plus a centre crosshair showing where Enter places the pin */
+.leaflet-container:focus-visible {
+  outline: 2px solid var(--lspb-focus);
+  outline-offset: -2px;
+}
+.leaflet-container:focus-visible::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border: 2px solid var(--lspb-focus);
+  border-radius: 50%;
+  z-index: 650;
+  pointer-events: none;
+}
 .leaflet-bar a,
 .leaflet-bar a:hover {
   background: var(--lspb-bg);
@@ -123,7 +158,7 @@
   box-shadow: none !important;
 }
 .lspb-map-label {
-  color: var(--lspb-line-dim);
+  color: var(--lspb-text-dim);
   font-size: 11px;
   white-space: nowrap;
   transform: translate(-50%, -50%);
@@ -196,7 +231,7 @@
   font-size: 13px;
 }
 .lspb-surface-label-dim {
-  color: var(--lspb-line-dim);
+  color: var(--lspb-text-dim);
 }
 .lspb-surface-label-sun {
   color: var(--lspb-sun);
