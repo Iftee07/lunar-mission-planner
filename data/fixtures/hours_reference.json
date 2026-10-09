@@ -1,0 +1,100 @@
+{
+ "cases": [
+  {
+   "lat": -89.5,
+   "lon": -45.0,
+   "timeUtc": "2026-11-01T00:00:00Z",
+   "body": "sun",
+   "visibleNow": false,
+   "hoursToChange": 447.13671875,
+   "nextPeriodHours": 35.7421875,
+   "continuous": false,
+   "windowVisibleHours": 0.0,
+   "windowHiddenHours": 156.0
+  },
+  {
+   "lat": -89.5,
+   "lon": -45.0,
+   "timeUtc": "2026-11-01T00:00:00Z",
+   "body": "earth",
+   "visibleNow": true,
+   "hoursToChange": 33.71484375,
+   "nextPeriodHours": 376.0,
+   "continuous": false,
+   "windowVisibleHours": 33.75,
+   "windowHiddenHours": 122.25
+  },
+  {
+   "lat": -89.5,
+   "lon": -45.0,
+   "timeUtc": "2027-02-14T12:00:00Z",
+   "body": "sun",
+   "visibleNow": false,
+   "hoursToChange": null,
+   "nextPeriodHours": null,
+   "continuous": true,
+   "windowVisibleHours": 0.0,
+   "windowHiddenHours": 156.0
+  },
+  {
+   "lat": -89.5,
+   "lon": -45.0,
+   "timeUtc": "2027-02-14T12:00:00Z",
+   "body": "earth",
+   "visibleNow": true,
+   "hoursToChange": 122.54296875,
+   "nextPeriodHours": 359.5390625,
+   "continuous": false,
+   "windowVisibleHours": 122.75,
+   "windowHiddenHours": 33.25
+  },
+  {
+   "lat": -87.0,
+   "lon": 120.0,
+   "timeUtc": "2026-11-01T00:00:00Z",
+   "body": "sun",
+   "visibleNow": false,
+   "hoursToChange": 232.80859375,
+   "nextPeriodHours": 205.6328125,
+   "continuous": false,
+   "windowVisibleHours": 0.0,
+   "windowHiddenHours": 156.0
+  },
+  {
+   "lat": -87.0,
+   "lon": 120.0,
+   "timeUtc": "2026-11-01T00:00:00Z",
+   "body": "earth",
+   "visibleNow": false,
+   "hoursToChange": null,
+   "nextPeriodHours": null,
+   "continuous": true,
+   "windowVisibleHours": 0.0,
+   "windowHiddenHours": 156.0
+  },
+  {
+   "lat": -87.0,
+   "lon": 120.0,
+   "timeUtc": "2027-02-14T12:00:00Z",
+   "body": "sun",
+   "visibleNow": true,
+   "hoursToChange": 22.47265625,
+   "nextPeriodHours": 538.84375,
+   "continuous": false,
+   "windowVisibleHours": 22.5,
+   "windowHiddenHours": 133.5
+  },
+  {
+   "lat": -87.0,
+   "lon": 120.0,
+   "timeUtc": "2027-02-14T12:00:00Z",
+   "body": "earth",
+   "visibleNow": false,
+   "hoursToChange": null,
+   "nextPeriodHours": null,
+   "continuous": true,
+   "windowVisibleHours": 0.0,
+   "windowHiddenHours": 156.0
+  }
+ ]
+}

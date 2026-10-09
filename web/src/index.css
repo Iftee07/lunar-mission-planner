@@ -26,11 +26,11 @@
   --popover-foreground: var(--lspb-line);
   --primary: var(--lspb-line);
   --primary-foreground: var(--lspb-bg);
-  --secondary: var(--lspb-bg);
+  --secondary: color-mix(in srgb, var(--lspb-line-dim) 25%, var(--lspb-bg));
   --secondary-foreground: var(--lspb-line);
-  --muted: var(--lspb-bg);
+  --muted: color-mix(in srgb, var(--lspb-line-dim) 25%, var(--lspb-bg));
   --muted-foreground: var(--lspb-line-dim);
-  --accent: var(--lspb-line-dim);
+  --accent: color-mix(in srgb, var(--lspb-line-dim) 40%, var(--lspb-bg));
   --accent-foreground: var(--lspb-line);
   --destructive: var(--lspb-bad);
   --border: var(--lspb-line-dim);
@@ -83,4 +83,137 @@
   body {
     @apply bg-background text-foreground font-mono;
   }
+}
+
+/* Leaflet map chrome (PRD section 7), theme tokens only */
+.leaflet-container {
+  background: var(--lspb-bg);
+  font-family: var(--lspb-font-mono);
+  cursor: crosshair;
+}
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: var(--lspb-bg);
+  color: var(--lspb-line);
+  border-bottom-color: var(--lspb-line-dim);
+}
+.leaflet-bar {
+  border: 1px solid var(--lspb-line-dim) !important;
+  box-shadow: none !important;
+}
+.lspb-map-label {
+  color: var(--lspb-line-dim);
+  font-size: 11px;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  text-shadow: 0 0 3px var(--lspb-bg), 0 0 3px var(--lspb-bg);
+}
+.lspb-map-readout {
+  background: color-mix(in srgb, var(--lspb-bg) 85%, transparent);
+  color: var(--lspb-line);
+  border: 1px solid var(--lspb-line-dim);
+  padding: 2px 8px;
+  font-size: 12px;
+  white-space: pre;
+}
+.lspb-pin {
+  border: 2px solid var(--lspb-sun);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--lspb-sun) 15%, transparent);
+  box-shadow: 0 0 0 1px var(--lspb-bg);
+}
+.lspb-pin::before,
+.lspb-pin::after {
+  content: "";
+  position: absolute;
+  background: var(--lspb-sun);
+  left: 50%;
+  top: 50%;
+}
+.lspb-pin::before {
+  width: 2px;
+  height: 30px;
+  transform: translate(-50%, -50%);
+}
+.lspb-pin::after {
+  width: 30px;
+  height: 2px;
+  transform: translate(-50%, -50%);
+}
+
+/* Surface view overlay (PRD section 8), theme tokens only */
+.lspb-surface-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.lspb-surface-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: -0.6em 0 0 6px;
+  color: var(--lspb-line);
+  font-family: var(--lspb-font-mono);
+  font-size: 11px;
+  white-space: nowrap;
+  text-shadow: 0 0 3px var(--lspb-bg), 0 0 3px var(--lspb-bg);
+}
+.lspb-surface-label-cardinal {
+  margin-left: -0.35em;
+  font-weight: 700;
+  font-size: 13px;
+}
+.lspb-surface-label-dim {
+  color: var(--lspb-line-dim);
+}
+.lspb-surface-label-sun {
+  color: var(--lspb-sun);
+  margin: 12px 0 0 16px;
+}
+.lspb-surface-label-earth {
+  color: var(--lspb-earth);
+  margin: 12px 0 0 16px;
+}
+.lspb-surface-label.lspb-surface-label-blocked {
+  color: var(--lspb-blocked);
+}
+.lspb-reticle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  pointer-events: none;
+}
+.lspb-reticle::before,
+.lspb-reticle::after {
+  content: "";
+  position: absolute;
+  background: currentColor;
+}
+.lspb-reticle::before {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  clip-path: polygon(0 0, 35% 0, 35% 100%, 65% 100%, 65% 0, 100% 0, 100% 100%, 0 100%);
+}
+.lspb-reticle::after {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%, 0 65%, 100% 65%, 100% 100%, 0 100%);
+}
+.lspb-reticle-sun {
+  color: var(--lspb-sun);
+}
+.lspb-reticle-earth {
+  color: var(--lspb-earth);
+}
+.lspb-reticle.lspb-reticle-blocked {
+  color: var(--lspb-blocked);
 }
