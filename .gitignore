@@ -11,9 +11,10 @@ __pycache__/
 node_modules/
 web/dist/
 
-# Large generated outputs (rebuilt by the pipeline)
-web/public/data/*.bin
-web/public/data/*.png
+# Generated web data (web/public/data/*.bin, *.png) is committed through Git LFS (.gitattributes)
+# so Vercel can build from git; regenerate it with the pipeline, then commit.
+# Vercel CLI project link
+.vercel/
 pipeline/out/
 *_preview.png
 
