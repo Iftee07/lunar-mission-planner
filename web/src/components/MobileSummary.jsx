@@ -43,10 +43,10 @@ export default function MobileSummary() {
   const shell = "absolute inset-x-3 bottom-3 z-(--lspb-z-map-ui) mx-auto max-w-md rounded-lg border bg-background/90 px-3 py-2 text-sm shadow-md backdrop-blur lg:hidden"
 
   if (!hasPin) {
-    if (view !== "map") return null // the surface view shows its own hint
+    if (view === "surface") return null // the surface view shows its own hint
     return (
       <p className={cn(shell, "flex items-center justify-center gap-2")}>
-        <MousePointerClick className="size-4 text-lspb-sun" aria-hidden="true" /> Tap the map to choose a point
+        <MousePointerClick className="size-4 text-lspb-sun" aria-hidden="true" /> Tap the {view === "globe" ? "Moon" : "map"} to choose a point
       </p>
     )
   }

@@ -167,7 +167,8 @@ async function fetchBytes(fetchImpl, url, onBytes) {
 
 // Data tiers, each loaded once and on demand (BUILD_PLAN rule 11):
 //   core    manifest + ephemeris, at start
-//   globe   display assets for the globe; URLs only, the globe view fetches its images itself
+//   globe   display assets for the globe (textures, feature names, mission sites); URLs only, the globe
+//           view fetches them itself when it opens
 //   polar   Polar HD grids, slope, hillshade, craters, sunlight/PSR layers (first polar pin or Polar HD map)
 //   global  global DEM, still gzip-compressed (first non-polar pin); the horizon worker decodes it
 // onProgress(tier, doneBytes, totalBytes) reports each tier's binary files as they stream in.
@@ -204,6 +205,7 @@ export function createDataLoader({ base = "/data/", fetchImpl = (u) => fetch(u),
         fallbackTextureUrl: url(g.fallback_texture),
         southPoleHdUrl: url(g.south_pole_hd),
         featuresUrl: url(manifest.craters_global),
+        sitesUrl: url(manifest.sites),
       }
     },
     async polar({ manifest }) {

@@ -21,11 +21,12 @@ function EmptyState() {
       <p className="flex items-center gap-2 font-medium">
         <ArrowLeft className="hidden size-4 shrink-0 text-lspb-sun lg:block" aria-hidden="true" />
         <ArrowUp className="size-4 shrink-0 text-lspb-sun lg:hidden" aria-hidden="true" />
-        Click the map to choose a point
+        Click the Moon to choose a point
       </p>
       <p className="flex items-start gap-2 text-muted-foreground">
         <MousePointerClick className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-        Sun, Earth and landing ratings for that site appear here. Keyboard: focus the map and press Enter.
+        Anywhere on the globe, a mission pin, or the Polar HD map. Sun, Earth and landing ratings for that site
+        appear here. Keyboard: focus the globe or map and press Enter.
       </p>
     </div>
   )

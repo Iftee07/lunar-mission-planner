@@ -27,6 +27,7 @@ export const TIME_SLIDER_RANGE_H = 708.7
 export const SLIDER_STEP_H = 0.25
 export const PLAY_SPEEDS_H_PER_S = [6, 12, 24, 72] // shown as 0.25, 0.5, 1, 3 d/s
 const SUN_MODES = ["center", "any_part"]
+export const VIEWS = ["globe", "polar", "surface"] // V cycles through them in this order
 
 const QUARTER_H_MS = HOUR_MS / 4
 const nowQuarterHour = () => Math.floor(Date.now() / QUARTER_H_MS) * QUARTER_H_MS
@@ -59,9 +60,11 @@ export const useStore = create((set) => ({
   antennaM: ANTENNA_DEFAULT_M,
   sunMode: "center", // "center" | "any_part" (Sun counted up while any part of the disc clears the horizon)
   missionH: MISSION_OPTIONS_H[0],
-  view: "map",
+  view: "globe", // globe | polar (Polar HD map) | surface
   screen: devParams()?.get("screen") === "app" ? "app" : "welcome", // welcome | app
-  pin: null, // { lat, lon, groundM, terrainSource, resolutionM, x?, y? } (x, y: polar stereographic, Polar HD only)
+  pin: null, // { lat, lon, groundM, terrainSource, resolutionM, x?, y?, site? } (x, y: polar stereographic, Polar HD
+  // only; site: the curated site (sites.json row) when the pin was placed on one)
+  focus: null, // { lat, lon, seq }: a request for the globe camera to fly there (site picked, coordinates typed)
 
   // --- computed, not user-editable ---
   dataReady: false, // core tier (manifest + ephemeris) loaded
@@ -82,7 +85,9 @@ export const useStore = create((set) => ({
   setMissionH: (h) => {
     if (MISSION_OPTIONS_H.includes(h)) set({ missionH: h })
   },
-  setView: (view) => set({ view }),
+  setView: (view) => {
+    if (VIEWS.includes(view)) set({ view })
+  },
   setScreen: (screen) => set({ screen }),
   setPin: (pin) => set({ pin }),
 }))
@@ -179,7 +184,7 @@ export function ensureTier(tier) {
 }
 
 // A pin at (lat, lon) on the given terrain; null where that terrain has no data.
-function makePin(latDeg, lonDeg, source, xy = null) {
+function makePin(latDeg, lonDeg, source, xy = null, site = null) {
   const terrain = engineData?.terrains[source]
   if (!terrain) return null
   const groundM = terrain.heightAt(latDeg, lonDeg)
@@ -188,18 +193,35 @@ function makePin(latDeg, lonDeg, source, xy = null) {
   if (lon > 180 || lon <= -180) lon = ((((lon + 180) % 360) + 360) % 360) - 180 || 180
   const pin = { lat: latDeg, lon, groundM, terrainSource: source, resolutionM: terrain.resolutionM }
   if (source === "polar-hd") Object.assign(pin, xy || project(latDeg, lonDeg, engineData.manifest.moon_radius_m))
+  if (site) pin.site = site
   return pin
 }
 
 // Pin anywhere on the Moon: Polar HD at 84 S or further south, Global terrain elsewhere (loads it first).
-// Resolves with the pin, or null if the point has no terrain data.
-async function setPinLatLon(latDeg, lonDeg) {
+// `site` (a sites.json row) names the pin. Resolves with the pin, or null if the point has no terrain data.
+// If another pin is placed while the terrain loads, the newer one wins.
+let pinRequest = 0
+export async function setPinLatLon(latDeg, lonDeg, site = null) {
+  const request = ++pinRequest
   await initData()
   const source = terrainSourceFor(latDeg, Boolean(engineData.manifest.grids))
   await ensureTier(tierForSource(source))
-  const pin = makePin(latDeg, lonDeg, source)
+  if (request !== pinRequest) return null
+  const pin = makePin(latDeg, lonDeg, source, null, site)
   if (pin) useStore.getState().setPin(pin)
   return pin
+}
+
+// Fly the globe to (lat, lon) and pin it: picking a mission site, typed coordinates.
+let focusSeq = 0
+export function goToLatLon(latDeg, lonDeg, site = null) {
+  useStore.setState({ focus: { lat: latDeg, lon: lonDeg, seq: ++focusSeq } })
+  return setPinLatLon(latDeg, lonDeg, site)
+}
+
+// URLs of the globe's display assets (engine/data.js "globe" tier): no download until the globe uses them.
+export function globeUrls() {
+  return initData().then(() => loader.ensure("globe"))
 }
 
 // Cursor readout for the Polar HD map: lat, lon, ground height; null outside the map disc.
@@ -218,6 +240,7 @@ export function pickXY(x, y) {
   if (lat > POLAR_HD_LAT_LIMIT_DEG) return false
   const pin = makePin(lat, lon, "polar-hd", { x, y })
   if (!pin) return false
+  pinRequest++ // supersedes a pin still waiting for its terrain
   useStore.getState().setPin(pin)
   return true
 }
@@ -329,10 +352,12 @@ useStore.subscribe((s, prev) => {
 })
 
 // Dev-only console hooks for validation (e.g. placing the pin at exact reference coordinates):
-//   await lspb.setPinLatLon(0.674, 23.473)   lspb.setTimeUtc("2026-11-01T00:00:00Z")   lspb.state()
+//   await lspb.setPinLatLon(0.674, 23.473)   lspb.goTo(-89.45, 222.7)   lspb.setTimeUtc("2026-11-01T00:00:00Z")
+//   lspb.state()   (lspb.globe and lspb.surface: the view APIs, once those views have mounted)
 function installDevHooks() {
   window.lspb = {
     setPinLatLon,
+    goTo: goToLatLon,
     setTimeUtc(iso) {
       useStore.getState().setBaseTime(Date.parse(iso))
     },

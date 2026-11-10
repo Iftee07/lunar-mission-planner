@@ -9,11 +9,13 @@ import {
 import { formatDays } from "@/lib/format.js"
 import { useStore } from "@/state.js"
 
-// Links open in a new tab on click only; nothing is fetched at runtime. Full citations are in the README.
+// Links open in a new tab on click only. Full citations are in the README.
 const SOURCES = [
+  ["NASA Moon Trek: LRO WAC global mosaic (globe imagery)", "https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=moon"],
   ["NASA: candidate Artemis III landing regions (6.5 day stay)", "https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/"],
   ["NASA briefing: slope and visibility screening (NTRS 20230005904)", "https://ntrs.nasa.gov/api/citations/20230005904/downloads/PlatteCity_Artemis.pdf"],
   ["LOLA 20 m south pole terrain (NASA GSFC PGDA)", "https://pgda.gsfc.nasa.gov/products/90"],
+  ["LOLA global terrain LDEM_16 (NASA PDS)", "https://pds-geosciences.wustl.edu/missions/lro/lola.htm"],
   ["NAIF SPICE kernels (Sun and Earth positions)", "https://naif.jpl.nasa.gov/naif/data.html"],
   ["IAU Gazetteer of Planetary Nomenclature (crater names)", "https://planetarynames.wr.usgs.gov"],
 ]
@@ -45,8 +47,9 @@ function About() {
       <PopoverContent align="end" className="max-h-[min(36rem,80dvh)] w-96 max-w-[calc(100vw-2rem)] space-y-4 overflow-y-auto text-sm">
         <p className="text-xs text-muted-foreground">NASA Space Apps 2026 challenge: Lunar Landing Site Navigator.</p>
         <p>
-          Pick a point near the lunar south pole and a landing date. The cards rate the site for a{" "}
-          {formatDays(missionH)} crewed-class stay.
+          Spin the Moon, pick a mission site or any point, and a landing date. The cards rate the site for a{" "}
+          {formatDays(missionH)} crewed-class stay. South of 84°S the numbers use 120 m terrain (Polar HD); elsewhere
+          ~1.9 km terrain (Global).
         </p>
         <Section title="Ratings">
           <ul className="space-y-1">
@@ -71,10 +74,14 @@ function About() {
         <Section title="Keyboard">
           <ul className="space-y-1">
             <li>
-              <Kbd>V</Kbd> switch Map / Surface
+              <Kbd>V</Kbd> switch Globe / Polar HD / Surface
             </li>
             <li>
-              Map: <Kbd>←↑→↓</Kbd> pan, <Kbd>+</Kbd> <Kbd>−</Kbd> zoom, <Kbd>Enter</Kbd> place the pin at the centre
+              Globe: <Kbd>←↑→↓</Kbd> rotate, <Kbd>+</Kbd> <Kbd>−</Kbd> zoom, <Kbd>Enter</Kbd> place the pin at the centre.
+              Mouse: drag to rotate, wheel to zoom, right-drag to tilt
+            </li>
+            <li>
+              Polar HD map: <Kbd>←↑→↓</Kbd> pan, <Kbd>+</Kbd> <Kbd>−</Kbd> zoom, <Kbd>Enter</Kbd> place the pin at the centre
             </li>
             <li>
               Surface: <Kbd>←↑→↓</Kbd> look around, <Kbd>+</Kbd> <Kbd>−</Kbd> zoom

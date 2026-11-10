@@ -31,9 +31,14 @@ export function earthMarkerPosition(earthKm, radiusM = MOON_RADIUS_M) {
   return [(earthKm[0] / r) * d, (earthKm[1] / r) * d, (earthKm[2] / r) * d]
 }
 
-// Near side: the hemisphere centred on 0° N 0° E (the mean sub-Earth point). Far side otherwise.
+// Which side of the Moon a point is on, by its angle from 0° N 0° E (the mean sub-Earth point): "near" side,
+// "far" side, or the "limb" band within LIMB_BAND_DEG of 90°, which libration (up to ~8°) turns toward and
+// away from Earth over a month. The poles are on the limb.
+const LIMB_BAND_DEG = 8
 export function moonSide(latDeg, lonDeg) {
-  return Math.cos(latDeg * D2R) * Math.cos(lonDeg * D2R) >= 0 ? "near" : "far"
+  const angle = Math.acos(Math.max(-1, Math.min(1, Math.cos(latDeg * D2R) * Math.cos(lonDeg * D2R)))) / D2R
+  if (Math.abs(angle - 90) <= LIMB_BAND_DEG) return "limb"
+  return angle < 90 ? "near" : "far"
 }
 
 // True if point p (metres, Moon-centred, on or just above the surface) is on the camera's side of the
@@ -48,6 +53,10 @@ export function facesCamera(p, cameraPos) {
 // surface. Heights never increase with rank, so a bigger feature is never hidden while a smaller one shows.
 export const LABEL_MAX_HEIGHT_M = [Infinity, 3.0e6, 1.2e6, 5.0e5, 2.0e5, 8.0e4] // ranks 1..6
 export const LABEL_BUDGET = 150
+// Fewer labels on a smaller screen: LABEL_BUDGET on a desktop-sized globe (about 1000 x 650 px), falling
+// faster than the area (labels do not shrink with the screen), down to 15.
+export const labelBudgetFor = (widthPx, heightPx) =>
+  Math.round(Math.min(LABEL_BUDGET, Math.max(15, LABEL_BUDGET * ((widthPx * heightPx) / (1000 * 650)) ** 1.5)))
 export const labelMaxHeight = (rank) => LABEL_MAX_HEIGHT_M[Math.min(Math.max(rank, 1), LABEL_MAX_HEIGHT_M.length) - 1]
 
 // Which labels to show. items: [{ diameter_km, rank, position: [x, y, z] metres }] sorted by diameter,

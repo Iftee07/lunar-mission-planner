@@ -13,13 +13,14 @@ import {
 } from "cesium"
 import { describe, expect, test } from "vitest"
 import { MOON_RADIUS_M, azElFromSite, makeSite } from "../src/engine/geometry.js"
-import { MOON, cartesianFromLatLon, latLonFromCartesian, pickLatLon } from "../src/view/globeCoords.js"
+import { MOON, MOON_TREK, cartesianFromLatLon, latLonFromCartesian, moonTrekOptions, pickLatLon } from "../src/view/globeCoords.js"
 import {
   LABEL_BUDGET,
   LABEL_MAX_HEIGHT_M,
   SITE_GROUPS,
   createImageryFallback,
   facesCamera,
+  labelBudgetFor,
   labelMaxHeight,
   moonSide,
   selectLabels,
@@ -89,6 +90,20 @@ describe("globe frame and picking", () => {
     expect(worst).toBeLessThan(0.05)
   })
 
+  test("Moon Trek tiles use the capabilities' geographic grid (2 x 1 at level 0, top-left 180 W 90 N)", () => {
+    const opts = moonTrekOptions()
+    const ts = opts.tilingScheme
+    expect([ts.getNumberOfXTilesAtLevel(0), ts.getNumberOfYTilesAtLevel(0)]).toEqual([2, 1])
+    expect([ts.getNumberOfXTilesAtLevel(8), ts.getNumberOfYTilesAtLevel(8)]).toEqual([512, 256]) // MatrixWidth/Height of level 8
+    const r = ts.tileXYToRectangle(0, 0, 0)
+    expect([r.west / D2R, r.north / D2R, r.east / D2R, r.south / D2R]).toEqual([-180, 90, 0, -90])
+    // Mare Crisium (IAU centre 17.0 N, 59.1 E) is in level-3 tile row 3, column 10, as served by Moon Trek.
+    expect(ts.positionToTileXY({ longitude: 59.1 * D2R, latitude: 17.0 * D2R, height: 0 }, 3)).toMatchObject({ x: 10, y: 3 })
+    expect(opts.maximumLevel).toBe(8)
+    expect(opts.url).toContain(MOON_TREK.layer)
+    expect(opts.url).toMatch(/\{TileMatrix\}\/\{TileRow\}\/\{TileCol\}/)
+  })
+
   test("a ray that misses the Moon picks nothing", () => {
     const camera = makeCamera()
     camera.lookAt(cartesianFromLatLon(0, 0), new HeadingPitchRange(0, -5 * D2R, 2.0e6)) // grazing view
@@ -112,10 +127,13 @@ describe("Sun lighting on the globe", () => {
     }
   })
 
-  test("near side / far side", () => {
+  test("near side / far side / limb", () => {
     expect(moonSide(0.674, 23.473)).toBe("near")
     expect(moonSide(-45.457, 177.589)).toBe("far")
     expect(moonSide(0, -100)).toBe("far")
+    expect(moonSide(-89.67, 129.78)).toBe("limb") // Shackleton: the south pole is on the limb seen from Earth
+    expect(moonSide(0, 85)).toBe("limb")
+    expect(moonSide(0, 80)).toBe("near")
   })
 })
 
@@ -174,6 +192,9 @@ describe("crater labels: level of detail", () => {
       expect(LABEL_MAX_HEIGHT_M[r]).toBeLessThanOrEqual(LABEL_MAX_HEIGHT_M[r - 1])
     }
     expect(labelMaxHeight(1)).toBe(Infinity)
+    expect(labelBudgetFor(1034, 685)).toBe(LABEL_BUDGET) // desktop
+    expect(labelBudgetFor(360, 460)).toBe(19) // phone
+    expect(labelBudgetFor(2560, 1400)).toBe(LABEL_BUDGET) // never above the cap
     expect(labelMaxHeight(99)).toBe(LABEL_MAX_HEIGHT_M.at(-1))
   })
 

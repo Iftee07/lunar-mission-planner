@@ -17,6 +17,16 @@
   --lspb-bad: #f87171;
   --lspb-crater: #a78bfa; /* named crater outlines on the map */
   --lspb-crater-label: #ddd6fe;
+  /* 3D globe: space behind the Moon, star dots, and the Moon's colour until its imagery arrives */
+  --lspb-space: #000000;
+  --lspb-star: #ffffff;
+  --lspb-globe-base: #3a3f45;
+  /* mission-pin groups on the globe (Okabe-Ito colour-blind-safe palette) */
+  --lspb-group-apollo: #e69f00;
+  --lspb-group-clps: #cc79a7;
+  --lspb-group-artemis: #009e73;
+  --lspb-group-other: #56b4e9;
+  --lspb-group-reference: #f0e442;
   /* welcome-slide art */
   --lspb-art-moon: #d5dde6;
   --lspb-art-moon-shade: #6b7c8f;
@@ -120,6 +130,38 @@
   h2,
   h3 {
     font-family: var(--lspb-font-heading);
+  }
+}
+
+/* 3D globe (CesiumJS): keyboard focus ring plus a centre crosshair showing where Enter places the pin */
+.lspb-globe {
+  background: var(--lspb-space);
+  cursor: crosshair;
+}
+.lspb-globe:focus-visible {
+  outline: 2px solid var(--lspb-focus);
+  outline-offset: -2px;
+}
+.lspb-globe:focus-visible::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border: 2px solid var(--lspb-focus);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.lspb-globe .cesium-widget-credits {
+  font-family: var(--lspb-font-sans);
+  color: var(--lspb-text-dim);
+}
+/* phones and tablets: the ratings strip covers the bottom of the main view, so the credits sit above it */
+@media (max-width: 1023.98px) {
+  .lspb-globe .cesium-widget-credits {
+    bottom: 4.5rem;
   }
 }
 

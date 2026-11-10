@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { Bug, Map as MapIcon } from "lucide-react"
+import { Bug, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { createSurface } from "@/view/surface.js"
 import { getEngineData, selectEffectiveTimeMs, selectOutOfRange, useStore } from "@/state.js"
@@ -74,9 +74,9 @@ export default function SurfacePanel({ active }) {
       <div ref={containerRef} className="absolute inset-0 overflow-hidden" data-testid="surface-container" />
       {!pin && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background">
-          <p className="text-sm">Click the map to choose a point</p>
-          <Button variant="outline" onClick={() => setView("map")}>
-            <MapIcon /> Go to map
+          <p className="text-sm">Choose a point on the globe first</p>
+          <Button variant="outline" onClick={() => setView("globe")}>
+            <Globe /> Go to globe
           </Button>
         </div>
       )}
