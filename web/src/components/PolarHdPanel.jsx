@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 import { CircleDashed } from "lucide-react"
 import { Toggle } from "@/components/ui/toggle"
+import { POLAR_HD_LAT_LIMIT_DEG } from "@/engine/terrain.js"
+import { project } from "@/engine/projection.js"
 import { createPolarMap } from "@/view/polarMap.js"
 import DataStatus from "@/components/DataStatus"
 import { describeXY, ensureTier, getEngineData, pickXY, useStore } from "@/state.js"
@@ -34,6 +36,11 @@ export default function PolarHdPanel({ active }) {
     api.setPin(useStore.getState().pin)
     const unsubscribe = useStore.subscribe((s, prev) => {
       if (s.pin !== prev.pin) api.setPin(s.pin)
+      // A search result or typed coordinates inside the map while it is open: pan there.
+      if (s.focus !== prev.focus && s.focus && s.view === "polar" && s.focus.lat <= POLAR_HD_LAT_LIMIT_DEG) {
+        const { x, y } = project(s.focus.lat, s.focus.lon, data.manifest.moon_radius_m)
+        api.panTo(x, y, !window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+      }
     })
     return () => {
       unsubscribe()

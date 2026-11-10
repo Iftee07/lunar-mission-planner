@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Slider } from "@/components/ui/slider"
 import { createGlobe } from "@/view/globe.js"
 import { SITE_GROUPS } from "@/view/globeModel.js"
-import { getEngineData, globeUrls, goToLatLon, selectEffectiveTimeMs, setPinLatLon, useStore } from "@/state.js"
+import { getEngineData, globeUrls, goToLatLon, loadSites, selectEffectiveTimeMs, setPinLatLon, useStore } from "@/state.js"
 
 const SIDE_TEXT = { near: "Near side (faces Earth)", far: "Far side (never faces Earth)", limb: "Limb (edge-on from Earth)" }
 
@@ -124,9 +124,10 @@ export default function GlobePanel({ active }) {
     let cancelled = false
     let api = null
     let unsubscribe = () => {}
-    globeUrls()
-      .then((urls) => {
+    Promise.all([globeUrls(), loadSites()])
+      .then(([urls, sitePins]) => {
         if (cancelled) return
+        setSites(sitePins)
         const data = getEngineData()
         const offline = startOffline()
         if (offline) setImagery("offline")
@@ -134,6 +135,7 @@ export default function GlobePanel({ active }) {
           manifest: data.manifest,
           ephemeris: data.ephemeris,
           urls,
+          sites: sitePins,
           offline,
           reducedMotion: prefersReducedMotion(),
           onPick: (lat, lon) => setPinLatLon(lat, lon).catch(() => {}), // a tier error shows in <DataStatus>
@@ -145,12 +147,12 @@ export default function GlobePanel({ active }) {
               return v.side === side && v.nearPole === nearPole ? v : { side, nearPole }
             }),
           onImagery: setImagery,
-          onSites: setSites,
         })
         apiRef.current = api
         const s0 = useStore.getState()
         api.setTime(selectEffectiveTimeMs(s0))
         api.setPin(s0.pin)
+        if (s0.focus) api.flyTo(s0.focus.lat, s0.focus.lon) // a site picked before the globe had loaded
         api.setActive(useStore.getState().view === "globe")
         unsubscribe = useStore.subscribe((s, prev) => {
           if (s.pin !== prev.pin) api.setPin(s.pin)

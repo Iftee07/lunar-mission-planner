@@ -12,6 +12,7 @@ const RING_LATS = [-85, -86, -87, -88, -89]
 const MERIDIAN_STEP_DEG = 30
 const MAP_EDGE_LAT = -84
 const CRATER_LABEL_MIN_PX = 36 // a crater's name shows once its rim is this wide on screen
+const FOCUS_MIN_ZOOM = -1 // 200 m per screen pixel
 
 const toLatLng = (x, y) => L.latLng(y / UNIT_M, x / UNIT_M)
 const fromLatLng = (ll) => ({ x: ll.lng * UNIT_M, y: ll.lat * UNIT_M })
@@ -209,8 +210,14 @@ export function createPolarMap(container, { manifest, hillshadeUrl, onPick, desc
     if (untouched) setBounds()
   })
 
+  // Centre the map on a point (search result, typed coordinates), zooming in to at least FOCUS_MIN_ZOOM.
+  function panTo(x, y, animate = true) {
+    map.setView(toLatLng(x, y), Math.max(map.getZoom(), FOCUS_MIN_ZOOM), { animate })
+  }
+
   return {
     setPin,
+    panTo,
     setCraterLayer,
     setCratersVisible,
     getCratersVisible: () => cratersVisible,

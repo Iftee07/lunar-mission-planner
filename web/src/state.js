@@ -16,6 +16,7 @@ import {
   terrainSourceFor,
   tierForSource,
 } from "@/engine/terrain.js"
+import { sitePins } from "@/view/globeModel.js"
 
 // UI in days, engine in hours: every duration here is in hours; only lib/format.js converts.
 export const HOUR_MS = 3600000
@@ -222,6 +223,31 @@ export function goToLatLon(latDeg, lonDeg, site = null) {
 // URLs of the globe's display assets (engine/data.js "globe" tier): no download until the globe uses them.
 export function globeUrls() {
   return initData().then(() => loader.ensure("globe"))
+}
+
+// Search result or typed coordinates: fly the globe there and pin it. With the Polar HD map open the map
+// pans there instead (PolarHdPanel follows `focus`); a point outside the map switches to the globe.
+export function selectPlace(latDeg, lonDeg, site = null) {
+  const s = useStore.getState()
+  if (s.view === "polar" && latDeg > POLAR_HD_LAT_LIMIT_DEG) s.setView("globe")
+  return goToLatLon(latDeg, lonDeg, site)
+}
+
+// The curated mission sites (sites.json), validated by sitePins (group and cited source, BUILD_PLAN rule 4):
+// [{ site, group }]. Resolves with [] if the file is missing or invalid; the next call tries again.
+let sitesPromise = null
+export function loadSites() {
+  if (!sitesPromise) {
+    sitesPromise = globeUrls()
+      .then(({ sitesUrl }) => (sitesUrl ? fetch(sitesUrl) : null))
+      .then((r) => (r?.ok ? r.json() : []))
+      .then(sitePins)
+      .catch(() => {
+        sitesPromise = null
+        return []
+      })
+  }
+  return sitesPromise
 }
 
 // Cursor readout for the Polar HD map: lat, lon, ground height; null outside the map disc.

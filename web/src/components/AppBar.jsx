@@ -1,4 +1,5 @@
 import { CircleHelp, ExternalLink, Moon } from "lucide-react"
+import SearchDialog from "@/components/SearchDialog"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
@@ -77,6 +78,9 @@ function About() {
               <Kbd>V</Kbd> switch Globe / Polar HD / Surface
             </li>
             <li>
+              <Kbd>Ctrl</Kbd> <Kbd>K</Kbd> (<Kbd>⌘</Kbd> <Kbd>K</Kbd> on a Mac) search sites or type coordinates, e.g. 0.674N 23.473E
+            </li>
+            <li>
               Globe: <Kbd>←↑→↓</Kbd> rotate, <Kbd>+</Kbd> <Kbd>−</Kbd> zoom, <Kbd>Enter</Kbd> place the pin at the centre.
               Mouse: drag to rotate, wheel to zoom, right-drag to tilt
             </li>
@@ -105,7 +109,7 @@ function About() {
   )
 }
 
-// Top app bar: product name and the About / Help popover.
+// Top app bar: product name, site search (Ctrl-K / Cmd-K) and the About / Help popover.
 export default function AppBar() {
   return (
     <header className="flex h-(--lspb-appbar-h) shrink-0 items-center justify-between gap-3 border-b px-4">
@@ -114,7 +118,10 @@ export default function AppBar() {
         <h1 className="truncate font-heading text-base font-semibold">Lunar Mission Planner</h1>
         <span className="hidden truncate text-xs text-muted-foreground md:inline">Lunar Landing Site Navigator</span>
       </div>
-      <About />
+      <div className="flex shrink-0 items-center gap-1.5">
+        <SearchDialog />
+        <About />
+      </div>
     </header>
   )
 }

@@ -43,6 +43,7 @@ import {
   Ellipsoid,
 } from "cesium"
 import "cesium/Build/Cesium/Widgets/CesiumWidget/CesiumWidget.css"
+import { statusText } from "@/lib/siteSearch.js"
 import { readTheme, token } from "@/lib/theme.js"
 import { MOON, cartesianFromLatLon, latLonFromCartesian, moonTrekOptions, pickLatLon } from "./globeCoords.js"
 import {
@@ -52,7 +53,6 @@ import {
   labelBudgetFor,
   moonSide,
   selectLabels,
-  sitePins,
   subPoint,
   sunLightDirection,
   watchTileErrors,
@@ -177,7 +177,8 @@ const easeOutBack = (t) => 1 + 2.2 * (t - 1) ** 3 + 1.2 * (t - 1) ** 2
 /**
  * options:
  *   manifest, ephemeris          engine data (core tier)
- *   urls                         { fallbackTextureUrl, southPoleHdUrl, featuresUrl, sitesUrl } (globe tier)
+ *   urls                         { fallbackTextureUrl, southPoleHdUrl, featuresUrl } (globe tier)
+ *   sites                        mission pins, [{ site, group }] (state.js loadSites())
  *   offline                      start with the bundled texture only (?offline=1 or the browser is offline)
  *   reducedMotion                no fly animation, pulse or bounce
  *   onPick(lat, lon)             click / Enter on the Moon
@@ -185,7 +186,6 @@ const easeOutBack = (t) => 1 + 2.2 * (t - 1) ** 3 + 1.2 * (t - 1) ** 2
  *   onHover(info | null)         { kind, title, detail?, note?, x, y } under the pointer (CSS px in the container)
  *   onView({ lat, lon, heightM, side })   view centre after the camera moves
  *   onImagery(state)             "online" | "partial" | "offline"
- *   onSites(pins)                mission pins once sites.json has loaded: [{ site, group }]
  */
 export function createGlobe(container, opts) {
   const { manifest, ephemeris, urls, offline = false, reducedMotion = false } = opts
@@ -390,28 +390,22 @@ export function createGlobe(container, opts) {
   const sitePinsBB = new BillboardCollection({ scene })
   scene.primitives.add(sitePinsBB)
   const groupVisible = Object.fromEntries(SITE_GROUPS.map((g) => [g.id, true]))
-  let pins = [] // [{ site, group, billboard }]
-  fetch(urls.sitesUrl)
-    .then((r) => (r.ok ? r.json() : []))
-    .then((sites) => {
-      if (widget.isDestroyed()) return
-      const builder = new PinBuilder()
-      const images = Object.fromEntries(SITE_GROUPS.map((g) => [g.id, builder.fromColor(css(g.token), 34)]))
-      pins = sitePins(sites).map(({ site, group }) => ({
-        site,
-        group,
-        billboard: sitePinsBB.add({
-          image: images[group.id],
-          position: cartesianFromLatLon(site.lat, site.lon),
-          verticalOrigin: VerticalOrigin.BOTTOM,
-          id: { kind: "site", site, group },
-          show: groupVisible[group.id],
-        }),
-      }))
-      opts.onSites?.(pins.map(({ site, group }) => ({ site, group })))
-      scene.requestRender()
-    })
-    .catch(() => {}) // the sidebar says nothing about pins; the globe still works
+  const pinImages = (() => {
+    const builder = new PinBuilder()
+    return Object.fromEntries(SITE_GROUPS.map((g) => [g.id, builder.fromColor(css(g.token), 34)]))
+  })()
+  // Mission pins (state.js loadSites(): validated sites.json rows, [{ site, group }]).
+  const pins = (opts.sites || []).map(({ site, group }) => ({
+    site,
+    group,
+    billboard: sitePinsBB.add({
+      image: pinImages[group.id],
+      position: cartesianFromLatLon(site.lat, site.lon),
+      verticalOrigin: VerticalOrigin.BOTTOM,
+      id: { kind: "site", site, group },
+      show: groupVisible[group.id],
+    }),
+  }))
 
   // --- the user's pin ---
   const pinBB = new BillboardCollection({ scene })
@@ -517,7 +511,7 @@ export function createGlobe(container, opts) {
       return {
         kind: "site",
         title: s.name,
-        detail: [id.group.label, s.status, s.mission_date].filter(Boolean).join(" · "),
+        detail: [id.group.label, statusText(s), s.mission_date].filter(Boolean).join(" · "),
         note: s.verified ? null : "unverified",
       }
     }
