@@ -3,7 +3,7 @@
   "ephemeris": {
     "file": "ephemeris.bin",
     "utc_start_unix_s": 1767225600,
-    "step_s": 900,
+    "step_s": 1800,
     "count": 175296,
     "frame": "MOON_ME",
     "kernels": [
@@ -13,9 +13,14 @@
       "moon_pa_de440_200625.bpc",
       "moon_de440_250416.tf"
     ],
-    "abcorr": "LT+S"
+    "abcorr": "LT+S",
+    "interp_error_deg": {
+      "sun": 4.3e-06,
+      "earth": 3.3e-05,
+      "reference_step_s": 60
+    }
   },
-  "build_date_utc": "2026-10-09T21:55:47Z",
+  "build_date_utc": "2026-11-10T07:12:17Z",
   "proj4": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs",
   "grids": {
     "near": {

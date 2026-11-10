@@ -15,8 +15,8 @@ MANIFEST = OUT / "manifest.json"
 
 MOON_RADIUS_M = 1737400
 EPHEMERIS_START_UTC = "2026-01-01T00:00:00Z"
-EPHEMERIS_END_UTC = "2030-12-31T23:45:00Z"
-EPHEMERIS_STEP_S = 900
+EPHEMERIS_END_UTC = "2035-12-31T23:30:00Z"
+EPHEMERIS_STEP_S = 1800  # interpolation error vs a 60 s reference < 0.0001 deg (02_build_ephemeris.py)
 FRAME = "MOON_ME"   # alias of MOON_ME_DE440_ME421 in moon_de440_*.tf (DE421 mean-Earth axes, as LOLA)
 ABCORR = "LT+S"
 META_KERNEL = KERNELS / "lspb.tm"
