@@ -11,6 +11,7 @@ describe("welcome flow", () => {
     expect(html).toContain("Hi there")
     expect(html).toContain("Welcome to")
     expect(html).toContain("Lunar Mission Planner")
+    expect(html).toContain("Lunar Landing Site Navigator")
     expect(html).toContain("Let&#x27;s go")
     expect(html).toContain("Skip")
     expect(html.match(/Go to slide \d/g)).toHaveLength(3)

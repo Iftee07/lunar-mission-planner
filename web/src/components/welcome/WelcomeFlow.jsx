@@ -66,6 +66,9 @@ const SLIDES = [
         <motion.p variants={textItem} className="text-xl text-muted-foreground md:text-2xl">
           Welcome to <span className="text-foreground">Lunar Mission Planner</span>
         </motion.p>
+        <motion.p variants={textItem} className="text-sm text-muted-foreground">
+          NASA Space Apps 2026 · Lunar Landing Site Navigator challenge
+        </motion.p>
         <motion.div variants={textItem} className="pt-4">
           <NextButton onClick={next} buttonRef={buttonRef}>
             Let&apos;s go

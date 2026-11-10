@@ -42,6 +42,7 @@ function About() {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="max-h-[min(36rem,80dvh)] w-96 max-w-[calc(100vw-2rem)] space-y-4 overflow-y-auto text-sm">
+        <p className="text-xs text-muted-foreground">NASA Space Apps 2026 challenge: Lunar Landing Site Navigator.</p>
         <p>
           Pick a point near the lunar south pole and a landing date. The cards rate the site for a{" "}
           {formatDays(MISSION_STAY_H)} crewed-class stay.
@@ -103,7 +104,7 @@ export default function AppBar() {
       <div className="flex min-w-0 items-center gap-2">
         <Moon className="size-5 shrink-0 text-lspb-sun" aria-hidden="true" />
         <h1 className="truncate font-heading text-base font-semibold">Lunar Mission Planner</h1>
-        <span className="hidden truncate text-xs text-muted-foreground md:inline">South pole landing sites</span>
+        <span className="hidden truncate text-xs text-muted-foreground md:inline">Lunar Landing Site Navigator</span>
       </div>
       <About />
     </header>
