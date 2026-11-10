@@ -1,0 +1,8 @@
+# Keep the graph to source code and docs; these only add noise to `graphify query`.
+# JSON config and pipeline data (manifest keys like "1", "file", "bytes" become junk seed nodes)
+*.json
+# Rasters and icons: each costs a vision pass to extract and adds only guessed edges
+*.png
+*.jpg
+*.svg
+graphify-out/

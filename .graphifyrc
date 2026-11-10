@@ -1,0 +1,4 @@
+# Smaller default answers from `graphify query` (built-in default is 2000 tokens).
+# Pass --budget N for a bigger answer when one is needed.
+query_budget=1000
+query_depth=2
