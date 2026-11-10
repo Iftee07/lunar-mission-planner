@@ -9,6 +9,7 @@ __pycache__/
 
 # Node
 node_modules/
+.vite/
 web/dist/
 
 # Generated web data (web/public/data/*.bin, *.png) is committed through Git LFS (.gitattributes)
