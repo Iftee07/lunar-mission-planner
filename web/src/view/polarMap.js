@@ -32,7 +32,11 @@ function label(latlng, text, cls) {
 //   layerData        { slope: slope grid (engine/data.js createSlope), sunlightUrl, psrUrl } for the data layers
 //   onPick(x, y)     -> true if accepted;   describe(x, y) -> { lat, lon, groundM } | null
 //   onLayerStatus(id, status, error?)   "loading" | "ready" | "error" while a layer renders (first use only)
-export function createPolarMap(container, { manifest, hillshadeUrl, layerData, onPick, describe, onLayerStatus = () => {} }) {
+//   onMapView({ x, y, zoom })   map centre (projected metres) and zoom after each move (shareable link)
+export function createPolarMap(container, opts) {
+  const { manifest, hillshadeUrl, layerData, onPick, describe } = opts
+  const onLayerStatus = opts.onLayerStatus || (() => {})
+  const onMapView = opts.onMapView || (() => {})
   const theme = readTheme()
   const R = manifest.moon_radius_m
   const g = manifest.grids.near
@@ -216,6 +220,7 @@ export function createPolarMap(container, { manifest, hillshadeUrl, layerData, o
     fitted = { zoom: map.getZoom(), center: map.getCenter() }
   }
   setBounds()
+  map.on("moveend", () => onMapView({ ...fromLatLng(map.getCenter()), zoom: map.getZoom() }))
   map.on("resize", () => {
     const untouched = fitted && map.getZoom() === fitted.zoom && map.getCenter().distanceTo(fitted.center) < 1
     if (untouched) setBounds()
@@ -312,6 +317,8 @@ export function createPolarMap(container, { manifest, hillshadeUrl, layerData, o
     setPin,
     panTo,
     setLayer,
+    // Restore a shared link's map view (no animation).
+    setMapView: ({ x, y, zoom }) => map.setView(toLatLng(x, y), zoom, { animate: false }),
     setCraterLayer,
     setCratersVisible,
     getCratersVisible: () => cratersVisible,

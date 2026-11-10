@@ -139,12 +139,15 @@ export default function GlobePanel({ active }) {
               return v.side === side && v.nearPole === nearPole ? v : { side, nearPole }
             }),
           onImagery: setImagery,
+          onCamera: (cam) => useStore.getState().setCamera("globe", cam),
         })
         apiRef.current = api
         const s0 = useStore.getState()
         api.setTime(selectEffectiveTimeMs(s0))
         api.setPin(s0.pin)
-        if (s0.focus) api.flyTo(s0.focus.lat, s0.focus.lon) // a site picked before the globe had loaded
+        // a shared link's camera, else a site picked before the globe had loaded
+        if (s0.camera.globe) api.setCamera(s0.camera.globe)
+        else if (s0.focus) api.flyTo(s0.focus.lat, s0.focus.lon)
         api.setActive(useStore.getState().view === "globe")
         unsubscribe = useStore.subscribe((s, prev) => {
           if (s.pin !== prev.pin) api.setPin(s.pin)

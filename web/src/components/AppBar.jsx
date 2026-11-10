@@ -1,4 +1,5 @@
 import { CircleHelp, ExternalLink, Moon } from "lucide-react"
+import CopyLinkButton from "@/components/CopyLinkButton"
 import SearchDialog from "@/components/SearchDialog"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -109,7 +110,7 @@ function About() {
   )
 }
 
-// Top app bar: product name, site search (Ctrl-K / Cmd-K) and the About / Help popover.
+// Top app bar: product name, site search (Ctrl-K / Cmd-K), Copy link and the About / Help popover.
 export default function AppBar() {
   return (
     <header className="flex h-(--lspb-appbar-h) shrink-0 items-center justify-between gap-3 border-b px-4">
@@ -120,6 +121,7 @@ export default function AppBar() {
       </div>
       <div className="flex shrink-0 items-center gap-1.5">
         <SearchDialog />
+        <CopyLinkButton />
         <About />
       </div>
     </header>

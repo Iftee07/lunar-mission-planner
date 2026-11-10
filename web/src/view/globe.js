@@ -77,6 +77,7 @@ const POLAR_HD_LOAD_LAT = -55 // load the overlay once the view centre is this f
 const toCartesian = (p) => new Cartesian3(p[0], p[1], p[2])
 const toArray = (c) => [c.x, c.y, c.z]
 const clamp01 = (x) => Math.min(1, Math.max(0, x))
+const DEG = 180 / Math.PI
 
 // Seeded random star field on the six sky-box faces: faint, sparse, fixed to the Moon's frame.
 function starFaces(space, star, size = 1024, count = 900) {
@@ -186,6 +187,7 @@ const easeOutBack = (t) => 1 + 2.2 * (t - 1) ** 3 + 1.2 * (t - 1) ** 2
  *   onHover(info | null)         { kind, title, detail?, note?, x, y } under the pointer (CSS px in the container)
  *   onView({ lat, lon, heightM, side })   view centre after the camera moves
  *   onImagery(state)             "online" | "partial" | "offline"
+ *   onCamera(cam)                camera after each move: { lat, lon, heightM, headingDeg, pitchDeg } (shareable link)
  */
 export function createGlobe(container, opts) {
   const { manifest, ephemeris, urls, offline = false, reducedMotion = false } = opts
@@ -195,6 +197,7 @@ export function createGlobe(container, opts) {
   const onHover = opts.onHover || noop
   const onView = opts.onView || noop
   const onImagery = opts.onImagery || noop
+  const onCamera = opts.onCamera || noop
   const theme = readTheme()
   const css = (name) => Color.fromCssColorString(token(name))
   const space = token("space")
@@ -486,6 +489,23 @@ export function createGlobe(container, opts) {
   camera.percentageChanged = 0.02
   camera.changed.addEventListener(scheduleViewUpdate)
   camera.moveEnd.addEventListener(scheduleViewUpdate)
+  camera.moveEnd.addEventListener(() => onCamera(getCamera()))
+
+  function getCamera() {
+    const c = camera.positionCartographic
+    return { lat: c.latitude * DEG, lon: c.longitude * DEG, heightM: c.height, headingDeg: camera.heading * DEG, pitchDeg: camera.pitch * DEG }
+  }
+
+  // Put the camera exactly where a shared link says (no flight).
+  function setCamera(cam) {
+    camera.cancelFlight()
+    camera.setView({
+      destination: cartesianFromLatLon(cam.lat, cam.lon, Math.min(MAX_ZOOM_M, Math.max(MIN_ZOOM_M, cam.heightM))),
+      orientation: { heading: cam.headingDeg / DEG, pitch: Math.max(-90, Math.min(0, cam.pitchDeg)) / DEG, roll: 0 },
+    })
+    scheduleViewUpdate()
+    scene.requestRender()
+  }
 
   // --- pointer: hover names, click to pin or select a site, double-click a feature to fly there ---
   const handler = new ScreenSpaceEventHandler(scene.canvas)
@@ -637,6 +657,7 @@ export function createGlobe(container, opts) {
     setTime,
     setPin,
     flyTo,
+    setCamera,
     setLabelsVisible(on) {
       labelsVisible = on
       updateLabels()

@@ -196,11 +196,13 @@ export default function PolarHdPanel({ active }) {
       onPick: pickXY,
       describe: describeXY,
       onLayerStatus: (id, status, error) => setLayerStatus((s) => ({ ...s, [id]: { status, error } })),
+      onMapView: (v) => useStore.getState().setCamera("polar", v),
     })
     apiRef.current = api
     api.setCraterLayer(data.polar.craters, true)
     setCratersOn(api.getCratersVisible())
     const s0 = useStore.getState()
+    if (s0.camera.polar) api.setMapView(s0.camera.polar) // a shared link's map view
     api.setPin(s0.pin)
     for (const id of LAYER_IDS) api.setLayer(id, s0.layers[id])
     const unsubscribe = useStore.subscribe((s, prev) => {

@@ -8,6 +8,11 @@ import "@fontsource/jetbrains-mono/700.css"
 import "leaflet/dist/leaflet.css" // before index.css, whose .leaflet-* theme overrides must win
 import "./index.css"
 import App from "./App.jsx"
+import { applyUrlState, startUrlSync } from "./urlSync.js"
+
+// A shared link restores the planner's state (and opens it directly); from then on the URL follows the state.
+applyUrlState(location.search)
+startUrlSync()
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

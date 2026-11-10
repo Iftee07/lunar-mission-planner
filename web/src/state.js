@@ -23,8 +23,8 @@ import { POLAR_LAYERS } from "@/view/polarLayerModel.js"
 export const HOUR_MS = 3600000
 export const LANDING_RADIUS_M = 100
 export const ANTENNA_PRESETS_M = [2, 5, 10, 15] // affects Earth visibility only
-const ANTENNA_DEFAULT_M = 2
-const MISSION_OPTIONS_H = [MISSION_STAY_H, 336] // 6.5 d (Artemis III stay) and 14 d (one lunar day)
+export const ANTENNA_DEFAULT_M = 2
+export const MISSION_OPTIONS_H = [MISSION_STAY_H, 336] // 6.5 d (Artemis III stay) and 14 d (one lunar day)
 export const TIME_SLIDER_RANGE_H = 708.7
 export const SLIDER_STEP_H = 0.25
 export const PLAY_SPEEDS_H_PER_S = [6, 12, 24, 72] // shown as 0.25, 0.5, 1, 3 d/s
@@ -67,6 +67,8 @@ export const useStore = create((set) => ({
   pin: null, // { lat, lon, groundM, terrainSource, resolutionM, x?, y?, site? } (x, y: polar stereographic, Polar HD
   // only; site: the curated site (sites.json row) when the pin was placed on one)
   focus: null, // { lat, lon, seq }: a request for the globe camera to fly there (site picked, coordinates typed)
+  camera: { globe: null, polar: null }, // last camera of each map view (globe: lat, lon, heightM, headingDeg, pitchDeg;
+  // polar: x, y, zoom), reported when a move ends; restores the view from a shared link
   layers: Object.fromEntries(POLAR_LAYERS.map((l) => [l.id, { on: false, opacity: l.opacity }])), // Polar HD map layers
 
   // --- computed, not user-editable ---
@@ -93,6 +95,7 @@ export const useStore = create((set) => ({
   },
   setScreen: (screen) => set({ screen }),
   setPin: (pin) => set({ pin }),
+  setCamera: (kind, cam) => set((s) => ({ camera: { ...s.camera, [kind]: cam } })),
   setLayer: (id, { on, opacity }) =>
     set((s) => {
       const cur = s.layers[id]
