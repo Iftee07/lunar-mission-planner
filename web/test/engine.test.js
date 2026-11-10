@@ -5,6 +5,7 @@ import { createGrid, siteAccessor } from "../src/engine/data.js"
 import { MOON_RADIUS_M, azElFromSite, makeSite } from "../src/engine/geometry.js"
 import { computeHorizon, groundAt } from "../src/engine/horizon.js"
 import { computeHours } from "../src/engine/hours.js"
+import { MISSION_STAY_H } from "../src/engine/ratings.js"
 import { project, unproject } from "../src/engine/projection.js"
 import { hasRealData, loadRealData, readFixture } from "./load.js"
 
@@ -76,7 +77,7 @@ describe("hours on a synthetic sun path", () => {
     const chk = azElFromSite(site, accessor.vectorAt("sun", startMs + 50 * HOUR_MS))
     expect(chk.azDeg).toBeCloseTo(100, 6)
 
-    const r = computeHours("sun", new Float32Array(720), accessor, startMs, 0, "center")
+    const r = computeHours("sun", new Float32Array(720), accessor, startMs, 0, "center", MISSION_STAY_H)
     console.log(`synthetic: change at ${r.hoursToChange.toFixed(4)} h (true ${T_RISE}), ` +
       `period ${r.nextPeriodHours.toFixed(4)} h (true ${(T_SET - T_RISE).toFixed(3)})`)
     expect(r.visibleNow).toBe(false)
@@ -145,7 +146,7 @@ describe.skipIf(!hasRealData())("real data (needs pipeline outputs and fixtures)
     for (const c of cases) {
       const p = horizonRef.find((q) => q.lat === c.lat && q.lon === c.lon)
       const acc = siteAccessor(data.ephemeris, { lat: p.lat, lon: p.lon, groundM: p.groundM })
-      const r = computeHours(c.body, horizonFor(p, p.antennaM), acc, Date.parse(c.timeUtc), p.antennaM, "center")
+      const r = computeHours(c.body, horizonFor(p, p.antennaM), acc, Date.parse(c.timeUtc), p.antennaM, "center", MISSION_STAY_H)
       const show = (v) => (v === null ? "-" : v.toFixed(2))
       console.log(`(${c.lat}, ${c.lon}) ${c.timeUtc} ${c.body.padEnd(5)} now ${r.visibleNow}/${c.visibleNow}  ` +
         `change ${show(r.hoursToChange)}/${show(c.hoursToChange)}  next ${show(r.nextPeriodHours)}/${show(c.nextPeriodHours)}  ` +
@@ -169,8 +170,8 @@ describe.skipIf(!hasRealData())("real data (needs pipeline outputs and fixtures)
       const acc = siteAccessor(data.ephemeris, { lat: p.lat, lon: p.lon, groundM: p.groundM })
       for (const t of times) {
         for (const body of ["sun", "earth"]) {
-          const a = computeHours(body, h0, acc, t, 0, "center")
-          const b = computeHours(body, h10, acc, t, 10, "center")
+          const a = computeHours(body, h0, acc, t, 0, "center", MISSION_STAY_H)
+          const b = computeHours(body, h10, acc, t, 10, "center", MISSION_STAY_H)
           expect(b.windowVisibleHours).toBeGreaterThanOrEqual(a.windowVisibleHours)
           if (a.visibleNow) expect(b.visibleNow).toBe(true)
         }

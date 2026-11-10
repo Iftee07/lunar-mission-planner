@@ -112,7 +112,8 @@ export function createMap(container, { manifest, hillshadeUrl, onPick, describe 
   let marker = null
   let pinLatLng = null
   function setPin(pin) {
-    if (!pin) {
+    if (!pin || pin.x === undefined) {
+      // no pin, or a pin outside Polar HD (Global terrain): nothing to mark on this map
       if (marker) marker.remove()
       marker = null
       return

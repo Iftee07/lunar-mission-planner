@@ -3,7 +3,14 @@ import { rateEarth, rateLanding, rateSun } from "@/engine/ratings.js"
 import { cn } from "@/lib/utils"
 import { selectOutOfRange, useStore } from "@/state.js"
 
-const TONE = { ok: "bg-lspb-ok text-background", warn: "bg-lspb-warn text-background", bad: "bg-lspb-bad text-background" }
+const TONE = {
+  ok: "bg-lspb-ok text-background",
+  warn: "bg-lspb-warn text-background",
+  bad: "bg-lspb-bad text-background",
+  none: "border text-muted-foreground",
+}
+// Global terrain (~1.9 km) is too coarse for a slope: no landing rating there (BUILD_PLAN rule 10).
+const NOT_ASSESSED = { label: "Not assessed", color: "none" }
 
 function Chip({ name, nameClass, rating }) {
   return (
@@ -28,6 +35,7 @@ export default function MobileSummary() {
   const sun = useStore((s) => s.results.sun)
   const earth = useStore((s) => s.results.earth)
   const slope = useStore((s) => s.results.slope)
+  const coarse = useStore((s) => s.pin?.terrainSource === "global")
   const ready = useStore((s) => s.results.horizonSun !== null && s.results.horizonEarth !== null)
   if (!dataReady) return null
 
@@ -51,7 +59,7 @@ export default function MobileSummary() {
         <span className="grid flex-1 grid-cols-3 gap-2">
           <Chip name="Sun" nameClass="text-lspb-sun" rating={ready && sun ? rateSun(sun) : null} />
           <Chip name="Earth" nameClass="text-lspb-earth" rating={ready && earth ? rateEarth(earth) : null} />
-          <Chip name="Landing" rating={slope ? rateLanding(slope.planeDeg) : null} />
+          <Chip name="Landing" rating={coarse ? NOT_ASSESSED : slope ? rateLanding(slope.planeDeg) : null} />
         </span>
       )}
       <ChevronDown className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />

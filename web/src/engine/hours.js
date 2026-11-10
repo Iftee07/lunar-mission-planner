@@ -7,7 +7,6 @@ import { horizonAt } from "./horizon.js"
 export const SUN_REFERENCE_HEIGHT_M = 2 // Sun observer height, independent of the antenna control
 export const STEP_H = 0.25
 export const LOOKAHEAD_H = 1500
-export const WINDOW_H = 156
 export const BISECT_TOLERANCE_H = 0.01
 export const SUN_SEMIDIAMETER_DEG = 0.267
 const HOUR_MS = 3600000
@@ -26,7 +25,7 @@ export function makeVisibility(body, horizon, tableAccessor, antennaM, sunMode) 
 }
 
 // Bisection between hours a (state sa) and b (state !sa); returns the change time in hours.
-function bisect(visible, startMs, a, b, sa) {
+export function bisect(visible, startMs, a, b, sa) {
   while (b - a > BISECT_TOLERANCE_H) {
     const m = (a + b) / 2
     if (visible(startMs + m * HOUR_MS) === sa) a = m
@@ -53,7 +52,8 @@ function nextChange(visible, startMs, from, state) {
 //   lookaheadTruncated   (true if LOOKAHEAD_H runs past the end of the ephemeris table)
 // }  or null if startUtcMs is outside the ephemeris.
 // tableAccessor = { pin: { lat, lon, groundM }, vectorAt(body, tMs) -> [x,y,z] km | null }
-export function computeHours(body, horizon, tableAccessor, startUtcMs, antennaM, sunMode) {
+// windowH: the rating window (ratings.js MISSION_STAY_H) over which windowVisibleHours is counted.
+export function computeHours(body, horizon, tableAccessor, startUtcMs, antennaM, sunMode, windowH) {
   const visible = makeVisibility(body, horizon, tableAccessor, antennaM, sunMode)
   const visibleNow = visible(startUtcMs)
   if (visibleNow === null) return null
@@ -68,10 +68,10 @@ export function computeHours(body, horizon, tableAccessor, startUtcMs, antennaM,
     truncated = second.truncated
   }
 
-  // Visible hours over the next WINDOW_H: STEP_H samples at 0, 0.25, ..., WINDOW_H - 0.25.
+  // Visible hours over the next windowH: STEP_H samples at 0, 0.25, ..., windowH - 0.25.
   let n = 0
   let counted = 0
-  for (let h = 0; h < WINDOW_H - 1e-9; h += STEP_H) {
+  for (let h = 0; h < windowH - 1e-9; h += STEP_H) {
     const s = visible(startUtcMs + h * HOUR_MS)
     if (s === null) break
     counted++
@@ -92,14 +92,14 @@ export function computeHours(body, horizon, tableAccessor, startUtcMs, antennaM,
 // Split observer heights: the Sun is always seen from SUN_REFERENCE_HEIGHT_M
 // (lander deck / solar array) with horizonSun; Earth from the antenna height with horizonEarth.
 // Returns { sun, earth, sunNow, earthNow }; hours entries are null outside the ephemeris.
-export function computeSiteHours({ pin, horizonSun, horizonEarth, antennaM, tableAccessor, tMs, sunMode }) {
+export function computeSiteHours({ pin, horizonSun, horizonEarth, antennaM, tableAccessor, tMs, sunMode, windowH }) {
   const sunSite = makeSite(pin.lat, pin.lon, pin.groundM, SUN_REFERENCE_HEIGHT_M)
   const earthSite = makeSite(pin.lat, pin.lon, pin.groundM, antennaM)
   const sunV = tableAccessor.vectorAt("sun", tMs)
   const earthV = tableAccessor.vectorAt("earth", tMs)
   return {
-    sun: computeHours("sun", horizonSun, tableAccessor, tMs, SUN_REFERENCE_HEIGHT_M, sunMode),
-    earth: computeHours("earth", horizonEarth, tableAccessor, tMs, antennaM, "center"),
+    sun: computeHours("sun", horizonSun, tableAccessor, tMs, SUN_REFERENCE_HEIGHT_M, sunMode, windowH),
+    earth: computeHours("earth", horizonEarth, tableAccessor, tMs, antennaM, "center", windowH),
     sunNow: sunV ? azElFromSite(sunSite, sunV) : null,
     earthNow: earthV ? azElFromSite(earthSite, earthV) : null,
   }

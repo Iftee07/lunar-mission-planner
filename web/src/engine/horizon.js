@@ -81,27 +81,38 @@ export function horizonAt(horizon, azDeg) {
   return horizon[i] + (horizon[(i + 1) % n] - horizon[i]) * w
 }
 
-// Main-thread client for horizon.worker.js. Grids are sent once; compute() returns a Promise.
-export function createHorizonWorker(grids) {
+// Main-thread client for horizon.worker.js. Each terrain is sent once (setPolar, loadGlobal);
+// compute() and loadGlobal() return Promises.
+export function createHorizonWorker() {
   const worker = new Worker(new URL("./horizon.worker.js", import.meta.url), { type: "module" })
   let nextId = 1
   const pending = new Map()
   worker.onmessage = (e) => {
-    const { id, horizon, error, ms } = e.data
+    const { id, error, ...out } = e.data
     const p = pending.get(id)
     if (!p) return
     pending.delete(id)
     if (error) p.reject(new Error(error))
-    else p.resolve({ horizon, ms })
+    else p.resolve(out)
   }
-  worker.postMessage({ type: "init", grids })
+  const request = (msg, transfer = []) => {
+    const id = nextId++
+    return new Promise((resolve, reject) => {
+      pending.set(id, { resolve, reject })
+      worker.postMessage({ ...msg, id }, transfer)
+    })
+  }
   return {
-    compute(pinXY, groundM, antennaM) {
-      const id = nextId++
-      return new Promise((resolve, reject) => {
-        pending.set(id, { resolve, reject })
-        worker.postMessage({ type: "compute", id, pinXY, groundM, antennaM })
-      })
+    setPolar(grids) {
+      worker.postMessage({ type: "polar", grids })
+    },
+    // Resolves with { dem: Int16Array, ms } once the worker has decoded the global DEM (gz is transferred).
+    loadGlobal(spec, gz, radiusM) {
+      return request({ type: "global", spec, gz, radiusM }, [gz])
+    },
+    // pin = { lat, lon, groundM }; resolves with { horizon: Float32Array(720), ms }.
+    compute(source, pin, heightM) {
+      return request({ type: "compute", source, pin: { lat: pin.lat, lon: pin.lon, groundM: pin.groundM }, heightM })
     },
     terminate() {
       worker.terminate()

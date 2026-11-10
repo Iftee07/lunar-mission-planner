@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { siteAccessor } from "@/engine/data.js"
 import { EARTH_DAY_MIN_VISIBLE_H, EARTH_DAY_STEP_H, earthVisibleDays } from "@/engine/earthDays.js"
 import { formatClock, formatDays } from "@/lib/format.js"
-import { EPHEMERIS_END_UTC_MS, EPHEMERIS_START_UTC_MS, HOUR_MS, getEngineData, useStore } from "@/state.js"
+import { HOUR_MS, getEngineData, useStore } from "@/state.js"
 
 // Start date and time editor, all in UTC: calendar days are UTC days and the time is a 24-hour UTC
 // clock. (The UTC offset select only changes the local time shown beside the slider.)
@@ -33,10 +33,11 @@ function parseHHMM(text) {
   return hh <= 23 && mm <= 59 ? { hh, mm } : null
 }
 
-// A UTC day is selectable only if every sample of it is inside the ephemeris.
-function dayInEphemeris(date) {
+// A UTC day is selectable only if every sample of it is inside the ephemeris (range from the manifest).
+function dayInEphemeris(date, range) {
+  if (!range) return false
   const startMs = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-  return startMs >= EPHEMERIS_START_UTC_MS && startMs + (24 - EARTH_DAY_STEP_H) * HOUR_MS <= EPHEMERIS_END_UTC_MS
+  return startMs >= range.startMs && startMs + (24 - EARTH_DAY_STEP_H) * HOUR_MS <= range.endMs
 }
 
 // Trigger shows the start time; the popover holds the calendar (days with Earth above the horizon for
@@ -47,6 +48,7 @@ export default function DatePicker() {
   const antennaM = useStore((s) => s.antennaM)
   const horizonEarth = useStore((s) => s.results.horizonEarth)
   const setBaseTime = useStore((s) => s.setBaseTime)
+  const range = useStore((s) => s.ephemerisRange)
 
   const [open, setOpen] = useState(false)
   const sel = utcParts(baseTimeUtcMs)
@@ -63,8 +65,8 @@ export default function DatePicker() {
   }
   const timeValid = parseHHMM(timeDraft) !== null
 
-  const start = utcParts(EPHEMERIS_START_UTC_MS)
-  const end = utcParts(EPHEMERIS_END_UTC_MS)
+  const start = utcParts(range ? range.startMs : baseTimeUtcMs)
+  const end = utcParts(range ? range.endMs : baseTimeUtcMs)
 
   // Visible hours per UTC day of the displayed month; recomputed on month, pin or antenna change.
   const year = month.getFullYear()
@@ -123,7 +125,7 @@ export default function DatePicker() {
           onMonthChange={setMonth}
           startMonth={new Date(start.y, start.m, 1)}
           endMonth={new Date(end.y, end.m, 1)}
-          disabled={(date) => !dayInEphemeris(date)}
+          disabled={(date) => !dayInEphemeris(date, range)}
           modifiers={{ earthVisible: isEarthDay }}
           modifiersClassNames={{ earthVisible: "[&>button]:bg-lspb-ok/25 [&>button]:text-lspb-ok [&>button]:font-semibold" }}
           labels={{

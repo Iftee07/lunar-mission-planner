@@ -2,7 +2,7 @@
 import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { createEphemeris, createGrid, createSlope } from "../src/engine/data.js"
+import { createEphemeris, createGlobalDem, createGrid, createSlope, decodeGlobalDem, gunzip } from "../src/engine/data.js"
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 export const DATA_DIR = path.resolve(here, "../public/data")
@@ -35,4 +35,17 @@ export function loadRealData() {
     slopePlane: createSlope(g.near, manifest.slope, new Uint8Array(bytes(manifest.slope.plane))),
   }
   return cache
+}
+
+export const hasGlobalDem = () => hasRealData() && fs.existsSync(path.join(DATA_DIR, "global_dem.bin"))
+
+// The decoded global DEM, exactly as the horizon worker builds it (gunzip + inverse predictor).
+let globalCache = null
+export async function loadGlobalDem() {
+  if (globalCache) return globalCache
+  const { manifest } = loadRealData()
+  const spec = manifest.global_dem
+  const planes = await gunzip(fs.readFileSync(path.join(DATA_DIR, spec.file)))
+  globalCache = createGlobalDem(spec, decodeGlobalDem(planes, spec.width, spec.height), manifest.moon_radius_m)
+  return globalCache
 }

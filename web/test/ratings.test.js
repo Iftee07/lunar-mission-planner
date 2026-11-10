@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest"
 import { siteAccessor } from "../src/engine/data.js"
 import { computeHorizon } from "../src/engine/horizon.js"
 import { SUN_REFERENCE_HEIGHT_M, computeSiteHours } from "../src/engine/hours.js"
-import { bodyDurations, rateEarth, rateLanding, rateSun } from "../src/engine/ratings.js"
+import { MISSION_STAY_H, bodyDurations, rateEarth, rateLanding, rateSun } from "../src/engine/ratings.js"
 import { formatDays } from "../src/lib/format.js"
 import { ANTENNA_PRESETS_M } from "../src/state.js"
 import { hasRealData, loadRealData, readFixture } from "./load.js"
@@ -134,7 +134,7 @@ describe.skipIf(!hasRealData())("antenna model on real data", () => {
       const horizonsEarth = ANTENNA_PRESETS_M.map(hz)
       for (const tMs of times) {
         const runs = ANTENNA_PRESETS_M.map((antennaM, i) =>
-          computeSiteHours({ pin, horizonSun, horizonEarth: horizonsEarth[i], antennaM, tableAccessor, tMs, sunMode: "center" }),
+          computeSiteHours({ pin, horizonSun, horizonEarth: horizonsEarth[i], antennaM, tableAccessor, tMs, sunMode: "center", windowH: MISSION_STAY_H }),
         )
         for (let i = 1; i < runs.length; i++) {
           expect(runs[i].sun).toEqual(runs[0].sun)

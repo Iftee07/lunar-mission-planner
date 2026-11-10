@@ -5,7 +5,7 @@
 // Camera at (0, antennaM, 0) above the ground at the pin. Three passes per frame:
 //   1. sky:     reference grid on a sphere (radius 100) centred on the camera, plus a background-coloured
 //               skirt below the skyline that hides grid lines behind the terrain
-//   2. terrain: polar grid draped on the DEM (fill in background colour + polygon offset, lines on top)
+//   2. terrain: polar grid draped on the pin's terrain (fill in background colour + polygon offset, lines on top)
 //   3. overlay: skyline (heaviest line); nearer ridgelines below it (the terrain horizon limited to
 //               RIDGE_RANGES_M, so they show where closer terrain rises and give the ground depth);
 //               Sun and Earth discs, their paths; always visible,
@@ -20,9 +20,8 @@ import { Line2 } from "three/addons/lines/Line2.js"
 import { LineGeometry } from "three/addons/lines/LineGeometry.js"
 import { LineMaterial } from "three/addons/lines/LineMaterial.js"
 import { azElFromSite, angularRadiusDeg, enuBasis, makeSite } from "@/engine/geometry.js"
-import { computeHorizon, groundAt, horizonAt } from "@/engine/horizon.js"
+import { horizonAt } from "@/engine/horizon.js"
 import { SUN_REFERENCE_HEIGHT_M, SUN_SEMIDIAMETER_DEG } from "@/engine/hours.js"
-import { projectUnit } from "@/engine/projection.js"
 import { readTheme } from "@/lib/theme.js"
 
 const D2R = Math.PI / 180
@@ -75,7 +74,8 @@ function disposeTree(obj) {
   })
 }
 
-// options: { engineData } (ephemeris, grids, manifest from engine/data.js loadAll)
+// options: { engineData } (ephemeris, manifest, and terrains by source, from state.js; a pin's terrain
+// is always loaded before the pin is set)
 export function createSurface(container, { engineData }) {
   const theme = readTheme()
   const R = engineData.manifest.moon_radius_m
@@ -210,7 +210,7 @@ export function createSurface(container, { engineData }) {
     // Nearer ridgelines: same observer, terrain limited to each range (a few ms each on the main thread).
     // A subset of the terrain can never rise above the full horizon; clamp only against float noise.
     ridgeObjs = RIDGE_RANGES_M.map((rangeM, k) => {
-      const ridge = computeHorizon({ x: pin.x, y: pin.y }, pin.groundM, antennaM, engineData.grids, rangeM)
+      const ridge = engineData.terrains[pin.terrainSource].horizon(pin, antennaM, rangeM)
       for (let i = 0; i < n; i++) ridge[i] = Math.min(ridge[i], horizon[i])
       return horizonLine(ridge, RIDGE_WIDTH_PX, RIDGE_OPACITY[k], 1)
     })
@@ -239,6 +239,7 @@ export function createSurface(container, { engineData }) {
   // Terrain height (m) relative to the ground at the pin, curvature-lowered, at ground distance d, azimuth az.
   function terrainSampler(pin) {
     const { up, east, north } = enuBasis(pin.lat, pin.lon)
+    const terrain = engineData.terrains[pin.terrainSource]
     return (d, azDeg) => {
       const th = d / R
       const az = azDeg * D2R
@@ -246,13 +247,11 @@ export function createSurface(container, { engineData }) {
       const st = Math.sin(th)
       const ca = Math.cos(az)
       const sa = Math.sin(az)
-      const p = projectUnit(
+      const z = terrain.heightAtUnit(
         ct * up[0] + st * (ca * north[0] + sa * east[0]),
         ct * up[1] + st * (ca * north[1] + sa * east[1]),
         ct * up[2] + st * (ca * north[2] + sa * east[2]),
-        R,
       )
-      const z = groundAt(engineData.grids, p.x, p.y)
       return (Number.isFinite(z) ? z - pin.groundM : 0) - (d * d) / (2 * R)
     }
   }

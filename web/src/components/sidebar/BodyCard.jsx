@@ -1,5 +1,5 @@
 import { formatAz, formatClock, formatDeg } from "@/lib/format.js"
-import { EPHEMERIS_END_UTC_MS, EPHEMERIS_START_UTC_MS, selectOutOfRange, useStore } from "@/state.js"
+import { selectOutOfRange, useStore } from "@/state.js"
 import HorizonStatus from "./HorizonStatus"
 import { CardMessage, MetricCard, MetricRow, SkeletonRows } from "./MetricCard"
 
@@ -10,6 +10,7 @@ import { CardMessage, MetricCard, MetricRow, SkeletonRows } from "./MetricCard"
 // the first calculation shows skeleton rows of the same height.
 export default function BodyCard({ body, title, titleClassName, horizonKey, renderBadge, renderRows }) {
   const outOfRange = useStore(selectOutOfRange)
+  const range = useStore((s) => s.ephemerisRange)
   const error = useStore((s) => (s.results.status === "error" ? s.results.error : null))
   const horizonReady = useStore((s) => s.results[horizonKey] !== null)
   const r = useStore((s) => s.results[body])
@@ -23,7 +24,7 @@ export default function BodyCard({ body, title, titleClassName, horizonKey, rend
   if (outOfRange) {
     content = (
       <CardMessage tone="warn">
-        Date outside ephemeris range ({formatClock(EPHEMERIS_START_UTC_MS)} to {formatClock(EPHEMERIS_END_UTC_MS)} UTC)
+        Date outside ephemeris range ({formatClock(range.startMs)} to {formatClock(range.endMs)} UTC)
       </CardMessage>
     )
   } else if (error) {

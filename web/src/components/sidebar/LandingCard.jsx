@@ -11,9 +11,18 @@ import RatingBadge, { TipLive, TipNote, TipRule } from "./RatingBadge"
 const deg = (d) => `${d.toFixed(1)}°`
 
 // Landing card: two levels from the plane-fit slope over LANDING_RADIUS_M (time independent).
+// Only Polar HD terrain is fine enough for a slope; on Global terrain the landing is not assessed.
 export default function LandingCard() {
   const slope = useStore((s) => s.results.slope)
+  const coarse = useStore((s) => s.pin?.terrainSource === "global")
   const known = slope && Number.isFinite(slope.planeDeg)
+  if (coarse) {
+    return (
+      <MetricCard title="LANDING" data-testid="landing-card">
+        <MetricRow label="Slope">Not assessed (coarse terrain)</MetricRow>
+      </MetricCard>
+    )
+  }
 
   const badge = slope && (
     <RatingBadge rating={rateLanding(slope.planeDeg)} topic="Landing">

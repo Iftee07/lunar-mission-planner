@@ -1,31 +1,35 @@
 // App state: one Zustand store plus a compute controller.
-// User-editable fields are exactly those of section 4. Computed values live in `results`.
+// User-editable fields come first. Computed values live in `results`.
 // Large arrays (ephemeris, DEMs) stay in module scope (`engineData`), never in React state.
 
 import { create } from "zustand"
-import { loadAll, sampleBilinear, siteAccessor } from "@/engine/data.js"
-import { createHorizonWorker, groundAt } from "@/engine/horizon.js"
+import { createDataLoader, createGlobalDem, sampleBilinear, siteAccessor } from "@/engine/data.js"
+import { createHorizonWorker } from "@/engine/horizon.js"
 import { SUN_REFERENCE_HEIGHT_M, computeSiteHours } from "@/engine/hours.js"
+import { siteMetrics } from "@/engine/metrics.js"
 import { project, unproject } from "@/engine/projection.js"
+import { MISSION_STAY_H } from "@/engine/ratings.js"
+import {
+  POLAR_HD_LAT_LIMIT_DEG,
+  globalTerrain,
+  polarTerrain,
+  terrainSourceFor,
+  tierForSource,
+} from "@/engine/terrain.js"
 
 // UI in days, engine in hours: every duration here is in hours; only lib/format.js converts.
 export const HOUR_MS = 3600000
-export const EPHEMERIS_START_UTC_MS = Date.UTC(2026, 0, 1, 0, 0, 0)
-export const EPHEMERIS_END_UTC_MS = Date.UTC(2030, 11, 31, 23, 45, 0)
 export const LANDING_RADIUS_M = 100
 export const ANTENNA_PRESETS_M = [2, 5, 10, 15] // affects Earth visibility only
 const ANTENNA_DEFAULT_M = 2
+export const MISSION_OPTIONS_H = [156, 336] // 6.5 d (Artemis III stay) and 14 d (one lunar day)
 export const TIME_SLIDER_RANGE_H = 708.7
 export const SLIDER_STEP_H = 0.25
 export const PLAY_SPEEDS_H_PER_S = [6, 12, 24, 72] // shown as 0.25, 0.5, 1, 3 d/s
-export const MAP_LAT_LIMIT_DEG = -84
+const SUN_MODES = ["center", "any_part"]
 
 const QUARTER_H_MS = HOUR_MS / 4
-
-function defaultBaseTime() {
-  const now = Math.floor(Date.now() / QUARTER_H_MS) * QUARTER_H_MS
-  return now >= EPHEMERIS_START_UTC_MS && now <= EPHEMERIS_END_UTC_MS ? now : EPHEMERIS_START_UTC_MS
-}
+const nowQuarterHour = () => Math.floor(Date.now() / QUARTER_H_MS) * QUARTER_H_MS
 
 // Dev-only test harness (stripped from production builds): ?screen=app&pin=lat,lon&t=ISO&view=surface
 const devParams = () => (import.meta.env.DEV && typeof location !== "undefined" ? new URLSearchParams(location.search) : null)
@@ -33,6 +37,8 @@ const devParams = () => (import.meta.env.DEV && typeof location !== "undefined" 
 const emptyResults = {
   status: "idle", // idle | loading-data | computing | ready | error
   error: null,
+  terrainSource: null, // "polar-hd" | "global"
+  resolutionM: null, // terrain pixel size behind these results
   horizonSun: null, // Float32Array(720) at SUN_REFERENCE_HEIGHT_M; recomputed on pin change only
   horizonEarth: null, // Float32Array(720) at antennaM; recomputed on pin or antenna change
   horizonMs: null,
@@ -40,23 +46,28 @@ const emptyResults = {
   earth: null, // Earth seen from antennaM
   sunNow: null, // { azDeg, elDeg, distKm }
   earthNow: null,
-  slope: null, // { planeDeg, maxDeg, radiusM }
+  metrics: null, // engine/metrics.js siteMetrics() over the mission window
+  slope: null, // { planeDeg, maxDeg, radiusM } in Polar HD; null on Global terrain (not assessed)
 }
+
+const idleTier = { status: "idle", done: 0, total: 0, error: null } // status: idle | loading | ready | error
 
 export const useStore = create((set) => ({
   // --- user-editable state ---
-  baseTimeUtcMs: defaultBaseTime(),
+  baseTimeUtcMs: nowQuarterHour(), // clamped into the ephemeris once the manifest is loaded
   sliderOffsetH: 0,
   antennaM: ANTENNA_DEFAULT_M,
-  sunMode: "center",
+  sunMode: "center", // "center" | "any_part" (Sun counted up while any part of the disc clears the horizon)
+  missionH: MISSION_OPTIONS_H[0],
   view: "map",
   screen: devParams()?.get("screen") === "app" ? "app" : "welcome", // welcome | app
-  pin: null,
+  pin: null, // { lat, lon, groundM, terrainSource, resolutionM, x?, y? } (x, y: polar stereographic, Polar HD only)
 
   // --- computed, not user-editable ---
-  dataReady: false,
+  dataReady: false, // core tier (manifest + ephemeris) loaded
   dataError: null,
-  dataProgress: { done: 0, total: 0 }, // files loaded so far (first-load progress)
+  tiers: { core: idleTier, polar: idleTier, global: idleTier }, // per-tier loading progress (bytes)
+  ephemerisRange: null, // { startMs, endMs } from the manifest
   results: emptyResults,
 
   // --- actions ---
@@ -64,6 +75,12 @@ export const useStore = create((set) => ({
   setSliderOffset: (h) => set({ sliderOffsetH: Math.max(0, Math.min(TIME_SLIDER_RANGE_H, h)) }),
   setAntenna: (m) => {
     if (ANTENNA_PRESETS_M.includes(m)) set({ antennaM: m })
+  },
+  setSunMode: (mode) => {
+    if (SUN_MODES.includes(mode)) set({ sunMode: mode })
+  },
+  setMissionH: (h) => {
+    if (MISSION_OPTIONS_H.includes(h)) set({ missionH: h })
   },
   setView: (view) => set({ view }),
   setScreen: (screen) => set({ screen }),
@@ -73,65 +90,132 @@ export const useStore = create((set) => ({
 // --- derived selectors ---
 export const selectEffectiveTimeMs = (s) => s.baseTimeUtcMs + s.sliderOffsetH * HOUR_MS
 export const selectOutOfRange = (s) => {
+  if (!s.ephemerisRange) return false
   const t = selectEffectiveTimeMs(s)
-  return t < EPHEMERIS_START_UTC_MS || t > EPHEMERIS_END_UTC_MS
+  return t < s.ephemerisRange.startMs || t > s.ephemerisRange.endMs
 }
 
 // --- engine data (outside React state) ---
+// { manifest, ephemeris, polar (tier data) | null, terrains: { "polar-hd"?, global? } }
 let engineData = null
 let worker = null
-let loadPromise = null
+const loader = createDataLoader({
+  onProgress: (tier, done, total) => setTier(tier, { status: "loading", done, total }),
+})
+
+function setTier(tier, patch) {
+  if (tier === "globe") return
+  useStore.setState((s) => ({ tiers: { ...s.tiers, [tier]: { ...s.tiers[tier], ...patch } } }))
+}
 
 export function getEngineData() {
   return engineData
 }
 
-// Load once, even under React StrictMode double effects. retryData() starts over after a failure.
+// Core tier (manifest + ephemeris), once, even under React StrictMode double effects.
+let corePromise = null
 export function initData() {
-  if (loadPromise) return loadPromise
+  if (corePromise) return corePromise
   useStore.setState({ dataError: null })
-  loadPromise = loadAll("/data/", (done, total) => useStore.setState({ dataProgress: { done, total } }))
-    .then((data) => {
-      engineData = data
-      worker = createHorizonWorker(data.grids)
-      useStore.setState({ dataReady: true })
+  setTier("core", { status: "loading", error: null })
+  corePromise = loader
+    .ensure("core")
+    .then(({ manifest, ephemeris }) => {
+      engineData = { manifest, ephemeris, polar: null, terrains: {} }
+      worker = createHorizonWorker()
+      const { startMs, endMs } = ephemeris
+      const t = useStore.getState().baseTimeUtcMs
+      useStore.setState({
+        dataReady: true,
+        ephemerisRange: { startMs, endMs },
+        baseTimeUtcMs: t >= startMs && t <= endMs ? t : startMs,
+      })
+      setTier("core", { status: "ready" })
       if (import.meta.env.DEV) installDevHooks()
-      return data
+      return engineData
     })
     .catch((err) => {
-      useStore.setState({ dataError: String(err.message || err) })
+      corePromise = null
+      const message = String(err.message || err)
+      useStore.setState({ dataError: message })
+      setTier("core", { status: "error", error: message })
       throw err
     })
-  return loadPromise
+  return corePromise
 }
 
 export function retryData() {
-  if (engineData) return Promise.resolve(engineData)
-  loadPromise = null
   return initData().catch(() => {}) // the error is shown again if it persists
 }
 
-// Build a pin from projected map coordinates; null if outside the map disc or without terrain.
-function pinFromXY(x, y) {
-  if (!engineData) return null
-  const { lat, lon } = unproject(x, y, engineData.manifest.moon_radius_m)
-  if (lat > MAP_LAT_LIMIT_DEG) return null
-  const groundM = groundAt(engineData.grids, x, y)
-  if (!Number.isFinite(groundM)) return null
-  return { x, y, lat, lon, groundM }
+// Polar HD or global terrain, loaded on first use. Resolves once the terrain can be sampled.
+const tierPromises = {}
+export function ensureTier(tier) {
+  if (!tierPromises[tier]) {
+    setTier(tier, { status: "loading", error: null })
+    tierPromises[tier] = initData()
+      .then(() => loader.ensure(tier))
+      .then(async (data) => {
+        const R = engineData.manifest.moon_radius_m
+        if (tier === "polar") {
+          engineData.polar = data
+          engineData.terrains["polar-hd"] = polarTerrain(data.grids)
+          worker.setPolar(data.grids)
+        } else {
+          // the worker decodes the compressed DEM (off the main thread) and sends a copy back
+          const { dem } = await worker.loadGlobal(data.spec, data.gz, R)
+          engineData.terrains.global = globalTerrain(createGlobalDem(data.spec, dem, R))
+        }
+        setTier(tier, { status: "ready" })
+        return engineData
+      })
+      .catch((err) => {
+        delete tierPromises[tier]
+        setTier(tier, { status: "error", error: String(err.message || err) })
+        throw err
+      })
+  }
+  return tierPromises[tier]
 }
 
-// Cursor readout for the map: lat, lon, ground height; null outside the map disc.
+// A pin at (lat, lon) on the given terrain; null where that terrain has no data.
+function makePin(latDeg, lonDeg, source, xy = null) {
+  const terrain = engineData?.terrains[source]
+  if (!terrain) return null
+  const groundM = terrain.heightAt(latDeg, lonDeg)
+  if (!Number.isFinite(groundM)) return null
+  const lon = ((((lonDeg + 180) % 360) + 360) % 360) - 180
+  const pin = { lat: latDeg, lon: lon === -180 ? 180 : lon, groundM, terrainSource: source, resolutionM: terrain.resolutionM }
+  if (source === "polar-hd") Object.assign(pin, xy || project(latDeg, lonDeg, engineData.manifest.moon_radius_m))
+  return pin
+}
+
+// Pin anywhere on the Moon: Polar HD at 84 S or further south, Global terrain elsewhere (loads it first).
+// Resolves with the pin, or null if the point has no terrain data.
+export async function setPinLatLon(latDeg, lonDeg) {
+  await initData()
+  const source = terrainSourceFor(latDeg, Boolean(engineData.manifest.grids))
+  await ensureTier(tierForSource(source))
+  const pin = makePin(latDeg, lonDeg, source)
+  if (pin) useStore.getState().setPin(pin)
+  return pin
+}
+
+// Cursor readout for the Polar HD map: lat, lon, ground height; null outside the map disc.
 export function describeXY(x, y) {
-  if (!engineData) return null
+  const terrain = engineData?.terrains["polar-hd"]
+  if (!terrain) return null
   const { lat, lon } = unproject(x, y, engineData.manifest.moon_radius_m)
-  if (lat > MAP_LAT_LIMIT_DEG) return null
-  return { lat, lon, groundM: groundAt(engineData.grids, x, y) }
+  if (lat > POLAR_HD_LAT_LIMIT_DEG) return null
+  return { lat, lon, groundM: terrain.heightAt(lat, lon) }
 }
 
 // Map click / drag: set the single pin. Returns false if the point is outside the map disc.
 export function pickXY(x, y) {
-  const pin = pinFromXY(x, y)
+  if (!engineData) return false
+  const { lat, lon } = unproject(x, y, engineData.manifest.moon_radius_m)
+  if (lat > POLAR_HD_LAT_LIMIT_DEG) return false
+  const pin = makePin(lat, lon, "polar-hd", { x, y })
   if (!pin) return false
   useStore.getState().setPin(pin)
   return true
@@ -141,8 +225,10 @@ export function pickXY(x, y) {
 const latestRequest = { sun: 0, earth: 0 }
 let hoursFrame = 0
 
+// Landing slope exists only on the Polar HD grids; Global terrain is too coarse to assess it.
 function slopeAt(pin) {
-  const { slope } = engineData
+  if (pin.terrainSource !== "polar-hd") return null
+  const { slope } = engineData.polar
   return {
     planeDeg: sampleBilinear(slope.plane, pin.x, pin.y),
     maxDeg: sampleBilinear(slope.max, pin.x, pin.y),
@@ -161,7 +247,7 @@ async function recomputeHorizons(which) {
     return
   }
   const ids = {}
-  const patch = { status: "computing", error: null }
+  const patch = { status: "computing", error: null, terrainSource: pin.terrainSource, resolutionM: pin.resolutionM }
   if (which.sun) {
     ids.sun = ++latestRequest.sun
     patch.horizonSun = null
@@ -173,7 +259,7 @@ async function recomputeHorizons(which) {
   }
   useStore.setState((s) => ({ results: { ...s.results, ...patch } }))
 
-  const job = (heightM) => worker.compute({ x: pin.x, y: pin.y }, pin.groundM, heightM)
+  const job = (heightM) => worker.compute(pin.terrainSource, pin, heightM)
   const sunJob = which.sun ? job(SUN_REFERENCE_HEIGHT_M) : null
   // Same observer height: share the Sun horizon instead of computing it twice.
   const earthJob = which.earth ? (sunJob && antennaM === SUN_REFERENCE_HEIGHT_M ? sunJob : job(antennaM)) : null
@@ -195,10 +281,10 @@ async function recomputeHorizons(which) {
 
 function recomputeHours() {
   const s = useStore.getState()
-  const { pin, antennaM, sunMode } = s
+  const { pin, antennaM, sunMode, missionH } = s
   const { horizonSun, horizonEarth } = s.results
   if (!pin || !horizonSun || !horizonEarth || !engineData) return
-  const computed = computeSiteHours({
+  const args = {
     pin,
     horizonSun,
     horizonEarth,
@@ -206,8 +292,11 @@ function recomputeHours() {
     tableAccessor: siteAccessor(engineData.ephemeris, pin),
     tMs: selectEffectiveTimeMs(s),
     sunMode,
-  })
-  useStore.setState((st) => ({ results: { ...st.results, status: "ready", error: null, ...computed } }))
+  }
+  // Ratings keep NASA's 6.5 d Artemis III window (rule 8); missionH sets the metrics window.
+  const computed = computeSiteHours({ ...args, windowH: MISSION_STAY_H })
+  const metrics = siteMetrics({ ...args, missionH })
+  useStore.setState((st) => ({ results: { ...st.results, status: "ready", error: null, ...computed, metrics } }))
 }
 
 // Coalesce rapid time changes (slider drag, Play) into one recompute per animation frame.
@@ -231,22 +320,18 @@ useStore.subscribe((s, prev) => {
   if (
     s.baseTimeUtcMs !== prev.baseTimeUtcMs ||
     s.sliderOffsetH !== prev.sliderOffsetH ||
-    s.sunMode !== prev.sunMode
+    s.sunMode !== prev.sunMode ||
+    s.missionH !== prev.missionH
   ) {
     scheduleHours()
   }
 })
 
 // Dev-only console hooks for validation (e.g. placing the pin at exact reference coordinates):
-//   lspb.setPinLatLon(-89.5, -45)   lspb.setTimeUtc("2026-11-01T00:00:00Z")   lspb.state()
+//   await lspb.setPinLatLon(0.674, 23.473)   lspb.setTimeUtc("2026-11-01T00:00:00Z")   lspb.state()
 function installDevHooks() {
   window.lspb = {
-    setPinLatLon(lat, lon) {
-      const { x, y } = project(lat, lon, engineData.manifest.moon_radius_m)
-      const pin = pinFromXY(x, y)
-      useStore.getState().setPin(pin)
-      return pin
-    },
+    setPinLatLon,
     setTimeUtc(iso) {
       useStore.getState().setBaseTime(Date.parse(iso))
     },

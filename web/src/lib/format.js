@@ -6,9 +6,15 @@ import { LOOKAHEAD_H } from "@/engine/hours.js"
 
 const lonEast = (lon) => ((lon % 360) + 360) % 360
 
-// "-86.1234 S, 12.3456 E"
+// "86.1234 S, 12.3456 E" / "0.6742 N, 23.4731 E" (longitude east, 0..360)
 export function formatLatLon(lat, lon) {
-  return `${lat.toFixed(4)} S, ${lonEast(lon).toFixed(4)} E`
+  return `${Math.abs(lat).toFixed(4)} ${lat < 0 ? "S" : "N"}, ${lonEast(lon).toFixed(4)} E`
+}
+
+// Terrain source badge: "Polar HD · 120 m" / "Global · ~1.9 km" (engine/terrain.js sources).
+export function formatTerrain(source, resolutionM) {
+  if (source === "polar-hd") return `Polar HD · ${Math.round(resolutionM)} m`
+  return `Global · ~${(resolutionM / 1000).toFixed(1)} km`
 }
 
 const HOURS_PER_DAY = 24
