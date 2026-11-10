@@ -17,6 +17,8 @@
   --lspb-bad: #f87171;
   --lspb-crater: #a78bfa; /* named crater outlines on the map */
   --lspb-crater-label: #ddd6fe;
+  --lspb-layer-sun-low: #1e2a5e; /* Polar HD "average sunlight" layer at 0% (ramps to --lspb-sun at 100%) */
+  --lspb-psr: #60a5fa; /* Polar HD permanent-shadow layer */
   /* 3D globe: space behind the Moon, star dots, and the Moon's colour until its imagery arrives */
   --lspb-space: #000000;
   --lspb-star: #ffffff;
@@ -107,6 +109,7 @@
   --color-lspb-warn: var(--lspb-warn);
   --color-lspb-bad: var(--lspb-bad);
   --color-lspb-crater: var(--lspb-crater);
+  --color-lspb-psr: var(--lspb-psr);
 }
 
 @layer base {
@@ -206,6 +209,10 @@
   transform: translate(-50%, -50%);
   pointer-events: none;
   text-shadow: 0 0 3px var(--lspb-bg), 0 0 3px var(--lspb-bg);
+}
+/* Polar HD data layers (view/polarMap.js): fade in and out */
+.lspb-layer {
+  transition: opacity 200ms ease-out;
 }
 .lspb-crater-label {
   color: var(--lspb-crater-label);
@@ -492,5 +499,8 @@
   .lspb-lander-thrust,
   .lspb-lander-dust {
     opacity: 0;
+  }
+  .lspb-layer {
+    transition: none;
   }
 }

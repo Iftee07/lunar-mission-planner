@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Eye, Layers, Map as MapIcon, TriangleAlert, WifiOff } from "lucide-react"
+import CheckRow from "@/components/CheckRow"
 import DataStatus from "@/components/DataStatus"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -16,15 +17,6 @@ const POLAR_CHIP_LAT = -80
 // Starts on the bundled texture without trying Moon Trek: ?offline=1, or the browser says it is offline.
 const startOffline = () => new URLSearchParams(location.search).get("offline") === "1" || navigator.onLine === false
 const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
-
-function Check({ checked, onChange, children }) {
-  return (
-    <label className="flex cursor-pointer items-center gap-2 py-0.5">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="size-4 accent-(--lspb-focus)" />
-      {children}
-    </label>
-  )
-}
 
 // Layers and legend (one popover): mission groups, crater names, lat/lon grid, South Pole HD opacity.
 function LayersMenu({ apiRef, sites }) {
@@ -46,7 +38,7 @@ function LayersMenu({ apiRef, sites }) {
             Mission sites
           </h3>
           {SITE_GROUPS.map((g) => (
-            <Check
+            <CheckRow
               key={g.id}
               checked={groups[g.id]}
               onChange={(on) => {
@@ -57,12 +49,12 @@ function LayersMenu({ apiRef, sites }) {
               <span className="size-3 shrink-0 rounded-full border border-background" style={{ background: `var(--lspb-${g.token})` }} aria-hidden="true" />
               <span className="flex-1">{g.label}</span>
               <span className="font-mono text-xs text-muted-foreground tabular-nums">{count(g.id)}</span>
-            </Check>
+            </CheckRow>
           ))}
           <p className="text-xs text-muted-foreground">Hover a pin for its name; click to fly there.</p>
         </section>
         <section className="space-y-1 border-t pt-3">
-          <Check
+          <CheckRow
             checked={labels}
             onChange={(on) => {
               setLabels(on)
@@ -70,8 +62,8 @@ function LayersMenu({ apiRef, sites }) {
             }}
           >
             Crater and feature names (IAU)
-          </Check>
-          <Check
+          </CheckRow>
+          <CheckRow
             checked={grid}
             onChange={(on) => {
               setGrid(on)
@@ -79,7 +71,7 @@ function LayersMenu({ apiRef, sites }) {
             }}
           >
             Latitude / longitude grid
-          </Check>
+          </CheckRow>
         </section>
         <section className="space-y-2 border-t pt-3">
           <div className="flex items-baseline justify-between">

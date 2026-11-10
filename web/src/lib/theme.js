@@ -1,13 +1,13 @@
 // Reads LSPB theme tokens (CSS variables in src/index.css).
 // Leaflet, three.js and CesiumJS code get every colour through here: no colour literals elsewhere.
 
-const NAMES = ["bg", "line", "line-dim", "sun", "earth", "blocked", "ok", "warn", "bad", "crater", "crater-label"]
+const NAMES = ["bg", "line", "line-dim", "sun", "earth", "blocked", "ok", "warn", "bad", "crater", "crater-label", "layer-sun-low", "psr"]
 
 export function token(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(`--lspb-${name}`).trim()
 }
 
-// { bg, line, lineDim, sun, earth, blocked, ok, warn, bad, crater, craterLabel, fontMono }
+// { bg, line, lineDim, sun, earth, blocked, ok, warn, bad, crater, craterLabel, layerSunLow, psr, fontMono }
 export function readTheme() {
   const theme = {}
   for (const name of NAMES) {

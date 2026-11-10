@@ -5,7 +5,9 @@ import L from "leaflet"
 import { formatLatLon } from "@/lib/format.js"
 import { readTheme } from "@/lib/theme.js"
 import { clipRingToDisc, craterAt, rimPoints } from "@/engine/craters.js"
+import { sampleBilinear } from "@/engine/data.js"
 import { project, rhoForLat } from "@/engine/projection.js"
+import { LAYER_IDS, POLAR_LAYERS, hexToRgb, layerReadout, pixelAt } from "./polarLayerModel.js"
 
 const UNIT_M = 100
 const RING_LATS = [-85, -86, -87, -88, -89]
@@ -25,8 +27,12 @@ function label(latlng, text, cls) {
   })
 }
 
-// options: { manifest, hillshadeUrl, onPick(x, y) -> true if accepted, describe(x, y) -> { lat, lon, groundM } | null }
-export function createPolarMap(container, { manifest, hillshadeUrl, onPick, describe }) {
+// options:
+//   manifest, hillshadeUrl
+//   layerData        { slope: slope grid (engine/data.js createSlope), sunlightUrl, psrUrl } for the data layers
+//   onPick(x, y)     -> true if accepted;   describe(x, y) -> { lat, lon, groundM } | null
+//   onLayerStatus(id, status, error?)   "loading" | "ready" | "error" while a layer renders (first use only)
+export function createPolarMap(container, { manifest, hillshadeUrl, layerData, onPick, describe, onLayerStatus = () => {} }) {
   const theme = readTheme()
   const R = manifest.moon_radius_m
   const g = manifest.grids.near
@@ -46,7 +52,10 @@ export function createPolarMap(container, { manifest, hillshadeUrl, onPick, desc
     maxBoundsViscosity: 1,
   })
   L.control.zoom({ position: "topright" }).addTo(map)
-  L.imageOverlay(hillshadeUrl, imageBounds, { interactive: false }).addTo(map)
+  // Panes, bottom to top: hillshade, data layers, then Leaflet's overlay pane (grid, craters) and markers.
+  map.createPane("lspbBase").style.zIndex = 300
+  map.createPane("lspbLayers").style.zIndex = 350
+  L.imageOverlay(hillshadeUrl, imageBounds, { interactive: false, pane: "lspbBase" }).addTo(map)
 
   const lineStyle = { color: theme.lineDim, weight: 1, opacity: 0.9, interactive: false, fill: false }
   const overlay = L.layerGroup().addTo(map)
@@ -84,9 +93,11 @@ export function createPolarMap(container, { manifest, hillshadeUrl, onPick, desc
       return
     }
     const crater = cratersVisible ? craterAt(craters, d.lat, d.lon, R / 1000) : null
+    const values = LAYER_IDS.filter((id) => layers[id].on && layers[id].ready).map((id) => layerReadout(id, layerValueAt(id, x, y)))
     readoutEl.textContent =
       `${formatLatLon(d.lat, d.lon)}   h ${Number.isFinite(d.groundM) ? `${d.groundM.toFixed(0)} m` : "-"}` +
-      (crater ? `   ${crater.name}` : "")
+      (crater ? `   ${crater.name}` : "") +
+      values.map((v) => `   ${v ?? "no data"}`).join("")
   })
   map.on("mouseout", () => {
     readoutEl.textContent = "move the cursor over the map"
@@ -210,6 +221,88 @@ export function createPolarMap(container, { manifest, hillshadeUrl, onPick, desc
     if (untouched) setBounds()
   })
 
+  // --- Data layers (slope, average sunlight, permanent shadow) ---
+  // Each is rendered once, on first use, by a worker into a PNG over the near grid; toggling and opacity only
+  // change the overlay's opacity, which CSS fades (.lspb-layer, 200 ms; none under reduced motion).
+  const geom = { width: g.width, height: g.height, pixelM: g.pixel_m, xMin: g.x_min, yMax: g.y_max }
+  const layers = Object.fromEntries(
+    POLAR_LAYERS.map((l) => [l.id, { on: false, opacity: l.opacity, overlay: null, grid: null, ready: false, loading: false, url: null }]),
+  )
+  const layerColors = () => ({
+    ok: hexToRgb(theme.ok),
+    warn: hexToRgb(theme.warn),
+    bad: hexToRgb(theme.bad),
+    sunLow: hexToRgb(theme.layerSunLow),
+    sunHigh: hexToRgb(theme.sun),
+    psr: hexToRgb(theme.psr),
+  })
+  let destroyed = false
+
+  function layerValueAt(id, x, y) {
+    if (id === "slope") return sampleBilinear(layerData.slope, x, y)
+    const grid = layers[id].grid
+    return grid ? pixelAt(grid, x, y) : null
+  }
+
+  function renderLayer(id) {
+    const st = layers[id]
+    const base = { kind: id, width: g.width, height: g.height, colors: layerColors() }
+    let msg
+    if (id === "slope") {
+      const sg = layerData.slope
+      msg = { ...base, values: sg.data.slice(), scale: sg.scale, nodata: sg.nodata }
+    } else {
+      const url = id === "psr" ? layerData.psrUrl : layerData.sunlightUrl
+      if (!url) {
+        onLayerStatus(id, "error", "not in this data build")
+        return
+      }
+      msg = { ...base, url: new URL(url, location.href).href }
+    }
+    st.loading = true
+    onLayerStatus(id, "loading")
+    const worker = new Worker(new URL("./polarLayers.worker.js", import.meta.url), { type: "module" })
+    const done = (error) => {
+      worker.terminate()
+      st.loading = false
+      if (!destroyed) onLayerStatus(id, error ? "error" : "ready", error)
+    }
+    worker.onerror = (e) => done(e.message || "layer worker failed")
+    worker.onmessage = (e) => {
+      if (destroyed) return done()
+      if (e.data.error) return done(e.data.error)
+      st.url = URL.createObjectURL(e.data.png)
+      if (e.data.values) st.grid = { ...geom, data: e.data.values }
+      st.overlay = L.imageOverlay(st.url, imageBounds, {
+        pane: "lspbLayers",
+        interactive: false,
+        className: "lspb-layer",
+        opacity: 0,
+        zIndex: LAYER_IDS.indexOf(id) + 1,
+      }).addTo(map)
+      st.ready = true
+      done()
+      applyLayer(id)
+    }
+    worker.postMessage(msg, msg.values ? [msg.values.buffer] : [])
+  }
+
+  function applyLayer(id) {
+    const st = layers[id]
+    // next frame: an overlay just added starts at 0, so the CSS transition fades it in
+    if (st.overlay) requestAnimationFrame(() => !destroyed && st.overlay.setOpacity(st.on ? st.opacity : 0))
+  }
+
+  // setLayer(id, { on?, opacity? }): mirrors the store's layer state (PolarHdPanel forwards it).
+  function setLayer(id, { on, opacity }) {
+    const st = layers[id]
+    if (!st) return
+    if (on !== undefined) st.on = on
+    if (opacity !== undefined) st.opacity = opacity
+    if (st.on && !st.overlay && !st.loading) renderLayer(id)
+    applyLayer(id)
+  }
+
   // Centre the map on a point (search result, typed coordinates), zooming in to at least FOCUS_MIN_ZOOM.
   function panTo(x, y, animate = true) {
     map.setView(toLatLng(x, y), Math.max(map.getZoom(), FOCUS_MIN_ZOOM), { animate })
@@ -218,12 +311,15 @@ export function createPolarMap(container, { manifest, hillshadeUrl, onPick, desc
   return {
     setPin,
     panTo,
+    setLayer,
     setCraterLayer,
     setCratersVisible,
     getCratersVisible: () => cratersVisible,
     setBounds,
     invalidateSize: () => map.invalidateSize({ animate: false }),
     destroy: () => {
+      destroyed = true
+      for (const st of Object.values(layers)) if (st.url) URL.revokeObjectURL(st.url)
       container.removeEventListener("keydown", onKey)
       map.remove()
       marker = null

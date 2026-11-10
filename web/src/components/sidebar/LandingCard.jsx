@@ -4,7 +4,8 @@ import {
   SLOPE_TYPICAL_ERROR_DEG,
   rateLanding,
 } from "@/engine/ratings.js"
-import { LANDING_RADIUS_M, useStore } from "@/state.js"
+import { Map as MapIcon } from "lucide-react"
+import { LANDING_RADIUS_M, showSlopeOnMap, useStore } from "@/state.js"
 import { MetricCard, MetricRow, SkeletonRows } from "./MetricCard"
 import RatingBadge, { TipLive, TipNote, TipRule } from "./RatingBadge"
 
@@ -42,6 +43,7 @@ export default function LandingCard() {
         {SLOPE_TYPICAL_ERROR_DEG}° terrain model error (project judgement).
       </p>
       <TipNote>Slope only: boulders and small craters are not checked.</TipNote>
+      <TipNote>See it on the map: "See slopes on the map" below opens the Polar HD map with the slope layer.</TipNote>
     </RatingBadge>
   )
 
@@ -52,6 +54,13 @@ export default function LandingCard() {
       ) : (
         <MetricRow label="Slope">{known ? deg(slope.planeDeg) : "no data"}</MetricRow>
       )}
+      <button
+        type="button"
+        onClick={showSlopeOnMap}
+        className="mt-1 inline-flex items-center gap-1.5 rounded-sm text-xs text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <MapIcon className="size-3.5" aria-hidden="true" /> See slopes on the map
+      </button>
     </MetricCard>
   )
 }

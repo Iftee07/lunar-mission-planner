@@ -17,6 +17,7 @@ import {
   tierForSource,
 } from "@/engine/terrain.js"
 import { sitePins } from "@/view/globeModel.js"
+import { POLAR_LAYERS } from "@/view/polarLayerModel.js"
 
 // UI in days, engine in hours: every duration here is in hours; only lib/format.js converts.
 export const HOUR_MS = 3600000
@@ -66,6 +67,7 @@ export const useStore = create((set) => ({
   pin: null, // { lat, lon, groundM, terrainSource, resolutionM, x?, y?, site? } (x, y: polar stereographic, Polar HD
   // only; site: the curated site (sites.json row) when the pin was placed on one)
   focus: null, // { lat, lon, seq }: a request for the globe camera to fly there (site picked, coordinates typed)
+  layers: Object.fromEntries(POLAR_LAYERS.map((l) => [l.id, { on: false, opacity: l.opacity }])), // Polar HD map layers
 
   // --- computed, not user-editable ---
   dataReady: false, // core tier (manifest + ephemeris) loaded
@@ -91,7 +93,21 @@ export const useStore = create((set) => ({
   },
   setScreen: (screen) => set({ screen }),
   setPin: (pin) => set({ pin }),
+  setLayer: (id, { on, opacity }) =>
+    set((s) => {
+      const cur = s.layers[id]
+      if (!cur) return {}
+      const next = { on: on ?? cur.on, opacity: opacity === undefined ? cur.opacity : Math.max(0, Math.min(1, opacity)) }
+      return { layers: { ...s.layers, [id]: next } }
+    }),
 }))
+
+// The Landing card's link: open the Polar HD map with the slope layer on.
+export function showSlopeOnMap() {
+  const s = useStore.getState()
+  s.setLayer("slope", { on: true })
+  s.setView("polar")
+}
 
 // --- derived selectors ---
 export const selectEffectiveTimeMs = (s) => s.baseTimeUtcMs + s.sliderOffsetH * HOUR_MS
