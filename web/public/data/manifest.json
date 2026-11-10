@@ -20,7 +20,7 @@
       "reference_step_s": 60
     }
   },
-  "build_date_utc": "2026-11-10T07:12:17Z",
+  "build_date_utc": "2026-11-10T07:25:44Z",
   "proj4": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs",
   "grids": {
     "near": {
@@ -62,5 +62,54 @@
     "license": "Public domain (USGS metadata use constraints)",
     "retrieved_utc": "2026-10-09",
     "filter": "type 'Crater, craters', adopted by IAU, rim reaching lat <= -84.0"
+  },
+  "global_dem": {
+    "file": "global_dem.bin",
+    "encoding": "gzip(int16 residuals of left+up-upleft predictor, high-byte plane then low-byte plane)",
+    "width": 5760,
+    "height": 2880,
+    "pixels_per_degree": 16,
+    "pixel_m": 1895.21,
+    "scale": 0.5,
+    "layout": "row 0 = 90 N, column 0 = 0 E, pixel registered (centres at (i + 0.5) / ppd deg)",
+    "reference_radius_m": 1737400.0,
+    "frame": "Mean Earth/polar axis of DE421 (same as MOON_ME)",
+    "source": "LOLA GDR LDEM_16 (LRO-L-LOLA-4-GDR-V1.0, product version V3.1)",
+    "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_16.img",
+    "bytes_raw": 33177600,
+    "bytes_gzip_plain": 30011692,
+    "bytes_file": 19077347,
+    "size_decision": "16 ppd: lossless predictor+planes gzip 19,077,347 B <= 20,000,000 B (plain gzip would be 30,011,692 B)"
+  },
+  "globe": {
+    "fallback_texture": {
+      "file": "moon_fallback_4k.jpg",
+      "width": 4096,
+      "height": 2048,
+      "rectangle_deg": [
+        -180,
+        -90,
+        180,
+        90
+      ],
+      "source": "NASA Moon Trek WMTS, layer LRO_WAC_Mosaic_Global_303ppd_v02, tile level 3",
+      "source_url": "https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/WMTSCapabilities.xml",
+      "credit": "NASA/GSFC/Arizona State University (LROC WAC global mosaic), via NASA Moon Trek",
+      "note": "NASA SVS CGI Moon Kit (svs.gsfc.nasa.gov/4720) was unreachable on 2026-11-10",
+      "bytes": 2561962
+    },
+    "south_pole_hd": {
+      "file": "south_pole_hd.jpg",
+      "width": 4096,
+      "height": 1536,
+      "rectangle_deg": [
+        -180,
+        -90.0,
+        180,
+        -84.0
+      ],
+      "source": "LOLA 20 m south pole DEM (LDEM_80S_20MPP_ADJ) -> 120 m hillshade.png, resampled to lat/lon",
+      "bytes": 1083449
+    }
   }
 }

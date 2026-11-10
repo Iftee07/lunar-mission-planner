@@ -1,10 +1,12 @@
 """Shared helpers for the pipeline: paths, constants, SPICE loading, manifest, geometry."""
 import json
 import math
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
+import requests
 
 REPO = Path(__file__).resolve().parents[1]
 RAW = REPO / "data" / "raw"
@@ -20,6 +22,10 @@ EPHEMERIS_STEP_S = 1800  # interpolation error vs a 60 s reference < 0.0001 deg 
 FRAME = "MOON_ME"   # alias of MOON_ME_DE440_ME421 in moon_de440_*.tf (DE421 mean-Earth axes, as LOLA)
 ABCORR = "LT+S"
 META_KERNEL = KERNELS / "lspb.tm"
+
+DOWNLOAD_CHUNK = 1 << 20
+session = requests.Session()
+session.headers["User-Agent"] = "lspb-pipeline/0.1"
 
 
 def iso_to_unix(iso):
@@ -133,3 +139,47 @@ def az_el(lat_deg, lon_deg, body_km, height_m=0.0):
     el = math.degrees(math.asin(u / np.linalg.norm(v)))
     az = math.degrees(math.atan2(e, n)) % 360.0
     return az, el
+
+
+# --- resumable downloads (HTTP Range); re-running skips files that are already complete ---
+def remote_size(url):
+    r = session.head(url, timeout=60, allow_redirects=True)
+    r.raise_for_status()
+    return int(r.headers.get("Content-Length", -1))
+
+
+def download(url, dest):
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    total = remote_size(url)
+    have = dest.stat().st_size if dest.exists() else 0
+    if total > 0 and have == total:
+        print(f"  skip (complete) {dest.name}")
+        return total
+    if total > 0 and have > total:
+        dest.unlink()
+        have = 0
+
+    headers = {"Range": f"bytes={have}-"} if have else {}
+    with session.get(url, headers=headers, stream=True, timeout=120) as r:
+        if have and r.status_code != 206:  # server ignored Range: restart
+            have = 0
+            mode = "wb"
+        else:
+            mode = "ab" if have else "wb"
+        r.raise_for_status()
+        t0, done, last = time.time(), have, 0.0
+        with open(dest, mode) as f:
+            for block in r.iter_content(DOWNLOAD_CHUNK):
+                f.write(block)
+                done += len(block)
+                now = time.time()
+                if now - last > 5:
+                    rate = (done - have) / max(now - t0, 1e-6) / 1e6
+                    pct = 100 * done / total if total > 0 else 0
+                    print(f"  {dest.name}: {done/1e6:,.0f} / {total/1e6:,.0f} MB "
+                          f"({pct:.1f}%, {rate:.1f} MB/s)", flush=True)
+                    last = now
+    size = dest.stat().st_size
+    if total > 0 and size != total:
+        raise RuntimeError(f"{dest.name}: got {size} bytes, expected {total}; re-run to resume")
+    return size
