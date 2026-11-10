@@ -1,5 +1,5 @@
 // Reads LSPB theme tokens (CSS variables in src/index.css).
-// Leaflet and three.js code get every colour through here: no colour literals elsewhere.
+// Leaflet, three.js and CesiumJS code get every colour through here: no colour literals elsewhere.
 
 const NAMES = ["bg", "line", "line-dim", "sun", "earth", "blocked", "ok", "warn", "bad", "crater", "crater-label"]
 

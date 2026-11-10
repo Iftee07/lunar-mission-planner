@@ -24,7 +24,7 @@ export function sunLightDirection(sunKm) {
 
 // The Earth marker sits just beyond the limb, in the true Earth direction, so it shows which way Earth is
 // from the Moon (the real Earth, 384,000 km away, would be off screen). Metres from the Moon's centre.
-export const EARTH_MARKER_RADII = 1.45
+const EARTH_MARKER_RADII = 1.45
 export function earthMarkerPosition(earthKm, radiusM = MOON_RADIUS_M) {
   const r = norm(earthKm)
   const d = EARTH_MARKER_RADII * radiusM
