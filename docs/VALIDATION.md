@@ -92,3 +92,42 @@ Sources of the non-polar validation coordinates: NASA NSSDCA (Apollo) and LROC (
 Apollo 15 about 20 m off, Chang'e-4 about 1 km off), because NASA hosts did not answer this machine
 without the VPN. The exact spot does not
 affect this check, which compares our az/el with Horizons at the same coordinates.
+
+## Phase 2 — 2026-11-11
+
+Globe checks ran in Chrome 157 (headless, real GPU: ANGLE / Intel Iris Xe, Direct3D 11) over the DevTools
+Protocol, at 1440 × 900 (globe canvas 1034 × 685 CSS px) and at 360 × 740 (phone emulation, DPR 2).
+
+| Date | Phase | Check | Value | Tolerance / budget | Result |
+|---|---|---|---|---|---|
+| 2026-11-11 | 2 | Spike: Moon Trek WMTS capabilities (`LRO_WAC_Mosaic_Global_303ppd_v02`) | style `default`, TileMatrixSet `default028mm`, `image/jpeg`, TopLeftCorner 180 W 90 N, level 0 = 2 × 1 tiles of 256 px, levels 0-8 (512 × 256 at level 8, ~83 m/px); URL template taken from the document | from the capabilities, not guessed | pass |
+| 2026-11-11 | 2 | Spike: CORS on Moon Trek tiles | `Access-Control-Allow-Origin: *` for Origin `http://localhost:4173` and `https://lunar-mission-planner.vercel.app` (curl with an Origin header); in the browser 0 of 373 tiles failed (dev and preview on localhost). The deployed Vercel page itself was not tested (it deploys from `main` after the human's go) | tiles load | pass (no mirror needed: `12_mirror_tiles.py` not written) |
+| 2026-11-11 | 2 | Spike: alignment of the Moon Trek mosaic | the first build put the mosaic in the wrong place: Cesium's WMTS provider assumes Web Mercator unless told otherwise. Fixed with the capabilities' geographic grid (`GeographicTilingScheme`), now test-enforced. After the fix: Mare Crisium, Neper and Cleomedes under their IAU labels; the IAU label "Collins" on Collins crater 19 km north of the Apollo 11 pin (278 px north, 109 px east at 60 km altitude, as expected); Shackleton, Spudis, Haynes, Sverdrup and Henson on their craters; the bundled offline texture lines up the same way | on the features | pass |
+| 2026-11-11 | 2 | Globe frame: our lat/lon -> Cartesian (engine `latLonToUnit`) vs Cesium `Cartesian3.fromDegrees` on `Ellipsoid.MOON` (5 points) | max 4.8 × 10⁻¹⁰ m; `Ellipsoid.MOON` radii 1,737,400 m = the LOLA reference sphere | 10⁻⁶ R | pass |
+| 2026-11-11 | 2 | lat/lon -> Cartesian -> pick (real Cesium `Camera.pickEllipsoid`) -> lat/lon, 12 points × 3 views (nadir from 3000 km, 35° pitch from 400 km, 60° pitch from 50 km; both poles, ±180°) | max 1.75 × 10⁻⁸° | 0.05° | pass |
+| 2026-11-11 | 2 | Sub-solar point from the light direction vs the ephemeris at 2026-03-20, 2030-07-04, 2035-11-15 | 0° (floating point); independent check through the engine's local frame: Sun elevation 90.0000° at that point at all 3 times | 0.1° | pass |
+| 2026-11-11 | 2 | Lighting on screen | 2026-03-20 (just after new Moon): near side dark; 2026-03-03 (full): near side lit; 2026-03-26 (first quarter): terminator near the central meridian, east half lit | matches the phase | pass |
+| 2026-11-11 | 2 | Offline fallback (mock provider `errorEvent`) | first failure retried; first counted failure -> "partial" (offline texture under the tiles); 3rd in a row (test threshold) -> "offline"; a loaded tile resets the count; `offline: true` starts offline | activates | pass |
+| 2026-11-11 | 2 | Offline fallback in the browser (preview, `trek.nasa.gov` blocked with `Network.setBlockedURLs`) | offline texture requested, "Offline imagery" badge after 2.0 s, credit switches to NASA SVS; no console errors | activates | pass |
+| 2026-11-11 | 2 | `?offline=1` (preview) | no Moon Trek request; `moon_fallback_4k.jpg` 1.41 MB loaded; badge shown | fallback appears | pass |
+| 2026-11-11 | 2 | Crater-label LOD monotonic: height limit per rank 1-6 = ∞, 3000, 1200, 500, 200, 80 km; 60 random cameras (10 km to 20,000 km) over the 1709 IAU features | limits never increase with rank; no hidden in-view feature is bigger than a shown one; at most 150 shown | monotonic, ≤ 150 | pass |
+| 2026-11-11 | 2 | Labels shown with the camera over 20°S 10°E (no frustum cut; desktop budget 150) | 10,000 km: 24; 3000 km: 77; 1200 km: 150 of 161; 500 km: 150 of 218; 200 km: 140; 50 km: 46. Budget 150 on a 1034 × 685 globe, 19 on a 360 × 460 phone globe | about 150 at most | pass |
+| 2026-11-11 | 2 | Every mission pin has a group and a source (`sites.json`, 25 sites) | 25 of 25: known group, https source, source note, `verified` boolean; ids unique; lat/lon in range. Unverified: none | all | pass |
+| 2026-11-11 | 2 | `11_build_sites.py` | 25 sites (Apollo 6, CLPS 8, Artemis III regions 2, other countries 7, south-pole reference 2), 11,761 B; longitudes normalised to (-180, 180] | valid CSV | pass |
+| 2026-11-11 | 2 | Frame rate while rotating (dev hook `lspb.globe.benchmark(4)`: globe spinning every frame) | whole Moon: 60.0 fps; 200 km over Apollo 11 with tiles streaming: 60.2 fps (the display refresh cap) | ≥ 50 fps desktop | pass |
+| 2026-11-11 | 2 | Play at 3 d/s (72 h/s) for 4 s with a Global pin and the globe visible (time offset driven every frame, as Play does) | 57.3 fps, 95th-percentile frame 17.1 ms; 288.7 h covered; the terminator sweeps | smooth | pass |
+| 2026-11-11 | 2 | Frame rate on a mid-range phone | not measured (no device here) | ≥ 30 fps | **not checked** (human) |
+| 2026-11-11 | 2 | Cesium chunk (`GlobePanel`, lazy) | 3,945.49 kB raw / 1,049.18 kB gzip; plus `dist/cesium/` (workers and assets, 6.9 MB on disk, fetched on demand: 0.13 MB at first load) | info | — |
+| 2026-11-11 | 2 | **First-load transfer, welcome screen** (preview, headless Chrome, cache off, same method as Phase 0) | 4.60 MB, 11 requests (unchanged: the globe chunk is not prefetched) | ≤ 10 MB | pass |
+| 2026-11-11 | 2 | **First-load transfer, planner opened (globe), no pin** | **5.97 MB** in 20 requests, imagery tiles excluded (ephemeris 4.21, Cesium chunk 1.04, surface chunk 0.14, entry 0.13, planner 0.12, Cesium assets 0.13, `craters_global.json` 0.04, `sites.json` 0.01 MB, fonts and CSS); plus 24 Moon Trek tiles (1.19 MB) | ≤ 10 MB | pass |
+| 2026-11-11 | 2 | First-load transfer, planner opened, `?offline=1` | 7.38 MB (adds the 1.41 MB offline texture) | ≤ 10 MB | pass |
+| 2026-11-11 | 2 | Manual: hover the Apollo 11 pin | tooltip "Apollo 11 / Apollo · landed"; click: the camera flies there and the pin takes the site's exact coordinates (0.67416 N, 23.47314 E); sidebar shows "Apollo 11", terrain Global · ~1.9 km | name pops up | pass |
+| 2026-11-11 | 2 | Manual: zoom from the whole Moon into Shackleton (3000, 800, 120 km) | imagery sharpens (Moon Trek levels up to 8); IAU names appear by size (maria, then Shoemaker / Haworth / Malapert, then Shackleton / Spudis / Haynes); South Pole HD fades in (full below 1500 km); "Open Polar HD map" chip appears; side label "Limb" | as planned | pass |
+| 2026-11-11 | 2 | Manual: keyboard and views | globe focused + Enter pins the centre (-20.00, -30.00, Global); arrows rotate, +/- zoom; `V` cycles polar -> surface -> globe; the chip opens Polar HD; Enter on the Polar HD map pins the pole (Polar HD 120 m, slope 9.1°); surface view renders; the polar pin shows on the globe | works | pass |
+| 2026-11-11 | 2 | Manual: 360 px phone | no horizontal scroll (scrollWidth 360); whole disc in view; imagery credits behind Cesium's "Data attribution" link; ratings strip, chips and "View from here" do not overlap | works | pass |
+| 2026-11-11 | 2 | `npm run lint` | 0 warnings, 0 errors | clean | pass |
+| 2026-11-11 | 2 | `npm test` | 8 files, 83 passed / 0 skipped / 0 failed (+12, `globe.test.js`) | 0 failed | pass |
+| 2026-11-11 | 2 | `npm run build` (raw / gzip) | entry `index` 390.48 / 126.45 kB (Phase 1: 389.50); `Planner` 391.30 / 120.22 kB; `SurfacePanel` 566.71 / 143.27 kB; `GlobePanel` (Cesium) 3,945.49 / 1,049.18 kB; one size warning, for the lazy Cesium chunk only | builds | pass |
+
+Not re-run in Phase 2 (no engine, ephemeris or terrain change): pipeline `05`-`08`. Their fixtures are
+checked by `npm test`, which passed.

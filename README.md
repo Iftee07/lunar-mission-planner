@@ -1,14 +1,19 @@
 # Lunar Mission Planner
 
-A local web app for choosing a landing site near the lunar south pole. Pick a point on the map and a
-landing date; the planner tells you how long the site stays in sunlight, how long Earth stays above the
-local horizon for direct communication, and whether the ground is flat enough to land. It also shows the
-sky from the site as a line drawing, a calendar of days with Earth in view, and the named craters.
+A web app for choosing a lunar landing site and date. Spin a 3D Moon, tap a famous landing site or any
+point, and pick a date; the planner tells you how long the site stays in sunlight, how long Earth stays
+above the local horizon for direct communication, and (near the south pole) whether the ground is flat
+enough to land. The globe shows the real day/night line for the chosen time; a 120 m map of the south
+pole, the sky from the site as a line drawing, a calendar of days with Earth in view and the named craters
+are one tap away.
 
-Everything runs on your machine. The app makes no network requests at runtime: all data is generated
-once by a Python pipeline and served from `web/public/data/`. Data loads in tiers: only the Sun/Earth
-ephemeris at start (about 4.6 MB in total), the 120 m polar terrain when the map opens, and the global
-terrain the first time a point outside the polar region is used.
+Every calculation runs on your machine from data generated once by a Python pipeline and served from
+`web/public/data/`. The only runtime network use is the globe's imagery: NASA Moon Trek map tiles,
+display only. Without them (offline, or `?offline=1`) the globe falls back to a bundled Moon texture and
+everything else keeps working. Data loads in tiers: the Sun/Earth ephemeris at start (4.6 MB on the
+welcome screen), the 3D globe (CesiumJS, about 1 MB) when the planner opens, the 120 m polar terrain when
+the Polar HD map opens or a pin is placed south of 84°S, and the global terrain the first time a point
+elsewhere is used. With the globe open and no pin, the first load is 6.0 MB (imagery tiles excluded).
 
 - Built for the NASA Space Apps 2026 challenge **Lunar Landing Site Navigator**. Changes are listed
   in [CHANGELOG.md](CHANGELOG.md).
@@ -50,6 +55,7 @@ venv\Scripts\python pipeline\07_horizon_reference.py # slow Python reference hor
 venv\Scripts\python pipeline\08_hours_reference.py   # Python reference light/Earth hours (test fixtures)
 venv\Scripts\python pipeline\09_build_features.py    # named craters (IAU gazetteer, ~24 MB download)
 venv\Scripts\python pipeline\10_build_global.py      # global DEM (~33 MB download), offline globe texture, South Pole HD overlay
+venv\Scripts\python pipeline\11_build_sites.py       # validate the curated site list -> sites.json (globe mission pins)
 venv\Scripts\python pipeline\13_build_illumination.py # NASA average-sunlight and PSR layers (~84 MB download)
 
 cd web
@@ -95,15 +101,23 @@ The site is deployed on Vercel straight from git, as a static Vite build:
 2. **Pick a date and time.** The start button in the bottom bar opens a calendar. Green days have Earth
    above the horizon for at least 1 hour at the selected site. Below the calendar, type the time as a
    24-hour UTC clock (`HH:MM`). All times in the app are UTC.
-3. **Pick a site.** Click the map (or focus the map and press Enter to use its centre). Drag the pin to
-   move it. Named craters are outlined; hover to see a name, or hide them with the Craters button.
-   On a phone, tap the map; a strip at the bottom of the map shows the three ratings, and tapping it
-   scrolls to the full cards.
-4. **Read the cards.** Sun, Earth and Landing each have a rating badge; the `?` next to a badge explains
+3. **Pick a site on the globe.** The planner opens on a 3D Moon lit by the Sun at the selected time. Drag
+   to rotate, scroll or pinch to zoom, right-drag (or two fingers, or Ctrl-drag) to tilt. Click anywhere
+   to place the pin, or click a mission pin (hover, or tap once on a phone, to see its name) to fly there
+   and pick it. Keyboard: focus the globe, arrows rotate, `+`/`-` zoom, Enter places the pin at the centre.
+   Mission pins are coloured by group (Apollo, CLPS, Artemis III regions, other countries, south-pole
+   reference points); the Layers menu toggles groups, IAU crater and feature names, a lat/lon grid and the
+   South Pole HD overlay's opacity. Double-click a feature name to fly to it. On a phone, a strip at the
+   bottom shows the three ratings, and tapping it scrolls to the full cards.
+4. **Polar HD map.** Near the south pole, "Open Polar HD map" (or the Polar HD tab) switches to the 120 m
+   map of 84°S to the pole. Click it (or focus it and press Enter) to place the pin; drag the pin to move
+   it. Named craters are outlined; hover to see a name, or hide them with the Craters button.
+5. **Read the cards.** Sun, Earth and Landing each have a rating badge; the `?` next to a badge explains
    the rule with the live numbers. Antenna height (2, 5, 10 or 15 m) changes the Earth results only.
-5. **Move through time.** The slider covers 29.5 days (one synodic month) after the start time; Play runs
-   it at 0.25 to 3 days per second.
-6. **Surface view.** Press `V` (or use the Map / Surface toggle) to see the sky from the pin: the terrain
+6. **Move through time.** The slider covers 29.5 days (one synodic month) after the start time; Play runs
+   it at 0.25 to 3 days per second. The day/night line on the globe moves with it.
+7. **Surface view.** "View from here" on the globe, the Surface tab, or `V` (which cycles Globe, Polar HD
+   and Surface) shows the sky from the pin: the terrain
    skyline, the Sun and Earth and their paths over the next 6.5 days. Drag or use the arrow keys to look
    around, wheel or `+`/`-` to zoom (pinch on a touch screen).
 
@@ -201,6 +215,29 @@ changes the Sun results. The surface view's camera sits at the antenna height an
 For the displayed month, each UTC day is sampled every 0.25 h with the same Earth model as the Earth card
 (antenna height included). A day is marked green if Earth is in view for at least 1 hour that day.
 
+### Globe
+
+The globe is CesiumJS on a smooth sphere of 1737.4 km (Cesium's `Ellipsoid.MOON`, the LOLA reference
+sphere), with no 3D terrain (a team decision: terrain detail lives in the surface view, and every number
+comes from the LOLA engine). Its fixed frame is the ephemeris frame `MOON_ME`: x toward 0° N 0° E, z north
+(tested against Cesium's own conversions).
+
+- **Imagery:** the LRO WAC global mosaic from NASA Moon Trek's WMTS service, about 83 m per pixel at the
+  finest level (the tile grid is copied from the service's capabilities document and tested). Under any
+  tile that fails, the bundled CGI Moon Kit texture shows; after six failed tiles in a row (or with
+  `?offline=1`) the globe uses only the bundled texture and says "Offline imagery". South of 84°S our
+  120 m LOLA hillshade ("South Pole HD") fades in below 4,000 km altitude.
+- **Light:** a directional light along the ephemeris Sun vector at the selected time, so the terminator is
+  the real one and sweeps across the Moon during Play. A small dot marks the sub-solar point.
+- **Earth:** a marker just beyond the limb in the true Earth direction (direction only, not to scale) and
+  the sub-Earth point; during Play their slow wobble is libration.
+- **Names:** IAU features (`craters_global.json`) by size rank: 300 km and larger always, smaller ones as
+  the camera comes down (under 10 km below 80 km altitude), never a smaller one while a bigger one in view
+  is hidden, at most 150 at once (fewer on small screens). Mission pins come from `sites.json`
+  (`11_build_sites.py` validates `pipeline/data/sites_source.csv`; every site cites its source).
+- **Rendering** only happens when something changes (Cesium's request-render mode), and the globe stops
+  rendering while another view is shown.
+
 ### Named craters
 
 `09_build_features.py` reads the IAU Gazetteer of Planetary Nomenclature and keeps the 34 IAU-approved
@@ -254,8 +291,12 @@ All numbers below were measured on this repository's generated data.
 | Antenna 2 → 5 → 10 → 15 m | Sun results identical; Earth visible hours never decrease |
 | Calendar, one year at (-89.5°, -45°) | runs of 12-14 Earth days alternating with 13-15-day gaps; Earth in view 45% of the year |
 | Craters vs terrain | all 34 crater centres lie below their rim average (e.g. Shackleton 4.0 km deep) |
+| Globe frame: our lat/lon -> position vs Cesium's Moon ellipsoid | identical (< 10⁻⁹ m) |
+| Globe picking: lat/lon -> position -> screen pick -> lat/lon (36 views, both poles, 180°E) | max 1.8 × 10⁻⁸° (tolerance 0.05°) |
+| Globe lighting: sub-solar point from the light direction vs the ephemeris (3 times, 2026-2035) | identical; the Sun is at 90.0000° elevation there |
+| Globe imagery vs IAU positions (Mare Crisium, Collins crater near Apollo 11, Shackleton) | the names sit on their features (checked on screen) |
 
-Run them yourself: `npm test` in `web/` (68 tests) and the `05` to `08` pipeline scripts. The full
+Run them yourself: `npm test` in `web/` (83 tests) and the `05` to `08` pipeline scripts. The full
 history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 ## Known limits
@@ -275,6 +316,11 @@ history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.m
   gets its control in Phase 5). The 1.5-day Sun margin is the same for every length.
 - **Global terrain is coarse.** Outside 84°S horizons come from ~1.9 km terrain: hills smaller than a few
   kilometres are not in the skyline, and the landing rating is not given.
+- **The globe is for looking, not measuring.** It is a smooth sphere (no relief); its imagery is a photo
+  mosaic with its own baked-in shadows, under our real-time lighting. The South Pole HD overlay is a
+  hillshade with a fixed light direction (not the selected time), and its edge at 84°S is visible.
+- **Globe imagery needs the network.** Moon Trek tiles stream from trek.nasa.gov; offline, the bundled
+  4096 × 2048 texture (about 2.7 km per pixel) is much less sharp.
 
 ## Data sources and citations
 
@@ -287,9 +333,9 @@ history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.m
 | Global terrain: LOLA GDR `LDEM_16` (16 px/deg, product V3.1) | PDS Geosciences Node, https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ | NASA PDS data, freely available |
 | Average illumination and permanently shadowed regions: LOLA `AVGVISIB_75S_120M_201608`, `LPSR_75S_120M_201608` | NASA GSFC PGDA "Lunar Polar Illumination", https://pgda.gsfc.nasa.gov/products/69 | NASA data, freely available; cite Mazarico et al. (2011) |
 | Offline globe texture (display only): CGI Moon Kit 2025 colour map `lroc_color_16bit_srgb_4k.tif`, converted to `moon_fallback_4k.jpg` | NASA's Scientific Visualization Studio, https://svs.gsfc.nasa.gov/4720, with LROC data from NASA/GSFC/Arizona State University. Downloaded by hand into `data/raw/svs/` (the SVS host is not reachable from the build machine) | NASA data |
-| Globe imagery (from Phase 2): LRO WAC global mosaic `LRO_WAC_Mosaic_Global_303ppd_v02` | NASA Moon Trek WMTS, https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=moon (NASA/GSFC/Arizona State University) | NASA data |
+| Globe imagery (streamed, display only): LRO WAC global mosaic `LRO_WAC_Mosaic_Global_303ppd_v02` | NASA Moon Trek WMTS, https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=moon; tile grid from https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/WMTSCapabilities.xml (NASA/GSFC/Arizona State University) | NASA data |
 | For photometric science (not used by the app, whose numbers come from LOLA and SPICE): LROC WAC Hapke-normalized mosaic, 70°N-70°S | https://data.lroc.im-ldi.com/lroc/view_rdr/WAC_HAPKE; Sato, H., et al. (2014), *JGR Planets* 119, 1775-1805, doi:10.1002/2013JE004580 | NASA PDS data |
-| Landing-site coordinates (validation sites now, the site list in Phase 3): Apollo lunar module positions | NASA NSSDCA, https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html (Wagner et al. 2017, *Icarus* 283, 92-103) | NASA data |
+| Landing-site coordinates (validation sites and the globe's mission pins): Apollo lunar module positions | NASA NSSDCA, https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html (Wagner et al. 2017, *Icarus* 283, 92-103) | NASA data |
 | Landing-site coordinates: Chang'e 3-6, Chandrayaan-3, SLIM, IM-1, IM-2, Blue Ghost | LROC featured images (NASA/GSFC/Arizona State University), https://lroc.im-ldi.com/images, one post per lander, listed with quotes in `pipeline/data/sites_source.csv`; cross-checked with the IAU "Statio" landing-site names in the Gazetteer | NASA data; IAU/USGS public domain |
 
 Citations:
@@ -323,14 +369,16 @@ Citations:
 This project: Apache-2.0 ([LICENSE](LICENSE)).
 
 Web app dependencies (exact versions in `web/package.json` and `web/package-lock.json`; licences read from
-each installed package). All 94 production packages are permissive: 87 MIT, 3 OFL-1.1 (fonts), and one
-each Apache-2.0, BSD-2-Clause, ISC and 0BSD.
+each installed package). All 111 production packages are permissive: 87 MIT, 10 Apache-2.0 (CesiumJS and
+class-variance-authority), 5 ISC, 3 OFL-1.1 (fonts), 2 BSD-3-Clause, and one each BSD-2-Clause, 0BSD,
+MIT AND Zlib (pako) and MPL-2.0 OR Apache-2.0 (DOMPurify, used under Apache-2.0).
 
 | Package | Version | Licence |
 |---|---|---|
 | react, react-dom | 19.2.8 | MIT |
 | leaflet | 1.9.4 | BSD-2-Clause |
 | three | 0.186.1 | MIT |
+| cesium (with @cesium/engine, @cesium/widgets) | 1.147.0 | Apache-2.0 |
 | zustand | 5.0.15 | MIT |
 | radix-ui (tooltip, popover, select, slider, toggle) | 1.7.0 | MIT |
 | react-day-picker (with date-fns, @date-fns/tz) | 10.0.2 | MIT |

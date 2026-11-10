@@ -44,16 +44,16 @@ files in `src/components/ui/` are imported, all 15 dependencies and 7 dev depend
 | P1 | [x] `STEP_H`, `BISECT_TOLERANCE_H` exported from `hours.js` with no importer | Done: `series.js` / `metrics.js` import `STEP_H` and the shared `bisect()`; `BISECT_TOLERANCE_H` unexported |
 | P1 | [x] `MAP_LAT_LIMIT_DEG` exported from `state.js` with no importer | Done: replaced by `POLAR_HD_LAT_LIMIT_DEG` in `engine/terrain.js` (the router) |
 | P1 | [x] "Phase N" / "PRD section N" tags in pipeline docstrings (`00`–`09`, `common.py`) | Done (all of them, comment-only for `05`–`08`) |
-| P1/P2 | [ ] "2026 to 2030" and "south pole only" wording: `index.html` meta description, README intro and "Region" line, About popover first line | P1 done: dates read 2035 everywhere, README Region line names Polar HD and Global. P2: the About popover and meta description still say "near the lunar south pole" until the globe ships |
-| P2 | [ ] README "The app makes no network requests at runtime" | Reworded: Moon Trek imagery tiles are the only runtime network use (rule 3) |
-| P2 | [ ] `latLonToUnit` exported from `geometry.js` with no importer | `globe.js` imports it. Unexport if it doesn't |
-| P2 | [ ] `MapPanel.jsx` + `map/map.js` | **Renamed** to the Polar HD view, not duplicated (P1 already made it load the `polar` tier itself) |
-| P2 | [ ] `setPinLatLon` in `state.js` (dev hook only for now) | Exported again when the globe / typed coordinates (P2/P3) call it |
-| P2 | [ ] `globe` data tier (`engine/data.js`) returns URLs nobody reads yet | `globe.js` uses `fallbackTextureUrl`, `southPoleHdUrl`, `featuresUrl` |
+| P1/P2 | [x] "2026 to 2030" and "south pole only" wording: `index.html` meta description, README intro and "Region" line, About popover first line | Done: P1 dates and Region line; P2 About popover, meta description and README intro describe the whole-Moon globe |
+| P2 | [x] README "The app makes no network requests at runtime" | Done: reworded, Moon Trek imagery tiles are the only runtime network use (rule 3), with the offline fallback |
+| P2 | [x] `latLonToUnit` exported from `geometry.js` with no importer | Done: `view/globeCoords.js` builds every globe position with it |
+| P2 | [x] `MapPanel.jsx` + `map/map.js` | Done: renamed (git mv) to `PolarHdPanel.jsx` and `view/polarMap.js` (`createPolarMap`), view id `polar`; `src/map/` is gone |
+| P2 | [x] `setPinLatLon` in `state.js` (dev hook only for now) | Done: exported; the globe calls it on click, and `goToLatLon` (pins + fly-to) on mission pins (P3 typed coordinates will too) |
+| P2 | [x] `globe` data tier (`engine/data.js`) returns URLs nobody reads yet | Done: `globe.js` uses `fallbackTextureUrl`, `southPoleHdUrl`, `featuresUrl` and the new `sitesUrl` |
 | P3 | [ ] `polar` tier `layerUrls` (`illum_avg.png`, `psr.png`) not shown yet | Polar HD map layers (P3.4) |
-| P3 | [ ] `pipeline/data/sites_source.csv` (25 verified official sites, written early) has no builder yet | `pipeline/11_build_sites.py` validates it and writes `sites.json` |
+| P3 | [x] `pipeline/data/sites_source.csv` (25 verified official sites, written early) has no builder yet | Done early in P2 (the mission pins need it): `11_build_sites.py` writes `sites.json`. P3 adds search on top |
 | P5 | [ ] `results.metrics` (mission metrics, next windows) not shown yet | Cards, countdowns, timeline and Details list |
-| P2 | [ ] `ViewToggle` `Map \| Surface` | Same component becomes `Globe \| Polar HD \| Surface` |
+| P2 | [x] `ViewToggle` `Map \| Surface` | Done: same component, `Globe \| Polar HD \| Surface`; `V` cycles (Planner) |
 | P3 | [ ] Dev-only URL parsing: `devParams` in `state.js` (`?screen&pin&t&view`) and `devStartSlide` (`?slide=`) in `WelcomeFlow.jsx` | Production URL state; delete the dev-only parsers, don't keep both |
 | P5 | [ ] `TimeBar.jsx` slider and Play | `TimelineStrip` playhead: **one** time control. `PLAY_SPEEDS_H_PER_S` changes from `[6, 12, 24, 72]` to `[1, 6, 24, 72]` |
 | P5 | [ ] `MobileSummary.jsx` (phone ratings strip) | Merged into the new card summaries, or removed |
@@ -63,6 +63,7 @@ files in `src/components/ui/` are imported, all 15 dependencies and 7 dev depend
 | P6e | [ ] About popover "Ratings" section (repeats the badge rules) | Text comes from `explanations.js` |
 | P7 | [ ] `ATTRIBUTIONS.md` wording ("PRD rule 11", "PRD v3", "Phase 7") | Reword only; the file itself stays |
 | P7 | [ ] One-off `npx knip` (blocked in Phase 0) | Run it and fix everything it finds. Needs the human to allow the download |
+| P7 | [ ] `lspb.globe.benchmark()` and `lspb.surface.debugCheck()` (dev-only validation aids, reached through the dev hooks) | Keep while performance is still being recorded; decide in the final sweep |
 
 ## Keep (why)
 
@@ -77,4 +78,6 @@ files in `src/components/ui/` are imported, all 15 dependencies and 7 dev depend
 | `sunMode: "any_part"` in `hours.js` / `state.js` (no UI yet) | P5 adds the "Count partial Sun" toggle |
 | three.js surface view, Leaflet map | Kept by the plan (surface view; Polar HD view) |
 | `components/ui/segmented-control.jsx` (21st.dev) | Used by `ViewToggle` |
+| `vite.config.js` plugin `lspb-cesium-static` and `dist/cesium/` | CesiumJS loads its workers and assets from `/cesium/` at run time (BUILD_PLAN rule 7: "static assets copied by the Vite build") |
+| `web/vercel.json`, `vercel.json` unchanged in P2 | The Cesium assets are written into `dist/` by the build, so the deploy needs no change |
 | `pipeline/out/` previews | Local, gitignored outputs of `04` and `06` |

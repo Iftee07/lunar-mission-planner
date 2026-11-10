@@ -44,6 +44,29 @@ The Local Lead confirmed that building before the event is allowed.
   rim, the connecting ridge and two Artemis III regions (NASA PGDA well-lit points); upcoming CLPS
   targets (NASA CLPS graphic). The validation sites now use them too.
 
+### Phase 2: the 3D globe (2026-11-11)
+
+- **The planner now opens on a 3D Moon you can spin, like Google Earth.** Drag to rotate, scroll or
+  pinch to zoom, right-drag to tilt; click anywhere to place the pin. Built with CesiumJS (Apache-2.0),
+  loaded only when the globe opens (about 1 MB).
+- **Sharp NASA imagery.** The LRO WAC global mosaic streams from NASA Moon Trek and gets sharper as you
+  zoom (about 83 m per pixel). Offline, or with `?offline=1`, a bundled NASA texture takes over and an
+  "Offline imagery" badge says so. Near the south pole our 120 m LOLA shading fades in ("South Pole HD").
+- **Real sunlight.** The globe is lit by the Sun's true direction at the selected time, so the day/night
+  line sweeps across the Moon when you drag the time or press Play. Markers show Earth's direction and
+  the points where the Sun and Earth are overhead.
+- **Mission pins and names.** 25 landing sites (Apollo, CLPS, Artemis III regions, other countries,
+  south-pole reference points), each from a cited official source. Hover a pin for its name, click it to
+  fly there and pick it; the sidebar shows the site's name. 1709 IAU crater and feature names appear by
+  size as you zoom in. A Layers menu toggles groups, names, a lat/lon grid and the South Pole HD overlay.
+- **Three views:** Globe, Polar HD (the 120 m south pole map) and Surface; `V` cycles them, "View from
+  here" opens the surface view, and "Open Polar HD map" appears when you look at the south pole.
+- Keyboard on the globe: arrows rotate, `+`/`-` zoom, Enter places the pin at the centre. Works at
+  360 px wide (fewer labels, credits behind "Data attribution").
+- First load with the globe open and no pin: 6.0 MB (budget 10 MB). 60 fps while rotating on a laptop.
+  83 tests pass (12 new: frame and picking, Sun lighting, imagery grid and fallback, label level of
+  detail, mission-pin sources).
+
 ### Earlier (before 2026-11-10)
 
 - South-pole landing site planner: Sun and Earth visibility from SPICE ephemeris and LOLA terrain
