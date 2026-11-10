@@ -38,7 +38,7 @@ The Local Lead confirmed that building before the event is allowed.
   maps of the south pole (for the Phase 3 map layers), an offline Moon texture and a South Pole HD
   overlay (for the Phase 2 globe), and 1709 IAU feature names for globe labels.
 - Validation extended: JPL Horizons at Apollo 11, Chang'e-4, Apollo 15 and in 2033-2035; Python
-  references for the global horizon and the metrics. 69 tests pass.
+  references for the global horizon and the metrics. 71 tests pass.
 
 ### Earlier (before 2026-11-10)
 
