@@ -27,3 +27,9 @@ pipeline/out/
 .idea/
 .DS_Store
 Thumbs.db
+
+# graphify knowledge graph (local; rebuilt by the post-commit hook)
+graphify-out/
+
+# graphify knowledge graph (local only, rebuilt by the post-commit hook)
+graphify-out/
