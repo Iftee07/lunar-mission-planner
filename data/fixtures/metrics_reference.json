@@ -1,0 +1,96 @@
+{
+ "cases": [
+  {
+   "set": "pins",
+   "lat": -89.5,
+   "lon": -45.0,
+   "timeUtc": "2026-11-01T00:00:00Z",
+   "missionH": 156.0,
+   "sunlitFraction": 0.0,
+   "earthFraction": 0.21612079326923078,
+   "bothFraction": 0.0,
+   "sunUpEarthDownH": 0,
+   "longestDarkH": 156.0,
+   "longestNoEarthH": 122.28515625,
+   "sunElevationNowDeg": 1.8901206656432308,
+   "sunElevationMinDeg": 1.3607158027543695,
+   "sunElevationMaxDeg": 1.8901206656432308,
+   "sunIntervals": [],
+   "earthIntervals": [
+    [
+     0.0,
+     33.71484375
+    ]
+   ]
+  },
+  {
+   "set": "pins",
+   "lat": -87.0,
+   "lon": 120.0,
+   "timeUtc": "2026-11-01T00:00:00Z",
+   "missionH": 156.0,
+   "sunlitFraction": 0.0,
+   "earthFraction": 0.0,
+   "bothFraction": 0.0,
+   "sunUpEarthDownH": 0,
+   "longestDarkH": 156.0,
+   "longestNoEarthH": 156.0,
+   "sunElevationNowDeg": -1.4430326509081601,
+   "sunElevationMinDeg": -1.4430326509081601,
+   "sunElevationMaxDeg": 1.7359231266453778,
+   "sunIntervals": [],
+   "earthIntervals": []
+  },
+  {
+   "set": "global_pins",
+   "lat": 0.67416,
+   "lon": 23.47314,
+   "timeUtc": "2027-03-10T06:00:00Z",
+   "missionH": 156.0,
+   "sunlitFraction": 0.5133964342948718,
+   "earthFraction": 1.0,
+   "bothFraction": 0.5133964342948718,
+   "sunUpEarthDownH": 0.0,
+   "longestDarkH": 75.91015625,
+   "longestNoEarthH": 0.0,
+   "sunElevationNowDeg": -39.190691553504145,
+   "sunElevationMinDeg": -39.190691553504145,
+   "sunElevationMaxDeg": 40.03719008578998,
+   "sunIntervals": [
+    [
+     75.91015625,
+     156.0
+    ]
+   ],
+   "earthIntervals": [
+    [
+     0.0,
+     156.0
+    ]
+   ]
+  },
+  {
+   "set": "global_pins",
+   "lat": -45.444,
+   "lon": 177.599,
+   "timeUtc": "2027-03-10T06:00:00Z",
+   "missionH": 156.0,
+   "sunlitFraction": 0.8113731971153846,
+   "earthFraction": 0.0,
+   "bothFraction": 0.0,
+   "sunUpEarthDownH": 126.57421875,
+   "longestDarkH": 29.42578125,
+   "longestNoEarthH": 156.0,
+   "sunElevationNowDeg": 38.82928153873041,
+   "sunElevationMinDeg": -10.532650795368049,
+   "sunElevationMaxDeg": 38.82928153873041,
+   "sunIntervals": [
+    [
+     0.0,
+     126.57421875
+    ]
+   ],
+   "earthIntervals": []
+  }
+ ]
+}
