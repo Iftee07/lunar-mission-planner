@@ -26,6 +26,7 @@ npm 11.5.1, Python 3 venv from `pipeline/requirements.txt`, Chrome (headless) fo
 | 2026-11-10 | 0 | `npm test`, end of phase | 5 files, 48 passed / 0 skipped / 0 failed (1 assertion added to the welcome test) | 0 failed | pass |
 | 2026-11-10 | 0 | `npm run build`, end of phase (raw / gzip) | entry `index` 381.93 / 123.44 kB (+0.16 kB: the challenge-name line on welcome slide 1); `Planner` 387.33 / 119.15 kB; `SurfacePanel` 566.72 / 143.30 kB; CSS 94.25 / 30.87 kB | builds | pass |
 | 2026-11-10 | 0 | Manual, `npm run preview` in headless Chrome at 1440×900 and 360×740 | Welcome shows the challenge name; Skip opens the planner; Enter on the focused map pins the centre (−89.99°); Sun / Earth / Landing cards fill; `V` opens the surface view (canvas present); no console errors; no horizontal scroll at 360 px | behaves as before | pass |
+| 2026-11-10 | 0 | Vercel project has Git LFS enabled (needed to deploy the real data files) | confirmed by the team in the Vercel dashboard; the deployed file sizes have not been checked yet | on | pass (human check) |
 
 Not re-run in Phase 0 (no engine, data or pipeline change): `07_horizon_reference.py` and
 `08_hours_reference.py`. Their fixtures are checked by `npm test` (JS vs Python horizon < 0.00001°,
