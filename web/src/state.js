@@ -34,8 +34,6 @@ export const VIEWS = ["globe", "polar", "surface"] // V cycles through them in t
 const QUARTER_H_MS = HOUR_MS / 4
 const nowQuarterHour = () => Math.floor(Date.now() / QUARTER_H_MS) * QUARTER_H_MS
 
-// Dev-only test harness (stripped from production builds): ?screen=app&pin=lat,lon&t=ISO&view=surface
-const devParams = () => (import.meta.env.DEV && typeof location !== "undefined" ? new URLSearchParams(location.search) : null)
 
 const emptyResults = {
   status: "idle", // idle | loading-data | computing | ready | error
@@ -63,7 +61,7 @@ export const useStore = create((set) => ({
   sunMode: "center", // "center" | "any_part" (Sun counted up while any part of the disc clears the horizon)
   missionH: MISSION_OPTIONS_H[0],
   view: "globe", // globe | polar (Polar HD map) | surface
-  screen: devParams()?.get("screen") === "app" ? "app" : "welcome", // welcome | app
+  screen: "welcome", // welcome | app (a shared link opens the app directly: urlSync.js)
   pin: null, // { lat, lon, groundM, terrainSource, resolutionM, x?, y?, site? } (x, y: polar stereographic, Polar HD
   // only; site: the curated site (sites.json row) when the pin was placed on one)
   focus: null, // { lat, lon, seq }: a request for the globe camera to fly there (site picked, coordinates typed)
@@ -408,8 +406,4 @@ function installDevHooks() {
     },
     state: () => useStore.getState(),
   }
-  const q = devParams()
-  if (q?.get("t")) window.lspb.setTimeUtc(q.get("t"))
-  if (q?.get("pin")) window.lspb.setPinLatLon(...q.get("pin").split(",").map(Number))
-  if (q?.get("view")) useStore.getState().setView(q.get("view"))
 }

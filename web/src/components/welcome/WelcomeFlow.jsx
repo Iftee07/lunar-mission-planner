@@ -126,18 +126,11 @@ const SLIDES = [
   },
 ]
 
-function devStartSlide() {
-  if (!import.meta.env.DEV || typeof location === "undefined") return 0
-  const n = Number(new URLSearchParams(location.search).get("slide"))
-  return n >= 1 && n <= SLIDES.length ? n - 1 : 0
-}
-
 // Three full-screen slides before the planner. Enter or Right goes forward, Left goes back,
 // "Skip" (every slide) and the last button open the planner (screen = "app").
 export default function WelcomeFlow() {
   const setScreen = useStore((s) => s.setScreen)
-  // Dev-only test harness: ?slide=2 opens on that slide (stripped from production builds).
-  const [[index, dir], setPage] = useState(() => [devStartSlide(), 1])
+  const [[index, dir], setPage] = useState([0, 1])
   const buttonRef = useRef(null)
   const scrollRef = useRef(null)
   useEffect(() => {
