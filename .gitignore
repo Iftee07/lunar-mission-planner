@@ -19,6 +19,9 @@ web/dist/
 pipeline/out/
 *_preview.png
 
+# Claude Code personal settings
+.claude/settings.local.json
+
 # Editors / OS
 .vscode/
 .idea/
