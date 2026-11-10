@@ -109,9 +109,19 @@ The site is deployed on Vercel straight from git, as a static Vite build:
    reference points); the Layers menu toggles groups, IAU crater and feature names, a lat/lon grid and the
    South Pole HD overlay's opacity. Double-click a feature name to fly to it. On a phone, a strip at the
    bottom shows the three ratings, and tapping it scrolls to the full cards.
+   **Search** (the app-bar button, or `Ctrl`+`K` / `⌘K`) lists every mission site by group with its
+   status (landed, planned, reference point, point in an Artemis III candidate region). It also takes
+   coordinates for any point on the Moon: `0.674N 23.473E`, `89.45S 137.3W` or `-89.45, 222.7` (signed
+   degrees, east longitude 0 to 360 accepted). Bad input gets a plain error ("Latitude must be between
+   90°S and 90°N"). Picking a result flies the globe there, or pans the Polar HD map if that is open.
 4. **Polar HD map.** Near the south pole, "Open Polar HD map" (or the Polar HD tab) switches to the 120 m
    map of 84°S to the pole. Click it (or focus it and press Enter) to place the pin; drag the pin to move
-   it. Named craters are outlined; hover to see a name, or hide them with the Craters button.
+   it. Named craters are outlined; hover to see a name, or hide them with the Craters button. The Layers
+   button adds three data layers, each with an opacity slider, a legend and a `?` naming its source:
+   **slope** (green under 8°, amber 8 to 10°, red over 10°: the Landing rating's limits), **average
+   sunlight** (percent of time sunlit, a long-term average) and **permanent shadow** (PSR). The cursor
+   readout shows their values under the pointer. "See slopes on the map" on the Landing card opens the
+   map with the slope layer on.
 5. **Read the cards.** Sun, Earth and Landing each have a rating badge; the `?` next to a badge explains
    the rule with the live numbers. Antenna height (2, 5, 10 or 15 m) changes the Earth results only.
 6. **Move through time.** The slider covers 29.5 days (one synodic month) after the start time; Play runs
@@ -120,6 +130,11 @@ The site is deployed on Vercel straight from git, as a static Vite build:
    and Surface) shows the sky from the pin: the terrain
    skyline, the Sun and Earth and their paths over the next 6.5 days. Drag or use the arrow keys to look
    around, wheel or `+`/`-` to zoom (pinch on a touch screen).
+8. **Share it.** The address bar always holds the current view: site or pin, time, antenna height,
+   mission length, view, map layers and camera (for example
+   `?site=shackleton_rim&t=2026-03-26T00:00Z&view=polar&layers=slope`). "Copy link" copies it. Opening
+   such a link skips the welcome slides and restores the view: when a schedule slips, send the
+   alternative site or date as a link.
 
 The layout adapts from phones (360 px wide, portrait or landscape) to large desktops; on touch screens
 the `?` rating explanations open with a tap.
@@ -171,9 +186,10 @@ stores it losslessly as `global_dem.bin` (a 2D predictor, byte planes and gzip: 
 
 Every result names its source and resolution on the site line ("Polar HD · 120 m" or "Global · ~1.9 km").
 
-Prepared for the Polar HD map layers (`13_build_illumination.py`): NASA's LOLA average-illumination map
-(percent of time sunlit) and its permanently shadowed regions (Mazarico et al. 2011), resampled onto the
-120 m grid as `illum_avg.png` and `psr.png`.
+Polar HD map layers (`13_build_illumination.py`): NASA's LOLA average-illumination map (percent of time
+sunlit) and its permanently shadowed regions (Mazarico et al. 2011), resampled onto the 120 m grid as
+`illum_avg.png` and `psr.png`. The slope layer is drawn in the browser from `slope_plane.bin`, the file
+the Landing card already uses. A web worker colours each layer once, on first use.
 
 ### Horizon
 
@@ -295,8 +311,12 @@ All numbers below were measured on this repository's generated data.
 | Globe picking: lat/lon -> position -> screen pick -> lat/lon (36 views, both poles, 180°E) | max 1.8 × 10⁻⁸° (tolerance 0.05°) |
 | Globe lighting: sub-solar point from the light direction vs the ephemeris (3 times, 2026-2035) | identical; the Sun is at 90.0000° elevation there |
 | Globe imagery vs IAU positions (Mare Crisium, Collins crater near Apollo 11, Shackleton) | the names sit on their features (checked on screen) |
+| Slope layer colours vs the Landing rating (0° to 20° in 0.05° steps; real pixels) | green exactly where Landing says "Possible"; pixel value = the card's value at pixel centres |
+| Polar HD layers at Shackleton (cursor readout) | floor: 0% sunlit, permanent shadow; rim: 80% sunlit, slope 3.3° |
+| Typed coordinates (26 cases: signed, N/S/E/W, 0-360 east, errors) | all parse or fail as expected |
+| Shareable link: store -> URL -> store, and reload in the browser | same state; same URL after a reload |
 
-Run them yourself: `npm test` in `web/` (83 tests) and the `05` to `08` pipeline scripts. The full
+Run them yourself: `npm test` in `web/` (132 tests) and the `05` to `08` pipeline scripts. The full
 history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 ## Known limits

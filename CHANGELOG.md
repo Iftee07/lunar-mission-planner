@@ -67,6 +67,27 @@ The Local Lead confirmed that building before the event is allowed.
   83 tests pass (12 new: frame and picking, Sun lighting, imagery grid and fallback, label level of
   detail, mission-pin sources).
 
+### Phase 3: sites, search, coordinates, shareable links (2026-11-11)
+
+- **Search** (button in the top bar, or `Ctrl`+`K` / `⌘K`): every mission site, grouped by category with
+  its status (landed, planned, reference point, point in an Artemis III candidate region). Picking one flies
+  the globe there, or pans the Polar HD map if that is open.
+- **Go anywhere by typing coordinates** in the same box: `0.674N 23.473E`, `89.45S 137.3W` or
+  `-89.45, 222.7`. Mistakes get a plain message, for example "Latitude must be between 90°S and 90°N".
+- **Polar HD map layers**: slope (green under 8°, amber 8 to 10°, red over 10°, the Landing rating's limits),
+  average sunlight and permanent shadow, both from NASA's LOLA illumination maps. Each layer has an
+  opacity slider, a legend, a `?` with its source and time span, and its value under the cursor. Layers
+  fade in and out. "See slopes on the map" on the Landing card opens the map with the slope layer on.
+- **Shareable links**: the address bar always describes the current view (site or pin, time, antenna,
+  mission length, view, layers, camera). "Copy link" copies it, and opening it restores the view and skips
+  the welcome slides. When a schedule slips, send the alternative as a link. The compare list joins the
+  link in Phase 4.
+- The 25 mission sites are unchanged and all verified against their cited sources (Phase 2).
+- Removed the developer-only URL options `?screen=app` and `?slide=`. `?pin`, `?t` and `?view` now work
+  in every build, and any planner parameter opens the planner.
+- First load is still 6.0 MB with the globe open (budget 10 MB). 132 tests pass (49 new: coordinate parser,
+  search, map layers, link round trip).
+
 ### Earlier (before 2026-11-10)
 
 - South-pole landing site planner: Sun and Earth visibility from SPICE ephemeris and LOLA terrain

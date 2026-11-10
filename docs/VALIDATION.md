@@ -131,3 +131,35 @@ Protocol, at 1440 × 900 (globe canvas 1034 × 685 CSS px) and at 360 × 740 (ph
 
 Not re-run in Phase 2 (no engine, ephemeris or terrain change): pipeline `05`-`08`. Their fixtures are
 checked by `npm test`, which passed.
+
+## Phase 3 — 2026-11-11
+
+Browser checks ran in Chrome (headless, real GPU through ANGLE / Direct3D 11) over the DevTools Protocol against
+`npm run preview`, at 1440 × 900 and at 360 × 740 (phone emulation, DPR 2).
+
+| Date | Phase | Check | Value | Tolerance / budget | Result |
+|---|---|---|---|---|---|
+| 2026-11-11 | 3 | Every site has a source, unique id, lat/lon in range (`sites.json`, unchanged since Phase 2) | 25 of 25 verified (list in the Phase 3 report); test in `globe.test.js` | all | pass |
+| 2026-11-11 | 3 | Typed-coordinate parser (`coords.test.js`) | 26 cases: signed decimals, 0-360 east, N/S/E/W after or before the numbers, either order, degree signs, unicode minus, poles and 180°; errors for empty, words, 1 or 3 numbers, latitude > 90, longitude > 360 or W > 180, two latitudes, two longitudes, sign plus letter, malformed numbers | ≥ 12 cases | pass |
+| 2026-11-11 | 3 | Slope layer colours vs the Landing rating | green exactly where `rateLanding` says Possible, 0° to 20° in 0.05° steps; amber 8° to 10° inclusive, red above; the layer's pixel value equals the card's bilinear value at pixel centres (real `slope_plane.bin`) | same thresholds (rule 8) | pass |
+| 2026-11-11 | 3 | URL round trip (`urlState.test.js`) | store -> URL -> store restores time (to the minute), antenna, mission, Sun mode, view, layers, globe camera (4 decimals, 10 m) and the pin (site id, or 6 decimals = 0.03 m); defaults left out; bad values ignored one by one; no planner key -> welcome stays | restores | pass |
+| 2026-11-11 | 3 | Shared link in the browser: `?site=apollo11&t=2026-03-26T00:00Z&ant=10` | no welcome slides; sidebar "Apollo 11", Global · ~1.9 km, antenna 10 m pressed; the camera flies there and `cam=0.6742,23.4731,400,…` is added | restores | pass |
+| 2026-11-11 | 3 | Reload and copied link reopen the same view | Polar HD pin + slope layer: URL identical after reload; "Copy link" (clipboard permission granted) copied `?site=im2&t=2027-01-05T12:00Z&mission=336&cam=…`, which reopened IM-2 Athena with the identical URL | same URL | pass |
+| 2026-11-11 | 3 | Copy link feedback | "Copied" + drawn check mark, back to "Copy link" after 1.8 s; without clipboard access (unfocused headless page) it says "Copy failed … the link is in the address bar" | feedback | pass |
+| 2026-11-11 | 3 | Search (`Ctrl`+`K`) | "shackleton rim" -> one result in group "South-pole reference", Enter pins it (Polar HD · 120 m) and the globe flies there; "shack" lists Peak Near Shackleton (Artemis III) then the two reference points | works | pass |
+| 2026-11-11 | 3 | Typed coordinates in search | `0.674N 23.473E` -> "Go to 0.6740 N, 23.4730 E · Global terrain"; pin at 0.6740 N 23.4730 E. `-89.45, 222.7` -> pin 89.4500 S, 222.7000 E on Polar HD · 120 m, URL `pin=-89.45,-137.3`. `91, 0` -> "Latitude must be between 90°S and 90°N" | parses, clear errors | pass |
+| 2026-11-11 | 3 | Search while Polar HD is open | Connecting ridge: the map pans there (map view changes, view stays polar); Apollo 15 (outside 84°S): switches to the globe | pans / flies | pass |
+| 2026-11-11 | 3 | Polar HD layers render (worker), all three from a link | 3 overlays of 3038 × 3038 px within 2.2 s of opening the link, including the polar tier download (local preview); opacity 0.7 / 0.8 / 0.7; CSS transition 0.2 s; drawing order sunlight, PSR, slope | off the main thread | pass |
+| 2026-11-11 | 3 | Value under the cursor | at Shackleton's floor (pole): "sunlit 0% of the time   permanent shadow   slope 9.1°"; on the rim pin: "sunlit 80% … not PSR   slope 3.3°"; on the connecting ridge: "sunlit 43% … not PSR   slope 5.6°" (Shackleton floor PSR and 0% sunlit match `13_build_illumination.py`'s own check) | plausible, matches source | pass |
+| 2026-11-11 | 3 | Landing card "See slopes on the map" | opens Polar HD with only the slope layer on, centred on the pin (zoom -1) | works | pass |
+| 2026-11-11 | 3 | 360 px phone | no horizontal scroll (scrollWidth 360); app bar buttons inside 360 px; Layers popover 0-320 px; search dialog 16-344 px, input focused, 6 Apollo results | works | pass |
+| 2026-11-11 | 3 | Console errors during all browser checks | none | 0 | pass |
+| 2026-11-11 | 3 | `npm run lint` | 0 warnings, 0 errors | clean | pass |
+| 2026-11-11 | 3 | `npm test` | 12 files, 132 passed / 0 skipped / 0 failed (+49: `coords` 26, `siteSearch` 5, `polarLayers` 9, `urlState` 9) | 0 failed | pass |
+| 2026-11-11 | 3 | `npm run build` (raw / gzip) | entry `index` 399.03 / 130.05 kB (Phase 2: 390.48); `Planner` 414.54 / 127.39 kB (391.30); `SurfacePanel` 566.71 / 143.27 kB; `GlobePanel` (Cesium) 3,943.84 / 1,048.43 kB; `polarLayers.worker` 1.70 kB; one size warning, for the lazy Cesium chunk only | builds | pass |
+| 2026-11-11 | 3 | **First-load transfer, welcome screen** (cache off, same method as Phase 0) | 4.61 MB, 11 requests | ≤ 10 MB | pass |
+| 2026-11-11 | 3 | **First-load transfer, planner opened (globe), no pin** | **5.98 MB** in 23 requests, imagery tiles excluded; plus 24 Moon Trek tiles (1.19 MB). The layers add nothing here: the PNGs load with the polar tier, the slope layer reuses `slope_plane.bin` | ≤ 10 MB | pass |
+| 2026-11-11 | 3 | Copy link on the deployed (HTTPS) site, a real phone, a screen reader | not checked: Vercel deploys from `main` after the human's go; no phone or screen reader in this session | — | not checked |
+
+Not re-run in Phase 3 (no engine, ephemeris, terrain or site-data change): pipeline `05`-`08` and `11`. Their
+fixtures and `sites.json` are checked by `npm test`, which passed.

@@ -50,11 +50,13 @@ files in `src/components/ui/` are imported, all 15 dependencies and 7 dev depend
 | P2 | [x] `MapPanel.jsx` + `map/map.js` | Done: renamed (git mv) to `PolarHdPanel.jsx` and `view/polarMap.js` (`createPolarMap`), view id `polar`; `src/map/` is gone |
 | P2 | [x] `setPinLatLon` in `state.js` (dev hook only for now) | Done: exported; the globe calls it on click, and `goToLatLon` (pins + fly-to) on mission pins (P3 typed coordinates will too) |
 | P2 | [x] `globe` data tier (`engine/data.js`) returns URLs nobody reads yet | Done: `globe.js` uses `fallbackTextureUrl`, `southPoleHdUrl`, `featuresUrl` and the new `sitesUrl` |
-| P3 | [ ] `polar` tier `layerUrls` (`illum_avg.png`, `psr.png`) not shown yet | Polar HD map layers (P3.4) |
+| P3 | [x] `polar` tier `layerUrls` (`illum_avg.png`, `psr.png`) not shown yet | Done: Polar HD map layers (P3.4) read them through `PolarHdPanel` -> `createPolarMap` `layerData` |
 | P3 | [x] `pipeline/data/sites_source.csv` (25 verified official sites, written early) has no builder yet | Done early in P2 (the mission pins need it): `11_build_sites.py` writes `sites.json`. P3 adds search on top |
 | P5 | [ ] `results.metrics` (mission metrics, next windows) not shown yet | Cards, countdowns, timeline and Details list |
 | P2 | [x] `ViewToggle` `Map \| Surface` | Done: same component, `Globe \| Polar HD \| Surface`; `V` cycles (Planner) |
-| P3 | [ ] Dev-only URL parsing: `devParams` in `state.js` (`?screen&pin&t&view`) and `devStartSlide` (`?slide=`) in `WelcomeFlow.jsx` | Production URL state; delete the dev-only parsers, don't keep both |
+| P3 | [x] Dev-only URL parsing: `devParams` in `state.js` (`?screen&pin&t&view`) and `devStartSlide` (`?slide=`) in `WelcomeFlow.jsx` | Done: both deleted (`chore: remove the dev-only URL parsers`); `urlSync.js` + `lib/urlState.js` handle `pin`, `t`, `view` and the rest in every build |
+| P3 | [x] `globe.js` fetched `sites.json` itself (search needs the same list) | Done: `loadSites()` in `state.js` loads and validates once; the globe receives the pins; `onSites` callback deleted |
+| P3 | [x] `Check` checkbox row local to `GlobePanel.jsx` (the Polar HD Layers popover needs the same) | Done: shared `components/CheckRow.jsx` |
 | P5 | [ ] `TimeBar.jsx` slider and Play | `TimelineStrip` playhead: **one** time control. `PLAY_SPEEDS_H_PER_S` changes from `[6, 12, 24, 72]` to `[1, 6, 24, 72]` |
 | P5 | [ ] `MobileSummary.jsx` (phone ratings strip) | Merged into the new card summaries, or removed |
 | P5 | [ ] Sun/Earth card logic | Countdowns and metrics go into the shared `BodyCard`, not into `SunCard`/`EarthCard` separately |
