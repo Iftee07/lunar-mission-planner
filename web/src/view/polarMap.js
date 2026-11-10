@@ -252,7 +252,8 @@ export function createPolarMap(container, opts) {
 
   function renderLayer(id) {
     const st = layers[id]
-    const base = { kind: id, width: g.width, height: g.height, colors: layerColors() }
+    const disc = { ...geom, radiusM: rhoForLat(MAP_EDGE_LAT, R) } // clip to the map disc, like the hillshade
+    const base = { kind: id, width: g.width, height: g.height, colors: layerColors(), disc }
     let msg
     if (id === "slope") {
       const sg = layerData.slope

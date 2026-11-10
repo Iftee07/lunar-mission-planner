@@ -57,6 +57,13 @@ describe("sunlight and permanent-shadow layers", () => {
     expect(px(psr, 1)).toEqual([0, 0, 0, 0])
     expect(px(psr, 2)).toEqual([0, 0, 0, 0])
   })
+  test("clipped to the map disc: corner pixels of the square grid stay transparent", () => {
+    // 3 x 3 grid of 100 m pixels centred on the pole; disc radius 120 m keeps the centre and the edge midpoints
+    const disc = { width: 3, xMin: -150, yMax: 150, pixelM: 100, radiusM: 120 }
+    const rgba = colorizeLayer("slope", new Uint8Array(9), { colors, scale: 0.25, nodata: 255, disc })
+    const alpha = Array.from({ length: 9 }, (_, i) => rgba[4 * i + 3])
+    expect(alpha).toEqual([0, 255, 0, 255, 255, 255, 0, 255, 0])
+  })
   test("theme colours parse", () => {
     expect(hexToRgb("#60a5fa")).toEqual([96, 165, 250])
     expect(() => hexToRgb("blue")).toThrow()

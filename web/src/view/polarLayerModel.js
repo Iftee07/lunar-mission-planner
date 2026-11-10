@@ -47,7 +47,9 @@ export function hexToRgb(hex) {
 // RGBA image of a layer. values: Uint8Array (slope: raw slope bytes, degrees = value * scale, nodata `nodata`;
 // sunlight: percent; psr: 1/0). colors: { ok, warn, bad, sunLow, sunHigh, psr } as [r, g, b].
 // No data and "not PSR" pixels are transparent; opacity is applied by the map, not here.
-export function colorizeLayer(kind, values, { colors, scale = 1, nodata = LAYER_NODATA }) {
+// disc: { width, xMin, yMax, pixelM, radiusM } clips to the map disc (84 S): pixels whose centre is farther
+// from the pole than radiusM stay transparent (the square slope grid has data in its corners).
+export function colorizeLayer(kind, values, { colors, scale = 1, nodata = LAYER_NODATA, disc = null }) {
   const out = new Uint8ClampedArray(values.length * 4)
   const put = (i, c) => {
     out[4 * i] = c[0]
@@ -55,9 +57,15 @@ export function colorizeLayer(kind, values, { colors, scale = 1, nodata = LAYER_
     out[4 * i + 2] = c[2]
     out[4 * i + 3] = 255
   }
+  const r2 = disc ? disc.radiusM ** 2 : Infinity
   for (let i = 0; i < values.length; i++) {
     const v = values[i]
     if (v === nodata) continue
+    if (disc) {
+      const x = disc.xMin + ((i % disc.width) + 0.5) * disc.pixelM
+      const y = disc.yMax - (Math.floor(i / disc.width) + 0.5) * disc.pixelM
+      if (x * x + y * y > r2) continue
+    }
     if (kind === "slope") put(i, colors[slopeBand(v * scale)])
     else if (kind === "psr") {
       if (v === 1) put(i, colors.psr)
