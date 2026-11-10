@@ -8,6 +8,8 @@ sky from the site as a line drawing, a calendar of days with Earth in view, and 
 Everything runs on your machine. The app makes no network requests at runtime: all data is generated
 once by a Python pipeline and served from `web/public/data/`.
 
+- Built for the NASA Space Apps 2026 challenge **Lunar Landing Site Navigator**. Changes are listed
+  in [CHANGELOG.md](CHANGELOG.md).
 - Region: 84°S to the pole. Dates: 2026-01-01 to 2030-12-31 (UTC).
 - Ratings are tuned for a 6.5-day crewed-class surface stay (NASA Artemis III).
 - Licence: Apache-2.0 (see [LICENSE](LICENSE)).
@@ -15,6 +17,7 @@ once by a Python pipeline and served from `web/public/data/`.
 ## Contents
 
 - [Quick start](#quick-start)
+- [Deploy](#deploy)
 - [Using the app](#using-the-app)
 - [Method](#method)
 - [Ratings](#ratings)
@@ -59,6 +62,18 @@ Other web commands (run in `web/`):
 
 Only steps 01, 03 and 09 use the network, and each caches what it downloads in `data/raw/` or
 `data/fixtures/`.
+
+## Deploy
+
+The site is deployed on Vercel straight from git, as a static Vite build:
+
+- `vercel.json` (repo root) declares one service, `web`, with root `web/` and framework `vite`, and
+  rewrites every path (`/(.*)`) to that service.
+- `web/vercel.json` gives the build: `npm ci`, then `npm run build`, serving `web/dist/`.
+- The generated data in `web/public/data/` (`*.bin`, `*.png`) is committed through **Git LFS**
+  (`.gitattributes`), because the pipeline needs about 10 GB of raw downloads and can't run on
+  Vercel. The Vercel project must have Git LFS enabled, or the build ships ~130-byte pointer files
+  instead of the data. After re-running the pipeline, commit the new data files to deploy them.
 
 ## Using the app
 
