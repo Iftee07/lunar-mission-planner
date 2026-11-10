@@ -65,6 +65,8 @@ Only steps 01, 03 and 09 use the network, and each caches what it downloads in `
 
 ## Deploy
 
+Live site: https://lunar-mission-planner.vercel.app/ (deployed from `main`).
+
 The site is deployed on Vercel straight from git, as a static Vite build:
 
 - `vercel.json` (repo root) declares one service, `web`, with root `web/` and framework `vite`, and
