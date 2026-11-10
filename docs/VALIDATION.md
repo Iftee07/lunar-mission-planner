@@ -154,6 +154,7 @@ Browser checks ran in Chrome (headless, real GPU through ANGLE / Direct3D 11) ov
 | 2026-11-11 | 3 | Landing card "See slopes on the map" | opens Polar HD with only the slope layer on, centred on the pin (zoom -1) | works | pass |
 | 2026-11-11 | 3 | 360 px phone | no horizontal scroll (scrollWidth 360); app bar buttons inside 360 px; Layers popover 0-320 px; search dialog 16-344 px, input focused, 6 Apollo results | works | pass |
 | 2026-11-11 | 3 | Globe zoom (follow-up to the human's report "touchpad zoom does not work") | from 6000 km: mouse wheel (spaced like a real wheel) -> 1345 km; Ctrl + wheel, which is how a touchpad pinch arrives, -> 107 km with the page zoom unchanged (it zoomed nothing before the fix); new + / − buttons: 107 -> 36 -> 70 km | zooms | pass |
+| 2026-11-11 | 3 | Mission-site markers on the Polar HD map (follow-up request) | 6 markers for the 7 sites south of 84°S (Griffin Mission-1 and IM-4 share Mons Mouton, -84.6, 31.0); group colours as on the globe; focusable (tabIndex 0, role button, labelled); hover tooltip "Connecting ridge … / South-pole reference · reference point"; click picks it (Polar HD · 120 m, `site=connecting_ridge`); the Layers checkbox hides them | as on the globe | pass |
 | 2026-11-11 | 3 | Console errors during all browser checks | none | 0 | pass |
 | 2026-11-11 | 3 | `npm run lint` | 0 warnings, 0 errors | clean | pass |
 | 2026-11-11 | 3 | `npm test` | 12 files, 132 passed / 0 skipped / 0 failed (+49: `coords` 26, `siteSearch` 5, `polarLayers` 9, `urlState` 9) | 0 failed | pass |

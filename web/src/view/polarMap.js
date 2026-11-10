@@ -7,6 +7,7 @@ import { readTheme } from "@/lib/theme.js"
 import { clipRingToDisc, craterAt, rimPoints } from "@/engine/craters.js"
 import { sampleBilinear } from "@/engine/data.js"
 import { project, rhoForLat } from "@/engine/projection.js"
+import { statusText } from "@/lib/siteSearch.js"
 import { LAYER_IDS, POLAR_LAYERS, hexToRgb, layerReadout, pixelAt } from "./polarLayerModel.js"
 
 const UNIT_M = 100
@@ -32,11 +33,13 @@ function label(latlng, text, cls) {
 //   layerData        { slope: slope grid (engine/data.js createSlope), sunlightUrl, psrUrl } for the data layers
 //   onPick(x, y)     -> true if accepted;   describe(x, y) -> { lat, lon, groundM } | null
 //   onLayerStatus(id, status, error?)   "loading" | "ready" | "error" while a layer renders (first use only)
+//   onSelectSite(site)   click / Enter on a mission-site marker (a sites.json row)
 //   onMapView({ x, y, zoom })   map centre (projected metres) and zoom after each move (shareable link)
 export function createPolarMap(container, opts) {
   const { manifest, hillshadeUrl, layerData, onPick, describe } = opts
   const onLayerStatus = opts.onLayerStatus || (() => {})
   const onMapView = opts.onMapView || (() => {})
+  const onSelectSite = opts.onSelectSite || (() => {})
   const theme = readTheme()
   const R = manifest.moon_radius_m
   const g = manifest.grids.near
@@ -227,6 +230,54 @@ export function createPolarMap(container, opts) {
     if (untouched) setBounds()
   })
 
+  // --- Mission sites on the map (state.js loadSites(): [{ site, group }]), coloured by group as on the globe ---
+  // Sites at the same coordinates share one marker (e.g. two missions to one target); clicking it picks the
+  // first. Markers are focusable (Tab) and Enter picks, like a click. They sit above crater labels, under the pin.
+  const siteGroup = L.layerGroup()
+  function setSites(pins) {
+    siteGroup.clearLayers()
+    const byPlace = new Map()
+    for (const p of pins) {
+      if (p.site.lat > MAP_EDGE_LAT) continue
+      const key = `${p.site.lat},${p.site.lon}`
+      if (!byPlace.has(key)) byPlace.set(key, [])
+      byPlace.get(key).push(p)
+    }
+    for (const list of byPlace.values()) {
+      const { site, group } = list[0]
+      const { x, y } = project(site.lat, site.lon, R)
+      const dot = document.createElement("span")
+      dot.className = "lspb-site-dot"
+      dot.style.background = `var(--lspb-${group.token})`
+      const tip = document.createElement("div")
+      for (const { site: s, group: g } of list) {
+        const name = document.createElement("strong")
+        name.textContent = s.name
+        const detail = document.createElement("div")
+        detail.textContent = [g.label, statusText(s), s.verified ? null : "unverified"].filter(Boolean).join(" · ")
+        tip.append(name, detail)
+      }
+      const label = list.map((q) => q.site.name).join(", ")
+      const marker = L.marker(toLatLng(x, y), {
+        icon: L.divIcon({ className: "lspb-site-marker", html: dot, iconSize: [16, 16], iconAnchor: [8, 8] }),
+        keyboard: true,
+        zIndexOffset: -500,
+      })
+      marker.bindTooltip(tip, { direction: "top", offset: [0, -8], className: "lspb-site-tooltip" })
+      marker.on("add", () => {
+        const el = marker.getElement()
+        el.setAttribute("role", "button")
+        el.setAttribute("aria-label", `Mission site: ${label}`)
+      })
+      marker.on("click", () => onSelectSite(site))
+      siteGroup.addLayer(marker)
+    }
+  }
+  function setSitesVisible(on) {
+    if (on) siteGroup.addTo(map)
+    else siteGroup.remove()
+  }
+
   // --- Data layers (slope, average sunlight, permanent shadow) ---
   // Each is rendered once, on first use, by a worker into a PNG over the near grid; toggling and opacity only
   // change the overlay's opacity, which CSS fades (.lspb-layer, 200 ms; none under reduced motion).
@@ -319,6 +370,8 @@ export function createPolarMap(container, opts) {
     setPin,
     panTo,
     setLayer,
+    setSites,
+    setSitesVisible,
     // Restore a shared link's map view (no animation).
     setMapView: ({ x, y, zoom }) => map.setView(toLatLng(x, y), zoom, { animate: false }),
     setCraterLayer,

@@ -11,7 +11,7 @@ import { POLAR_HD_LAT_LIMIT_DEG } from "@/engine/terrain.js"
 import { project } from "@/engine/projection.js"
 import { createPolarMap } from "@/view/polarMap.js"
 import { LAYER_IDS, POLAR_LAYERS } from "@/view/polarLayerModel.js"
-import { describeXY, ensureTier, getEngineData, pickXY, useStore } from "@/state.js"
+import { describeXY, ensureTier, getEngineData, loadSites, pickXY, selectPlace, useStore } from "@/state.js"
 
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
@@ -149,7 +149,7 @@ function LayerRow({ layer, state, status, info }) {
 }
 
 // Layers popover of the Polar HD map: toggle, opacity, legend and "?" for each data layer.
-function LayersMenu({ manifest, statuses }) {
+function LayersMenu({ manifest, statuses, sites }) {
   const layers = useStore((s) => s.layers)
   const count = LAYER_IDS.filter((id) => layers[id].on).length
   return (
@@ -161,6 +161,13 @@ function LayersMenu({ manifest, statuses }) {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="max-h-[min(34rem,70dvh)] w-80 max-w-[calc(100vw-2rem)] space-y-2.5 overflow-y-auto text-sm">
+        <section className="space-y-1" aria-label="Mission sites">
+          <CheckRow checked={sites.on} onChange={sites.setOn}>
+            <span className="font-medium">Mission sites</span>
+            <span className="font-mono text-xs text-muted-foreground tabular-nums">{sites.count}</span>
+          </CheckRow>
+          <p className="text-xs text-muted-foreground">Sites south of 84°S, coloured by group as on the globe. Hover for the name; click to pick it.</p>
+        </section>
         {[...POLAR_LAYERS].reverse().map((layer) => (
           <LayerRow key={layer.id} layer={layer} state={layers[layer.id]} status={statuses[layer.id]} info={layerInfo(layer.id, manifest)} />
         ))}
@@ -175,11 +182,15 @@ function LayersMenu({ manifest, statuses }) {
 export default function PolarHdPanel({ active }) {
   const containerRef = useRef(null)
   const apiRef = useRef(null)
+  const sitesOnRef = useRef(true) // read when the sites arrive (async)
   const shownRef = useRef(false) // the current map has been visible at least once
   const polarReady = useStore((s) => s.tiers.polar.status === "ready")
   // Mirrors the map module's crater visibility (the map module owns it; not part of the store).
   const [cratersOn, setCratersOn] = useState(true)
   const [layerStatus, setLayerStatus] = useState({}) // id -> { status, error }
+  // Mission-site markers: visibility mirrors the map module (not part of the store); count = sites on the map
+  const [sitesOn, setSitesOn] = useState(true)
+  const [siteCount, setSiteCount] = useState(0)
 
   // Opening the Polar HD map loads its data tier (once).
   useEffect(() => {
@@ -198,10 +209,17 @@ export default function PolarHdPanel({ active }) {
       describe: describeXY,
       onLayerStatus: (id, status, error) => setLayerStatus((s) => ({ ...s, [id]: { status, error } })),
       onMapView: (v) => useStore.getState().setCamera("polar", v),
+      onSelectSite: (site) => selectPlace(site.lat, site.lon, site).catch(() => {}), // errors show in <DataStatus>
     })
     apiRef.current = api
     shownRef.current = false
     api.setCraterLayer(data.polar.craters, true)
+    loadSites().then((pins) => {
+      if (apiRef.current !== api) return
+      api.setSites(pins)
+      api.setSitesVisible(sitesOnRef.current)
+      setSiteCount(pins.filter((p) => p.site.lat <= POLAR_HD_LAT_LIMIT_DEG).length)
+    })
     setCratersOn(api.getCratersVisible())
     const s0 = useStore.getState()
     api.setPin(s0.pin)
@@ -258,7 +276,19 @@ export default function PolarHdPanel({ active }) {
           >
             <CircleDashed /> <span className="hidden sm:inline">Craters</span>
           </Toggle>
-          <LayersMenu manifest={getEngineData().manifest} statuses={layerStatus} />
+          <LayersMenu
+            manifest={getEngineData().manifest}
+            statuses={layerStatus}
+            sites={{
+              on: sitesOn,
+              count: siteCount,
+              setOn: (on) => {
+                sitesOnRef.current = on
+                setSitesOn(on)
+                apiRef.current?.setSitesVisible(on)
+              },
+            }}
+          />
         </div>
       )}
       {active && <DataStatus tier="polar" />}

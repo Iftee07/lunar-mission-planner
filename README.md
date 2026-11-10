@@ -117,8 +117,10 @@ The site is deployed on Vercel straight from git, as a static Vite build:
    90°S and 90°N"). Picking a result flies the globe there, or pans the Polar HD map if that is open.
 4. **Polar HD map.** Near the south pole, "Open Polar HD map" (or the Polar HD tab) switches to the 120 m
    map of 84°S to the pole. Click it (or focus it and press Enter) to place the pin; drag the pin to move
-   it. Named craters are outlined; hover to see a name, or hide them with the Craters button. The Layers
-   button adds three data layers, each with an opacity slider, a legend and a `?` naming its source:
+   it. Named craters are outlined; hover to see a name, or hide them with the Craters button. Mission sites
+   south of 84°S are marked in their globe colours (hover for the name, click or Tab + Enter to pick one;
+   two missions aimed at the same point share a marker). The Layers button hides them and adds three data
+   layers, each with an opacity slider, a legend and a `?` naming its source:
    **slope** (green under 8°, amber 8 to 10°, red over 10°: the Landing rating's limits), **average
    sunlight** (percent of time sunlit, a long-term average) and **permanent shadow** (PSR). The cursor
    readout shows their values under the pointer. "See slopes on the map" on the Landing card opens the

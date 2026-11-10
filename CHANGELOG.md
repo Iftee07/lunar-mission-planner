@@ -78,6 +78,9 @@ The Local Lead confirmed that building before the event is allowed.
   average sunlight and permanent shadow, both from NASA's LOLA illumination maps. Each layer has an
   opacity slider, a legend, a `?` with its source and time span, and its value under the cursor. Layers
   fade in and out. "See slopes on the map" on the Landing card opens the map with the slope layer on.
+- **Mission sites on the Polar HD map**: the sites south of 84°S (IM-2, Griffin and IM-4, the two Artemis III
+  points, Shackleton rim, the connecting ridge) appear as markers in their globe colours. Hover for the name,
+  click to pick one; a checkbox in Layers hides them.
 - **Shareable links**: the address bar always describes the current view (site or pin, time, antenna,
   mission length, view, layers, camera). "Copy link" copies it, and opening it restores the view and skips
   the welcome slides. When a schedule slips, send the alternative as a link. The compare list joins the

@@ -210,6 +210,39 @@
   pointer-events: none;
   text-shadow: 0 0 3px var(--lspb-bg), 0 0 3px var(--lspb-bg);
 }
+/* Mission-site markers on the Polar HD map (view/polarMap.js); fill colour set inline from the group token */
+.lspb-site-marker {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  outline: none;
+}
+.lspb-site-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--lspb-bg);
+  box-shadow: 0 0 0 1px var(--lspb-line);
+}
+.lspb-site-marker:focus-visible .lspb-site-dot {
+  box-shadow: 0 0 0 2px var(--lspb-focus);
+}
+.leaflet-tooltip.lspb-site-tooltip {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+.leaflet-tooltip.lspb-site-tooltip div {
+  color: var(--muted-foreground);
+}
+.leaflet-tooltip-top.lspb-site-tooltip::before {
+  border-top-color: var(--border);
+}
 /* Polar HD data layers (view/polarMap.js): fade in and out */
 .lspb-layer {
   transition: opacity 200ms ease-out;
