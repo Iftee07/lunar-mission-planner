@@ -31,7 +31,7 @@ function EmptyState() {
   )
 }
 
-// Right sidebar (PRD v3 section 4): Site line, then Sun, Earth, Landing, Antenna cards.
+// Right sidebar: Site line, then Sun, Earth, Landing, Antenna cards.
 export default function Sidebar() {
   const dataReady = useStore((s) => s.dataReady)
   const dataError = useStore((s) => s.dataError)

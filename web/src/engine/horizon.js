@@ -1,4 +1,4 @@
-// Terrain horizon (PRD section 5.4). Plain ES module, no React; runs inside horizon.worker.js.
+// Terrain horizon. Plain ES module, no React; runs inside horizon.worker.js.
 
 import { sampleBilinear } from "./data.js"
 import { MOON_RADIUS_M } from "./geometry.js"

@@ -122,7 +122,7 @@ export async function loadAll(base = "/data/", onProgress = () => {}) {
     ),
   )
   const slopeGrid = g[manifest.slope.grid || "near"]
-  // Named craters (Phase 9b) are a display-only layer: if the file is missing the app still works.
+  // Named craters are a display-only layer: if the file is missing the app still works.
   const craters = manifest.craters
     ? await fetch(base + manifest.craters.file)
         .then((r) => (r.ok ? r.json() : []))

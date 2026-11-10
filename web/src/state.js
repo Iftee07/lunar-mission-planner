@@ -1,4 +1,4 @@
-// App state (PRD section 4): one Zustand store plus a compute controller.
+// App state: one Zustand store plus a compute controller.
 // User-editable fields are exactly those of section 4. Computed values live in `results`.
 // Large arrays (ephemeris, DEMs) stay in module scope (`engineData`), never in React state.
 
@@ -44,7 +44,7 @@ const emptyResults = {
 }
 
 export const useStore = create((set) => ({
-  // --- user-editable state (PRD section 4) ---
+  // --- user-editable state ---
   baseTimeUtcMs: defaultBaseTime(),
   sliderOffsetH: 0,
   antennaM: ANTENNA_DEFAULT_M,
@@ -150,7 +150,7 @@ function slopeAt(pin) {
   }
 }
 
-// Two horizons per pin (PRD v3 section 2): Sun at SUN_REFERENCE_HEIGHT_M (pin change only),
+// Two horizons per pin: Sun at SUN_REFERENCE_HEIGHT_M (pin change only),
 // Earth at antennaM (pin or antenna change). `which` = { sun, earth } selects what to recompute.
 async function recomputeHorizons(which) {
   const { pin, antennaM } = useStore.getState()

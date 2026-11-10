@@ -1,4 +1,4 @@
-// Site geometry (PRD section 5.2). Plain ES module, no React.
+// Site geometry. Plain ES module, no React.
 // Vectors are Moon-centred, MOON_ME frame. Body vectors in km, heights in metres.
 
 export const MOON_RADIUS_M = 1737400

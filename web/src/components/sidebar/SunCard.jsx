@@ -4,7 +4,7 @@ import BodyCard from "./BodyCard"
 import { MetricRow } from "./MetricCard"
 import RatingBadge, { TipLive, TipNote, TipRule } from "./RatingBadge"
 
-// Sun card: rated by continuous sunlight from the landing time (PRD v3 section 3).
+// Sun card: rated by continuous sunlight from the landing time.
 function SunBadge({ r }) {
   const { onHours } = bodyDurations(r)
   return (

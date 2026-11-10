@@ -1,4 +1,4 @@
-// Phase 9b tests (PRD v3): crater geometry and placement against the terrain model.
+// Crater geometry and placement against the terrain model.
 import fs from "node:fs"
 import path from "node:path"
 import { describe, expect, test } from "vitest"

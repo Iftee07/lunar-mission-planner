@@ -1,4 +1,4 @@
-// Named-crater geometry for the map layer (PRD v3 Phase 9b). Plain ES module, no Leaflet.
+// Named-crater geometry for the map layer. Plain ES module, no Leaflet.
 // Craters: { name, lat, lon (deg east), diameter_km } from the IAU gazetteer (pipeline/09_build_features.py).
 
 const D2R = Math.PI / 180

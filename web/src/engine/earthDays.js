@@ -1,4 +1,4 @@
-// Earth-visible days for the calendar (PRD v3 Phase 9). Plain ES module, no React.
+// Earth-visible days for the calendar. Plain ES module, no React.
 // All durations in hours. Day boundaries are local days in the selected UTC offset, never the
 // browser time zone.
 

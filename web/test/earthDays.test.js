@@ -1,4 +1,4 @@
-// Phase 9 tests (PRD v3): Earth-visible calendar days.
+// Earth-visible calendar days.
 import { describe, expect, test } from "vitest"
 import { siteAccessor } from "../src/engine/data.js"
 import { EARTH_DAY_MIN_VISIBLE_H, earthVisibleDays, visibleHoursByDay } from "../src/engine/earthDays.js"

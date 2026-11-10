@@ -1,4 +1,4 @@
-// Visibility and hours (PRD section 5.5). Plain ES module, no React.
+// Visibility and hours. Plain ES module, no React.
 // All durations are in hours (UI in days, engine in hours: only lib/format.js converts).
 
 import { azElFromSite, makeSite } from "./geometry.js"
@@ -89,7 +89,7 @@ export function computeHours(body, horizon, tableAccessor, startUtcMs, antennaM,
   }
 }
 
-// Split observer heights (PRD v3 section 2): the Sun is always seen from SUN_REFERENCE_HEIGHT_M
+// Split observer heights: the Sun is always seen from SUN_REFERENCE_HEIGHT_M
 // (lander deck / solar array) with horizonSun; Earth from the antenna height with horizonEarth.
 // Returns { sun, earth, sunNow, earthNow }; hours entries are null outside the ephemeris.
 export function computeSiteHours({ pin, horizonSun, horizonEarth, antennaM, tableAccessor, tMs, sunMode }) {

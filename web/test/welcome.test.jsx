@@ -1,4 +1,4 @@
-// Phase 10 smoke test: the welcome flow renders (server-side, no browser APIs needed).
+// Smoke test: the welcome flow renders (server-side, no browser APIs needed).
 import { renderToString } from "react-dom/server"
 import { describe, expect, test } from "vitest"
 import WelcomeFlow from "../src/components/welcome/WelcomeFlow.jsx"

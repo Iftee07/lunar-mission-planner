@@ -6,7 +6,7 @@ import { LOOKAHEAD_H } from "@/engine/hours.js"
 
 export const lonEast = (lon) => ((lon % 360) + 360) % 360
 
-// "-86.1234 S, 12.3456 E" (PRD section 4)
+// "-86.1234 S, 12.3456 E"
 export function formatLatLon(lat, lon) {
   return `${lat.toFixed(4)} S, ${lonEast(lon).toFixed(4)} E`
 }

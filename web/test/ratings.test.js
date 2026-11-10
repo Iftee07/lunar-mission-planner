@@ -1,4 +1,4 @@
-// Phase 6 tests (PRD v3): rating boundaries, days formatting, split Sun/Earth observer heights.
+// Rating boundaries, days formatting, split Sun/Earth observer heights.
 import { describe, expect, test } from "vitest"
 import { siteAccessor } from "../src/engine/data.js"
 import { computeHorizon } from "../src/engine/horizon.js"

@@ -1,4 +1,4 @@
-// Phase 3 engine tests (PRD section 9, phase 3). Run with `npm test`.
+// Engine tests. Run with `npm test`.
 import proj4 from "proj4"
 import { describe, expect, test } from "vitest"
 import { createGrid, siteAccessor } from "../src/engine/data.js"

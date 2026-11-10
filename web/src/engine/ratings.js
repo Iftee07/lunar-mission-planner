@@ -1,4 +1,4 @@
-// Mission ratings (PRD v3 section 3). Plain ES module, no React. Pure functions.
+// Mission ratings. Plain ES module, no React. Pure functions.
 // All durations are in hours here; the UI converts to Earth days only in lib/format.js.
 //
 // Published figures: 6.5 d Artemis III stay, 25% Earth-visibility screening label, 10 deg slope limit.

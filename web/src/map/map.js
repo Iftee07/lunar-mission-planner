@@ -1,4 +1,4 @@
-// 2D map of the lunar south pole (PRD section 7). Plain ES module: Leaflet only, no React.
+// 2D map of the lunar south pole. Plain ES module: Leaflet only, no React.
 // L.CRS.Simple with map units of 100 m: latLng = [y / 100, x / 100] in projected metres.
 
 import L from "leaflet"

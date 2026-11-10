@@ -1,4 +1,4 @@
-// South polar stereographic, true scale at the pole, sphere radius R (PRD section 5.3).
+// South polar stereographic, true scale at the pole, sphere radius R.
 // Matches the LOLA GeoTIFF CRS: +proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +R=1737400.
 // x = rho sin(lon), y = rho cos(lon), rho = 2R tan(pi/4 + lat/2). Longitude 0 points to +y.
 

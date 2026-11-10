@@ -2,7 +2,7 @@ import { LoaderCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import AnimatedValue from "./AnimatedValue"
 
-// Shared shell for the four sidebar cards (PRD v3 section 4): title row with an optional badge,
+// Shared shell for the four sidebar cards: title row with an optional badge,
 // metric rows, optional centred footer (horizon status). `busy` dims the content and shows a spinner
 // while it recalculates, keeping the last values in place so the layout does not jump.
 export function MetricCard({ title, titleClassName, badge, footer, busy = false, children, ...props }) {

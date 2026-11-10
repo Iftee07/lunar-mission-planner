@@ -1,4 +1,4 @@
-// Surface view (PRD section 8): the sky as seen from the pin, as a minimal line drawing.
+// Surface view: the sky as seen from the pin, as a minimal line drawing.
 // Plain ES module: three.js only, no React. Colours come from theme tokens (lib/theme.js).
 //
 // Frame: X = east, Y = up, -Z = north. Direction for (az, el): (sin az cos el, sin el, -cos az cos el).
@@ -10,7 +10,7 @@
 //               RIDGE_RANGES_M, so they show where closer terrain rises and give the ground depth);
 //               Sun and Earth discs, their paths; always visible,
 //               a body below the skyline is dashed in the "blocked" colour
-// Antenna model (PRD v3): the drawn skyline is the Earth/antenna-height skyline (horizonEarth). The Sun
+// Antenna model: the drawn skyline is the Earth/antenna-height skyline (horizonEarth). The Sun
 // is placed and tested from SUN_REFERENCE_HEIGHT_M against horizonSun, so the Sun's "(blocked)" label
 // can occasionally disagree slightly with the drawn skyline.
 // Labels and the fixed-size reticles are DOM elements positioned over the canvas.

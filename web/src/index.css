@@ -2,7 +2,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* LSPB theme tokens: the only place colours are defined (PRD section 8).
+/* LSPB theme tokens: the only place colours are defined.
    Dark theme only. JS reads these through src/lib/theme.js. */
 :root {
   --lspb-bg: #0d1b2a;
@@ -15,9 +15,9 @@
   --lspb-ok: #4ade80;
   --lspb-warn: #fbbf24;
   --lspb-bad: #f87171;
-  --lspb-crater: #a78bfa; /* named crater outlines on the map (Phase 9b) */
+  --lspb-crater: #a78bfa; /* named crater outlines on the map */
   --lspb-crater-label: #ddd6fe;
-  /* welcome-slide art (Phase 10) */
+  /* welcome-slide art */
   --lspb-art-moon: #d5dde6;
   --lspb-art-moon-shade: #6b7c8f;
   --lspb-art-crater: #a9b6c3;
@@ -31,7 +31,7 @@
   --lspb-font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --lspb-font-heading: "Space Grotesk Variable", "Inter Variable", ui-sans-serif, sans-serif;
 
-  /* design system (Phase 10b): one place for layout sizes and stacking.
+  /* design system: one place for layout sizes and stacking.
      Spacing and type use Tailwind's default 0.25rem / text-xs..text-7xl scales; radii derive from --radius.
      Fonts: --lspb-font-heading (Space Grotesk) headings, --lspb-font-sans (Inter) body,
      --lspb-font-mono (JetBrains Mono) numbers and labels. */
@@ -126,7 +126,7 @@
   }
 }
 
-/* Leaflet map chrome (PRD section 7), theme tokens only */
+/* Leaflet map chrome, theme tokens only */
 .leaflet-container {
   background: var(--lspb-bg);
   font-family: var(--lspb-font-mono);
@@ -216,7 +216,7 @@
   transform: translate(-50%, -50%);
 }
 
-/* Surface view overlay (PRD section 8), theme tokens only */
+/* Surface view overlay, theme tokens only */
 .lspb-surface-labels {
   position: absolute;
   inset: 0;
@@ -292,7 +292,7 @@
   color: var(--lspb-blocked);
 }
 
-/* ---------- Welcome flow (Phase 10): looping art, transform + opacity only ---------- */
+/* ---------- Welcome flow: looping art, transform + opacity only ---------- */
 .lspb-welcome-bg {
   background:
     radial-gradient(ellipse 60% 50% at 78% 18%, color-mix(in srgb, var(--lspb-earth) 9%, transparent), transparent 70%),
