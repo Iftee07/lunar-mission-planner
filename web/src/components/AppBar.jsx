@@ -83,7 +83,7 @@ function About() {
             </li>
             <li>
               Globe: <Kbd>←↑→↓</Kbd> rotate, <Kbd>+</Kbd> <Kbd>−</Kbd> zoom, <Kbd>Enter</Kbd> place the pin at the centre.
-              Mouse: drag to rotate, wheel to zoom, right-drag to tilt
+              Mouse: drag to rotate, wheel (or touchpad pinch, or the + − buttons) to zoom, right-drag to tilt
             </li>
             <li>
               Polar HD map: <Kbd>←↑→↓</Kbd> pan, <Kbd>+</Kbd> <Kbd>−</Kbd> zoom, <Kbd>Enter</Kbd> place the pin at the centre

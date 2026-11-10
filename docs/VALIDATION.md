@@ -153,6 +153,7 @@ Browser checks ran in Chrome (headless, real GPU through ANGLE / Direct3D 11) ov
 | 2026-11-11 | 3 | Value under the cursor | at Shackleton's floor (pole): "sunlit 0% of the time   permanent shadow   slope 9.1°"; on the rim pin: "sunlit 80% … not PSR   slope 3.3°"; on the connecting ridge: "sunlit 43% … not PSR   slope 5.6°" (Shackleton floor PSR and 0% sunlit match `13_build_illumination.py`'s own check) | plausible, matches source | pass |
 | 2026-11-11 | 3 | Landing card "See slopes on the map" | opens Polar HD with only the slope layer on, centred on the pin (zoom -1) | works | pass |
 | 2026-11-11 | 3 | 360 px phone | no horizontal scroll (scrollWidth 360); app bar buttons inside 360 px; Layers popover 0-320 px; search dialog 16-344 px, input focused, 6 Apollo results | works | pass |
+| 2026-11-11 | 3 | Globe zoom (follow-up to the human's report "touchpad zoom does not work") | from 6000 km: mouse wheel (spaced like a real wheel) -> 1345 km; Ctrl + wheel, which is how a touchpad pinch arrives, -> 107 km with the page zoom unchanged (it zoomed nothing before the fix); new + / − buttons: 107 -> 36 -> 70 km | zooms | pass |
 | 2026-11-11 | 3 | Console errors during all browser checks | none | 0 | pass |
 | 2026-11-11 | 3 | `npm run lint` | 0 warnings, 0 errors | clean | pass |
 | 2026-11-11 | 3 | `npm test` | 12 files, 132 passed / 0 skipped / 0 failed (+49: `coords` 26, `siteSearch` 5, `polarLayers` 9, `urlState` 9) | 0 failed | pass |

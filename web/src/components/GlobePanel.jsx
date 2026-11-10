@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { Eye, Layers, Map as MapIcon, TriangleAlert, WifiOff } from "lucide-react"
+import { Eye, Layers, Map as MapIcon, Minus, Plus, TriangleAlert, WifiOff } from "lucide-react"
 import CheckRow from "@/components/CheckRow"
 import DataStatus from "@/components/DataStatus"
 import { Button } from "@/components/ui/button"
@@ -192,8 +192,16 @@ export default function GlobePanel({ active }) {
     <div className="absolute inset-0" style={{ display: active ? "block" : "none" }} data-testid="globe-panel">
       <div ref={containerRef} className="lspb-globe absolute inset-0 overflow-hidden" data-testid="globe-container" />
 
-      <div className="absolute top-3 right-3 z-(--lspb-z-map-ui)">
+      <div className="absolute top-3 right-3 z-(--lspb-z-map-ui) flex flex-col items-end gap-2">
         <LayersMenu apiRef={apiRef} sites={sites} />
+        <div className="flex flex-col overflow-hidden rounded-md border bg-background/90 shadow-xs" role="group" aria-label="Zoom">
+          <Button variant="ghost" size="icon-sm" className="rounded-none" onClick={() => apiRef.current?.zoomIn()} aria-label="Zoom in">
+            <Plus />
+          </Button>
+          <Button variant="ghost" size="icon-sm" className="rounded-none border-t" onClick={() => apiRef.current?.zoomOut()} aria-label="Zoom out">
+            <Minus />
+          </Button>
+        </div>
       </div>
 
       {view.nearPole && (

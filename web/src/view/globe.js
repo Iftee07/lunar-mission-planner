@@ -233,7 +233,12 @@ export function createGlobe(container, opts) {
   const ctl = scene.screenSpaceCameraController
   ctl.minimumZoomDistance = MIN_ZOOM_M
   ctl.maximumZoomDistance = MAX_ZOOM_M
-  ctl.zoomEventTypes = [CameraEventType.WHEEL, CameraEventType.PINCH]
+  // A laptop touchpad pinch arrives as Ctrl + wheel: it zooms the globe too, not the page.
+  ctl.zoomEventTypes = [CameraEventType.WHEEL, CameraEventType.PINCH, { eventType: CameraEventType.WHEEL, modifier: KeyboardEventModifier.CTRL }]
+  const onWheel = (e) => {
+    if (e.ctrlKey) e.preventDefault() // the browser's page zoom
+  }
+  container.addEventListener("wheel", onWheel, { passive: false })
   ctl.tiltEventTypes = [
     CameraEventType.RIGHT_DRAG,
     CameraEventType.MIDDLE_DRAG,
@@ -609,6 +614,15 @@ export function createGlobe(container, opts) {
     "aria-label",
     "3D globe of the Moon. Arrow keys rotate, plus and minus zoom, Enter places the pin at the centre.",
   )
+  // One zoom step (keyboard + / -, the on-screen buttons): in by 30% of the height, out by 40%, within limits.
+  function zoomStep(dir) {
+    const h = camera.positionCartographic.height
+    if (dir > 0) camera.zoomIn(Math.max(0, Math.min(h * 0.3, h - MIN_ZOOM_M)))
+    else camera.zoomOut(Math.max(0, Math.min(h * 0.4, MAX_ZOOM_M - h)))
+    scheduleViewUpdate()
+    scene.requestRender()
+  }
+
   const onKey = (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return
     const h = camera.positionCartographic.height
@@ -628,11 +642,11 @@ export function createGlobe(container, opts) {
         break
       case "+":
       case "=":
-        camera.zoomIn(Math.max(0, Math.min(h * 0.3, h - MIN_ZOOM_M)))
+        zoomStep(1)
         break
       case "-":
       case "_":
-        camera.zoomOut(Math.max(0, Math.min(h * 0.4, MAX_ZOOM_M - h)))
+        zoomStep(-1)
         break
       case "Enter":
       case " ": {
@@ -658,6 +672,8 @@ export function createGlobe(container, opts) {
     setPin,
     flyTo,
     setCamera,
+    zoomIn: () => zoomStep(1),
+    zoomOut: () => zoomStep(-1),
     setLabelsVisible(on) {
       labelsVisible = on
       updateLabels()
@@ -705,6 +721,7 @@ export function createGlobe(container, opts) {
       cancelAnimationFrame(viewFrame)
       cancelAnimationFrame(hoverFrame)
       container.removeEventListener("keydown", onKey)
+      container.removeEventListener("wheel", onWheel)
       container.removeEventListener("pointerdown", onPointerDown, true)
       window.removeEventListener("pointerup", onPointerUp, true)
       handler.destroy()
