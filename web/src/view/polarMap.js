@@ -220,7 +220,8 @@ export function createPolarMap(container, opts) {
     fitted = { zoom: map.getZoom(), center: map.getCenter() }
   }
   setBounds()
-  map.on("moveend", () => onMapView({ ...fromLatLng(map.getCenter()), zoom: map.getZoom() }))
+  // Reported only while visible: a map created hidden (display: none) has no real view yet.
+  map.on("moveend", () => container.clientWidth && onMapView({ ...fromLatLng(map.getCenter()), zoom: map.getZoom() }))
   map.on("resize", () => {
     const untouched = fitted && map.getZoom() === fitted.zoom && map.getCenter().distanceTo(fitted.center) < 1
     if (untouched) setBounds()

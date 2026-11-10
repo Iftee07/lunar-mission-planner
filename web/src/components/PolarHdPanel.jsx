@@ -175,6 +175,7 @@ function LayersMenu({ manifest, statuses }) {
 export default function PolarHdPanel({ active }) {
   const containerRef = useRef(null)
   const apiRef = useRef(null)
+  const shownRef = useRef(false) // the current map has been visible at least once
   const polarReady = useStore((s) => s.tiers.polar.status === "ready")
   // Mirrors the map module's crater visibility (the map module owns it; not part of the store).
   const [cratersOn, setCratersOn] = useState(true)
@@ -199,10 +200,10 @@ export default function PolarHdPanel({ active }) {
       onMapView: (v) => useStore.getState().setCamera("polar", v),
     })
     apiRef.current = api
+    shownRef.current = false
     api.setCraterLayer(data.polar.craters, true)
     setCratersOn(api.getCratersVisible())
     const s0 = useStore.getState()
-    if (s0.camera.polar) api.setMapView(s0.camera.polar) // a shared link's map view
     api.setPin(s0.pin)
     for (const id of LAYER_IDS) api.setLayer(id, s0.layers[id])
     const unsubscribe = useStore.subscribe((s, prev) => {
@@ -221,10 +222,23 @@ export default function PolarHdPanel({ active }) {
     }
   }, [polarReady])
 
-  // Leaflet must re-measure after its container goes from display:none to visible.
+  // Leaflet must re-measure after its container goes from display:none to visible. The first time a map is
+  // shown it gets its real view: a shared link's map view, else the whole disc, then the place last picked
+  // (a link's site or pin, a search result) if it is on the map.
   useEffect(() => {
-    if (active) apiRef.current?.invalidateSize()
-  }, [active])
+    const api = apiRef.current
+    if (!active || !api) return
+    const s = useStore.getState() // before invalidateSize, whose moveend reports the hidden map's placeholder view
+    api.invalidateSize()
+    if (shownRef.current) return
+    shownRef.current = true
+    if (s.camera.polar) return api.setMapView(s.camera.polar)
+    api.setBounds()
+    if (s.focus && s.focus.lat <= POLAR_HD_LAT_LIMIT_DEG) {
+      const { x, y } = project(s.focus.lat, s.focus.lon, getEngineData().manifest.moon_radius_m)
+      api.panTo(x, y, false)
+    }
+  }, [active, polarReady])
 
   return (
     <div className="absolute inset-0" style={{ display: active ? "block" : "none" }}>

@@ -59,6 +59,11 @@ describe("URL codec", () => {
     expect(place.lon).toBeCloseTo(180, 9)
   })
 
+  test("a heading of 359.97° travels as 0", () => {
+    const cam = { lat: 0, lon: 0, heightM: 4.0e5, headingDeg: 359.97, pitchDeg: -90 }
+    expect(encodeUrlState(snapshot({ camera: { globe: cam, polar: null } })).get("cam")).toBe("0,0,400,0,-90")
+  })
+
   test("time is kept to the minute", () => {
     const { patch } = roundTrip(snapshot({ timeMs: T + 29000 }))
     expect(patch.baseTimeUtcMs).toBe(T)

@@ -47,7 +47,7 @@ export function encodeUrlState(snap) {
   if (snap.view !== VIEWS[0]) q.set("view", snap.view)
   if (snap.layers.length) q.set("layers", snap.layers.join(","))
   const g = snap.camera?.globe
-  if (g) q.set("cam", [fixed(g.lat, 4), fixed(g.lon, 4), fixed(g.heightM / 1000, 2), fixed(g.headingDeg, 1), fixed(g.pitchDeg, 1)].join(","))
+  if (g) q.set("cam", [fixed(g.lat, 4), fixed(g.lon, 4), fixed(g.heightM / 1000, 2), fixed(Number(fixed(g.headingDeg, 1)) % 360, 1), fixed(g.pitchDeg, 1)].join(","))
   const m = snap.camera?.polar
   if (m) q.set("map", [fixed(m.x / 1000, 2), fixed(m.y / 1000, 2), fixed(m.zoom, 2)].join(","))
   return q
