@@ -281,7 +281,9 @@ history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.m
 | Crater names, positions, diameters | Gazetteer of Planetary Nomenclature, IAU WGPSN and USGS Astrogeology Science Center, https://planetarynames.wr.usgs.gov (file `MOON_nomenclature_center_pts.zip`) | Public domain (USGS metadata) |
 | Global terrain: LOLA GDR `LDEM_16` (16 px/deg, product V3.1) | PDS Geosciences Node, https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ | NASA PDS data, freely available |
 | Average illumination and permanently shadowed regions: LOLA `AVGVISIB_75S_120M_201608`, `LPSR_75S_120M_201608` | NASA GSFC PGDA "Lunar Polar Illumination", https://pgda.gsfc.nasa.gov/products/69 | NASA data, freely available; cite Mazarico et al. (2011) |
-| Offline globe texture and imagery: LRO WAC global mosaic `LRO_WAC_Mosaic_Global_303ppd_v02` | NASA Moon Trek WMTS, https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=moon (NASA/GSFC/Arizona State University) | NASA data |
+| Offline globe texture (display only): CGI Moon Kit 2025 colour map `lroc_color_16bit_srgb_4k.tif`, converted to `moon_fallback_4k.jpg` | NASA's Scientific Visualization Studio, https://svs.gsfc.nasa.gov/4720, with LROC data from NASA/GSFC/Arizona State University. Downloaded by hand into `data/raw/svs/` (the SVS host is not reachable from the build machine) | NASA data |
+| Globe imagery (from Phase 2): LRO WAC global mosaic `LRO_WAC_Mosaic_Global_303ppd_v02` | NASA Moon Trek WMTS, https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=moon (NASA/GSFC/Arizona State University) | NASA data |
+| For photometric science (not used by the app, whose numbers come from LOLA and SPICE): LROC WAC Hapke-normalized mosaic, 70°N-70°S | https://data.lroc.im-ldi.com/lroc/view_rdr/WAC_HAPKE; Sato, H., et al. (2014), *JGR Planets* 119, 1775-1805, doi:10.1002/2013JE004580 | NASA PDS data |
 | Coordinates of Apollo 11, Chang'e-4 and Apollo 15 (validation sites only) | Wikipedia articles cited in `pipeline/03_horizons_fixtures.py` (NASA NSSDCA was unreachable on 2026-11-10) | CC BY-SA text; coordinates are facts |
 
 Citations:

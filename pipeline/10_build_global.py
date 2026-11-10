@@ -7,11 +7,12 @@
    of a 2D predictor (left + up - upleft). The browser decodes it in the horizon worker
    (DecompressionStream, then the inverse predictor). Size rule (BUILD_PLAN 1.1): 16 ppd only if
    the compressed transfer is <= 20 MB, else 8 ppd; the sizes are printed and kept in the manifest.
-2. Offline globe texture: NASA SVS CGI Moon Kit was unreachable from the build machine
-   (svs.gsfc.nasa.gov timed out, 2026-11-10), so the 4096 x 2048 fallback is stitched from the
-   16 x 8 level-3 tiles of the same NASA Moon Trek LRO WAC global mosaic the globe streams
-   (equirectangular, -180..180 E, so 0 E is in the centre). Credit: NASA/GSFC/Arizona State
-   University (LROC WAC), served by NASA Moon Trek.
+2. Offline globe texture (used only when Moon Trek tiles cannot load): NASA SVS CGI Moon Kit
+   (https://svs.gsfc.nasa.gov/4720), the 2025 colour map lroc_color_16bit_srgb_4k.tif (4096 x 2048,
+   16-bit sRGB, equirectangular, centred on 0 E), converted to an 8-bit JPEG. svs.gsfc.nasa.gov is not
+   reachable from the build machine, so the TIFF is downloaded by hand from that page into
+   data/raw/svs/. Credit: NASA's Scientific Visualization Studio, with LROC data from
+   NASA/GSFC/Arizona State University.
 3. South Pole HD overlay: the 120 m LOLA hillshade (hillshade.png, south polar stereographic)
    resampled to a geographic (lat/lon) image for 84 S - 90 S, the extent of the 120 m grid,
    so the globe can drape it over the pole. Width is capped at 4096 px (WebGL texture limit on
@@ -20,14 +21,13 @@
 Downloads are cached in data/raw/ (re-runs reuse them).
 """
 import gzip
-import io
 import sys
 
 import numpy as np
 from PIL import Image
 from scipy.ndimage import map_coordinates
 
-from common import MANIFEST, OUT, RAW, download, session, stereo_fwd, update_manifest
+from common import MANIFEST, OUT, RAW, download, stereo_fwd, update_manifest
 
 PDS_GDR = "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/"
 LDEM = {"img": "ldem_16.img", "lbl": "ldem_16.lbl", "width": 5760, "height": 2880, "ppd": 16,
@@ -35,10 +35,9 @@ LDEM = {"img": "ldem_16.img", "lbl": "ldem_16.lbl", "width": 5760, "height": 288
 DEM_FILE = "global_dem.bin"
 SIZE_LIMIT_BYTES = 20_000_000
 
-TREK = ("https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/"
-        "default/default028mm/{z}/{row}/{col}.jpg")
-TREK_CAPS = "https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/WMTSCapabilities.xml"
-TREK_LEVEL, TILE = 3, 256          # level 3 = 16 x 8 tiles of 256 px (from WMTSCapabilities.xml)
+SVS_PAGE = "https://svs.gsfc.nasa.gov/4720"
+SVS_TIFF = RAW / "svs" / "lroc_color_16bit_srgb_4k.tif"
+SVS_SIZE = (4096, 2048)
 FALLBACK_FILE = "moon_fallback_4k.jpg"
 
 POLE_FILE = "south_pole_hd.jpg"
@@ -102,28 +101,25 @@ def build_global_dem():
 
 
 def build_fallback_texture():
-    cache = RAW / "trek_l3"
-    n_cols, n_rows = 2 ** (TREK_LEVEL + 1), 2 ** TREK_LEVEL
-    img = Image.new("RGB", (n_cols * TILE, n_rows * TILE))
-    for row in range(n_rows):
-        for col in range(n_cols):
-            dest = cache / f"{row}_{col}.jpg"
-            if not dest.exists():
-                r = session.get(TREK.format(z=TREK_LEVEL, row=row, col=col), timeout=60)
-                r.raise_for_status()
-                dest.parent.mkdir(parents=True, exist_ok=True)
-                dest.write_bytes(r.content)
-            img.paste(Image.open(io.BytesIO(dest.read_bytes())).convert("RGB"), (col * TILE, row * TILE))
+    import rasterio
+    if not SVS_TIFF.exists():
+        sys.exit(f"missing {SVS_TIFF}: download lroc_color_16bit_srgb_4k.tif from {SVS_PAGE} into data/raw/svs/")
+    with rasterio.open(SVS_TIFF) as src:
+        if (src.width, src.height) != SVS_SIZE or src.count != 3 or src.dtypes[0] != "uint16":
+            sys.exit(f"{SVS_TIFF.name}: expected {SVS_SIZE} 3-band uint16, got {src.width}x{src.height} "
+                     f"{src.count} bands {src.dtypes[0]}")
+        rgb16 = src.read()
+    rgb8 = np.round(rgb16.astype(np.float32) / 257.0).clip(0, 255).astype(np.uint8)  # 16-bit sRGB -> 8-bit sRGB
+    img = Image.fromarray(np.moveaxis(rgb8, 0, -1), "RGB")
     img.save(OUT / FALLBACK_FILE, quality=85, optimize=True, progressive=True)
     size = (OUT / FALLBACK_FILE).stat().st_size
-    print(f"fallback texture {img.size[0]} x {img.size[1]} from {n_cols * n_rows} level-{TREK_LEVEL} tiles: {size:,} B")
+    print(f"fallback texture {img.size[0]} x {img.size[1]} from {SVS_TIFF.name}: {size:,} B")
     return {
         "file": FALLBACK_FILE, "width": img.size[0], "height": img.size[1],
         "rectangle_deg": [-180, -90, 180, 90],
-        "source": f"NASA Moon Trek WMTS, layer LRO_WAC_Mosaic_Global_303ppd_v02, tile level {TREK_LEVEL}",
-        "source_url": TREK_CAPS,
-        "credit": "NASA/GSFC/Arizona State University (LROC WAC global mosaic), via NASA Moon Trek",
-        "note": "NASA SVS CGI Moon Kit (svs.gsfc.nasa.gov/4720) was unreachable on 2026-11-10",
+        "source": "NASA SVS CGI Moon Kit, 2025 colour map lroc_color_16bit_srgb_4k.tif (8-bit JPEG)",
+        "source_url": SVS_PAGE,
+        "credit": "NASA's Scientific Visualization Studio, with LROC data from NASA/GSFC/Arizona State University",
         "bytes": size,
     }
 

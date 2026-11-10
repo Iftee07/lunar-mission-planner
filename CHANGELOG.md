@@ -35,7 +35,7 @@ The Local Lead confirmed that building before the event is allowed.
   five windows; Sun elevation now, lowest and highest. Mission length 6.5 d or 14 d, and the Sun and
   Earth ratings follow it (team decision); at the default 6.5 d they are exactly NASA's values.
 - New data, all from NASA: LOLA global terrain (PDS), NASA's average-sunlight and permanent-shadow
-  maps of the south pole (for the Phase 3 map layers), an offline Moon texture and a South Pole HD
+  maps of the south pole (for the Phase 3 map layers), an offline Moon texture (NASA SVS CGI Moon Kit colour map) and a South Pole HD
   overlay (for the Phase 2 globe), and 1709 IAU feature names for globe labels.
 - Validation extended: JPL Horizons at Apollo 11, Chang'e-4, Apollo 15 and in 2033-2035; Python
   references for the global horizon and the metrics. 71 tests pass.

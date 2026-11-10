@@ -74,6 +74,7 @@ uncompressed. The "planner opened" run clicks Skip and places no pin.
 
 | 2026-11-10 | 1 | Ratings follow the mission length (team decision): thresholds at the default 156 h | Sun Perfect 192 h, Good 156 h; Earth Perfect 156 h, Good 25% (unchanged published values); 14 d: 372 / 336 / 336 h / 25% of 336 h | equal at default | pass |
 | 2026-11-10 | 1 | Gate after that change | lint clean; 71 passed / 0 failed; build OK, entry 389.50 kB | green | pass |
+| 2026-11-10 | 1 | Offline texture from NASA SVS CGI Moon Kit (`lroc_color_16bit_srgb_4k.tif`, 4096 x 2048, 3 x uint16, downloaded by the team) replaces the Moon Trek stitch | longitude alignment vs the Moon Trek LRO WAC mosaic: best correlation at 0 px shift (step 0.70°), r = 0.585; `moon_fallback_4k.jpg` 1,411,546 B (was 2,561,962 B); `global_dem.bin` and `south_pole_hd.jpg` rebuilt byte-identical | aligned to 0°E | pass |
 
 Sources of the non-polar validation coordinates: Wikipedia pages listed in `pipeline/03_horizons_fixtures.py`
 (NASA NSSDCA and SVS were unreachable from the build machine on 2026-11-10); the team approved them on
