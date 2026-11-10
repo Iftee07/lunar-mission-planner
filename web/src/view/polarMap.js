@@ -1,4 +1,4 @@
-// 2D map of the lunar south pole. Plain ES module: Leaflet only, no React.
+// Polar HD view: 2D map of the lunar south pole. Plain ES module: Leaflet only, no React.
 // L.CRS.Simple with map units of 100 m: latLng = [y / 100, x / 100] in projected metres.
 
 import L from "leaflet"
@@ -25,7 +25,7 @@ function label(latlng, text, cls) {
 }
 
 // options: { manifest, hillshadeUrl, onPick(x, y) -> true if accepted, describe(x, y) -> { lat, lon, groundM } | null }
-export function createMap(container, { manifest, hillshadeUrl, onPick, describe }) {
+export function createPolarMap(container, { manifest, hillshadeUrl, onPick, describe }) {
   const theme = readTheme()
   const R = manifest.moon_radius_m
   const g = manifest.grids.near

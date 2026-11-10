@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react"
 import { CircleDashed } from "lucide-react"
 import { Toggle } from "@/components/ui/toggle"
-import { createMap } from "@/map/map.js"
+import { createPolarMap } from "@/view/polarMap.js"
 import DataStatus from "@/components/DataStatus"
 import { describeXY, ensureTier, getEngineData, pickXY, useStore } from "@/state.js"
 
-// The Polar HD map. Owns the Leaflet container; createMap once the polar data tier has loaded, destroy in
+// The Polar HD map. Owns the Leaflet container; createPolarMap once the polar data tier has loaded, destroy in
 // cleanup (StrictMode-safe). Stays mounted when hidden (display: none) so zoom, centre and pin persist.
-export default function MapPanel({ active }) {
+export default function PolarHdPanel({ active }) {
   const containerRef = useRef(null)
   const apiRef = useRef(null)
   const polarReady = useStore((s) => s.tiers.polar.status === "ready")
@@ -22,7 +22,7 @@ export default function MapPanel({ active }) {
   useEffect(() => {
     if (!polarReady) return
     const data = getEngineData()
-    const api = createMap(containerRef.current, {
+    const api = createPolarMap(containerRef.current, {
       manifest: data.manifest,
       hillshadeUrl: data.polar.hillshadeUrl,
       onPick: pickXY,

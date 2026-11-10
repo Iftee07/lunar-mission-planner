@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect } from "react"
 import AppBar from "@/components/AppBar"
 import DataStatus from "@/components/DataStatus"
 import ErrorBoundary from "@/components/ErrorBoundary"
-import MapPanel from "@/components/MapPanel"
+import PolarHdPanel from "@/components/PolarHdPanel"
 import MobileSummary from "@/components/MobileSummary"
 import Sidebar from "@/components/sidebar/Sidebar"
 import TimeBar from "@/components/TimeBar"
@@ -45,7 +45,7 @@ export default function Planner() {
             className="relative isolate h-(--lspb-main-h-stacked) min-h-(--lspb-main-min-h) overflow-hidden lg:h-auto lg:min-h-0 lg:min-w-0 lg:flex-1"
           >
             <ErrorBoundary label="map" active={view === "map"}>
-              <MapPanel active={view === "map"} />
+              <PolarHdPanel active={view === "map"} />
             </ErrorBoundary>
             <ErrorBoundary label="surface view" active={view === "surface"}>
               <Suspense fallback={null}>
