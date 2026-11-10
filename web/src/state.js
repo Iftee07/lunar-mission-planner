@@ -14,7 +14,7 @@ export const EPHEMERIS_START_UTC_MS = Date.UTC(2026, 0, 1, 0, 0, 0)
 export const EPHEMERIS_END_UTC_MS = Date.UTC(2030, 11, 31, 23, 45, 0)
 export const LANDING_RADIUS_M = 100
 export const ANTENNA_PRESETS_M = [2, 5, 10, 15] // affects Earth visibility only
-export const ANTENNA_DEFAULT_M = 2
+const ANTENNA_DEFAULT_M = 2
 export const TIME_SLIDER_RANGE_H = 708.7
 export const SLIDER_STEP_H = 0.25
 export const PLAY_SPEEDS_H_PER_S = [6, 12, 24, 72] // shown as 0.25, 0.5, 1, 3 d/s
@@ -112,7 +112,7 @@ export function retryData() {
 }
 
 // Build a pin from projected map coordinates; null if outside the map disc or without terrain.
-export function pinFromXY(x, y) {
+function pinFromXY(x, y) {
   if (!engineData) return null
   const { lat, lon } = unproject(x, y, engineData.manifest.moon_radius_m)
   if (lat > MAP_LAT_LIMIT_DEG) return null

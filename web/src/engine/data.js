@@ -2,8 +2,6 @@
 // The parse/create functions take plain arrays so tests can feed them from disk;
 // loadAll() is the browser loader (same-origin fetch only).
 
-const HOUR_MS = 3600000
-
 // Ephemeris table: Float32 LE, 6 values per sample (sun xyz, earth xyz), km, MOON_ME.
 export function createEphemeris(spec, f32) {
   const startMs = spec.utc_start_unix_s * 1000
@@ -79,10 +77,6 @@ export function createSlope(gridSpec, slopeSpec, u8) {
 // Bound accessor for hours.js: vectors for a fixed pin.
 export function siteAccessor(ephemeris, pin) {
   return { pin, vectorAt: ephemeris.vectorAt }
-}
-
-export function hoursToMs(h) {
-  return h * HOUR_MS
 }
 
 // Errors name the file, so the UI can say exactly what failed.

@@ -4,7 +4,7 @@
 
 import { LOOKAHEAD_H } from "@/engine/hours.js"
 
-export const lonEast = (lon) => ((lon % 360) + 360) % 360
+const lonEast = (lon) => ((lon % 360) + 360) % 360
 
 // "-86.1234 S, 12.3456 E"
 export function formatLatLon(lat, lon) {
@@ -32,7 +32,7 @@ export const formatAz = (az) => `${az.toFixed(1).padStart(5, "0")}°`
 const pad = (n) => String(n).padStart(2, "0")
 
 // UTC ms -> "YYYY-MM-DDTHH:mm" wall-clock in the given UTC offset (0 = UTC; the app shows UTC only).
-export function toLocalInput(ms, offsetH) {
+function toLocalInput(ms, offsetH) {
   const d = new Date(ms + offsetH * 3600000)
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`
 }

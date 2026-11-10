@@ -366,4 +366,3 @@ const SegmentedControlItem = ({
 };
 
 export { SegmentedControl, SegmentedControlItem };
-export default SegmentedControl;

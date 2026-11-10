@@ -55,13 +55,13 @@ function range(a, b, step) {
   return out
 }
 
-export function dirFromAzEl(azDeg, elDeg, r = 1) {
+function dirFromAzEl(azDeg, elDeg, r = 1) {
   const az = azDeg * D2R
   const el = elDeg * D2R
   return new THREE.Vector3(r * Math.sin(az) * Math.cos(el), r * Math.sin(el), -r * Math.cos(az) * Math.cos(el))
 }
 
-export function azElFromDir(v) {
+function azElFromDir(v) {
   const el = Math.asin(v.y / v.length()) * R2D
   let az = Math.atan2(v.x, -v.z) * R2D
   if (az < 0) az += 360

@@ -11,7 +11,7 @@ export function rhoForLat(latDeg, r = MOON_RADIUS_M) {
   return 2 * r * Math.tan(Math.PI / 4 + (latDeg * D2R) / 2)
 }
 
-export function latForRho(rho, r = MOON_RADIUS_M) {
+function latForRho(rho, r = MOON_RADIUS_M) {
   return (2 * Math.atan(rho / (2 * r)) - Math.PI / 2) * R2D
 }
 
