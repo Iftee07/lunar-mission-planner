@@ -51,7 +51,7 @@ files in `src/components/ui/` are imported, all 15 dependencies and 7 dev depend
 | P2 | [ ] `setPinLatLon` in `state.js` (dev hook only for now) | Exported again when the globe / typed coordinates (P2/P3) call it |
 | P2 | [ ] `globe` data tier (`engine/data.js`) returns URLs nobody reads yet | `globe.js` uses `fallbackTextureUrl`, `southPoleHdUrl`, `featuresUrl` |
 | P3 | [ ] `polar` tier `layerUrls` (`illum_avg.png`, `psr.png`) not shown yet | Polar HD map layers (P3.4) |
-| P3 | [ ] `pipeline/data/sites_source.csv` (15 verified official sites, written early) has no builder yet | `pipeline/11_build_sites.py` validates it and writes `sites.json` |
+| P3 | [ ] `pipeline/data/sites_source.csv` (25 verified official sites, written early) has no builder yet | `pipeline/11_build_sites.py` validates it and writes `sites.json` |
 | P5 | [ ] `results.metrics` (mission metrics, next windows) not shown yet | Cards, countdowns, timeline and Details list |
 | P2 | [ ] `ViewToggle` `Map \| Surface` | Same component becomes `Globe \| Polar HD \| Surface` |
 | P3 | [ ] Dev-only URL parsing: `devParams` in `state.js` (`?screen&pin&t&view`) and `devStartSlide` (`?slide=`) in `WelcomeFlow.jsx` | Production URL state; delete the dev-only parsers, don't keep both |

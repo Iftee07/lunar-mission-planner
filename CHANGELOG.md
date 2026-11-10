@@ -39,9 +39,10 @@ The Local Lead confirmed that building before the event is allowed.
   overlay (for the Phase 2 globe), and 1709 IAU feature names for globe labels.
 - Validation extended: JPL Horizons at Apollo 11, Chang'e-4, Apollo 15 and in 2033-2035; Python
   references for the global horizon and the metrics. 71 tests pass.
-- Official landing-site coordinates collected for Phase 3 (NASA NSSDCA for Apollo; LROC for
-  Chang'e 3-6, Chandrayaan-3, SLIM, IM-1, IM-2 and Blue Ghost), each with its source quote; the
-  validation sites now use them too.
+- Official coordinates for 25 sites collected for Phase 3, each with its source quote: Apollo and
+  Luna 9 (NASA NSSDCA); Chang'e 3-6, Chandrayaan-3, SLIM, IM-1, IM-2, Blue Ghost (LROC); Shackleton
+  rim, the connecting ridge and two Artemis III regions (NASA PGDA well-lit points); upcoming CLPS
+  targets (NASA CLPS graphic). The validation sites now use them too.
 
 ### Earlier (before 2026-11-10)
 

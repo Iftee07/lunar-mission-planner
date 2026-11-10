@@ -77,6 +77,15 @@ uncompressed. The "planner opened" run clicks Skip and places no pin.
 | 2026-11-10 | 1 | Offline texture from NASA SVS CGI Moon Kit (`lroc_color_16bit_srgb_4k.tif`, 4096 x 2048, 3 x uint16, downloaded by the team) replaces the Moon Trek stitch | longitude alignment vs the Moon Trek LRO WAC mosaic: best correlation at 0 px shift (step 0.70°), r = 0.585; `moon_fallback_4k.jpg` 1,411,546 B (was 2,561,962 B); `global_dem.bin` and `south_pole_hd.jpg` rebuilt byte-identical | aligned to 0°E | pass |
 
 | 2026-11-10 | 1 | Validation sites moved to official coordinates (fetched through the team's VPN): Apollo 11 and Apollo 15 lunar modules from NASA NSSDCA (Wagner et al. 2017), Chang'e-4 from LROC post 1087 (45.457°S, 177.589°E; IAU Statio Tianhe 45.45°S, 177.60°E). Sets "nonpolar" and "late" re-queried; "polar" records unchanged | Horizons max: nonpolar 0.000044°, late 0.000039° (`05` and JS); global horizon JS vs Python 0.000001°; metrics JS = Python to 4 decimals; 71 tests pass | 0.1° / 0.2° / 0.25 h | pass |
+| 2026-11-10 | 1 | Site list for Phase 3 (`pipeline/data/sites_source.csv`): 25 sites, each with a fetched official source and quote | Apollo ×6 (NSSDCA), Luna 9 (NSSDCA), landers ×9 (LROC, matching the IAU Statio names), south-pole reference ×2 and Artemis III ×2 (NASA PGDA ROI points), upcoming CLPS ×5 (NASA CLPS graphic + IAU / LROC region centres) | unique ids, lat/lon in range, every row sourced | pass |
+| 2026-11-10 | 1 | PGDA ROI points (projection `Stereographic_South_Pole`, R 1737.4 km, central meridian 0) checked against our separate NASA LOLA average-sunlight map | Shackleton rim 80%, connecting ridge 78%, Peak near Shackleton 75%, de Gerlache rim 74% (only 0.002% of the 84°S disc is above 70%); Shackleton crater centre 0% (PSR) | ROIs are > 70% regions | pass |
+
+Not in the site list, with reasons: Peregrine (NASA CLPS graphic: "Did not land on the Moon"), Blue Ghost
+Mission 2 ("Lunar Farside and Orbit", no site), Blue Moon MK1 ("specific location still being identified"),
+and 10 of the 13 Artemis III regions (NASA's 2022 release names them but gives no coordinates, the NTRS
+briefing 20230005904 has none, and PGDA publishes ROI files only for Sites 01, 04, 07 and 11).
+NSSDCA's Master Catalog pages returned "An error has occurred" on 2026-11-10; Luna 9 comes from its
+Soviet missions page instead.
 
 Sources of the non-polar validation coordinates: NASA NSSDCA (Apollo) and LROC (Chang'e-4), listed in
 `pipeline/03_horizons_fixtures.py`. Until this update they came from Wikipedia (Apollo 11 identical,
