@@ -301,56 +301,56 @@
     {
       "set": "nonpolar",
       "body": "sun",
-      "lat": -45.444,
-      "lon": 177.599,
+      "lat": -45.457,
+      "lon": 177.589,
       "time_ut": "2026-Nov-15 06:07:00.000",
-      "az_deg": 286.29746576,
-      "el_deg": 17.551375924
+      "az_deg": 286.309162051,
+      "el_deg": 17.554459709
     },
     {
       "set": "nonpolar",
       "body": "sun",
-      "lat": -45.444,
-      "lon": 177.599,
+      "lat": -45.457,
+      "lon": 177.589,
       "time_ut": "2028-Mar-20 12:22:00.000",
-      "az_deg": 73.327888503,
-      "el_deg": 13.917224823
+      "az_deg": 73.332428546,
+      "el_deg": 13.906775235
     },
     {
       "set": "nonpolar",
       "body": "sun",
-      "lat": -45.444,
-      "lon": 177.599,
+      "lat": -45.457,
+      "lon": 177.589,
       "time_ut": "2030-Jul-04 18:41:00.000",
-      "az_deg": 301.963874462,
-      "el_deg": 28.382833869
+      "az_deg": 301.978966537,
+      "el_deg": 28.381901539
     },
     {
       "set": "nonpolar",
       "body": "sun",
-      "lat": 26.13222,
-      "lon": 3.63386,
+      "lat": 26.13239,
+      "lon": 3.6333,
       "time_ut": "2026-Nov-15 06:07:00.000",
-      "az_deg": 83.446050231,
-      "el_deg": -16.542129369
+      "az_deg": 83.445736377,
+      "el_deg": -16.542609434
     },
     {
       "set": "nonpolar",
       "body": "sun",
-      "lat": 26.13222,
-      "lon": 3.63386,
+      "lat": 26.13239,
+      "lon": 3.6333,
       "time_ut": "2028-Mar-20 12:22:00.000",
-      "az_deg": 284.273170444,
-      "el_deg": -23.893448954
+      "az_deg": 284.272941869,
+      "el_deg": -23.892919806
     },
     {
       "set": "nonpolar",
       "body": "sun",
-      "lat": 26.13222,
-      "lon": 3.63386,
+      "lat": 26.13239,
+      "lon": 3.6333,
       "time_ut": "2030-Jul-04 18:41:00.000",
-      "az_deg": 73.140396137,
-      "el_deg": -31.930860959
+      "az_deg": 73.13995723,
+      "el_deg": -31.931292798
     },
     {
       "set": "nonpolar",
@@ -382,56 +382,56 @@
     {
       "set": "nonpolar",
       "body": "earth",
-      "lat": -45.444,
-      "lon": 177.599,
+      "lat": -45.457,
+      "lon": 177.589,
       "time_ut": "2026-Nov-15 06:07:00.000",
-      "az_deg": 179.153906036,
-      "el_deg": -47.721528365
+      "az_deg": 179.168908743,
+      "el_deg": -47.708673294
     },
     {
       "set": "nonpolar",
       "body": "earth",
-      "lat": -45.444,
-      "lon": 177.599,
+      "lat": -45.457,
+      "lon": 177.589,
       "time_ut": "2028-Mar-20 12:22:00.000",
-      "az_deg": 189.292153756,
-      "el_deg": -44.525779559
+      "az_deg": 189.303993471,
+      "el_deg": -44.511858971
     },
     {
       "set": "nonpolar",
       "body": "earth",
-      "lat": -45.444,
-      "lon": 177.599,
+      "lat": -45.457,
+      "lon": 177.589,
       "time_ut": "2030-Jul-04 18:41:00.000",
-      "az_deg": 174.157248484,
-      "el_deg": -50.996326192
+      "az_deg": 174.174562882,
+      "el_deg": -50.984148773
     },
     {
       "set": "nonpolar",
       "body": "earth",
-      "lat": 26.13222,
-      "lon": 3.63386,
+      "lat": 26.13239,
+      "lon": 3.6333,
       "time_ut": "2026-Nov-15 06:07:00.000",
-      "az_deg": 196.419484944,
-      "el_deg": 65.916644778
+      "az_deg": 196.41804625,
+      "el_deg": 65.916623735
     },
     {
       "set": "nonpolar",
       "body": "earth",
-      "lat": 26.13222,
-      "lon": 3.63386,
+      "lat": 26.13239,
+      "lon": 3.6333,
       "time_ut": "2028-Mar-20 12:22:00.000",
-      "az_deg": 178.6397459,
-      "el_deg": 63.923827927
+      "az_deg": 178.638475553,
+      "el_deg": 63.923645328
     },
     {
       "set": "nonpolar",
       "body": "earth",
-      "lat": 26.13222,
-      "lon": 3.63386,
+      "lat": 26.13239,
+      "lon": 3.6333,
       "time_ut": "2030-Jul-04 18:41:00.000",
-      "az_deg": 206.929031225,
-      "el_deg": 68.104302094
+      "az_deg": 206.927471429,
+      "el_deg": 68.104378528
     },
     {
       "set": "late",
@@ -472,20 +472,20 @@
     {
       "set": "late",
       "body": "sun",
-      "lat": -45.444,
-      "lon": 177.599,
+      "lat": -45.457,
+      "lon": 177.589,
       "time_ut": "2033-Jun-21 03:17:00.000",
-      "az_deg": 82.127916899,
-      "el_deg": 9.694024161
+      "az_deg": 82.1330084,
+      "el_deg": 9.685295027
     },
     {
       "set": "late",
       "body": "sun",
-      "lat": -45.444,
-      "lon": 177.599,
+      "lat": -45.457,
+      "lon": 177.589,
       "time_ut": "2035-Sep-08 21:53:00.000",
-      "az_deg": 279.881146668,
-      "el_deg": 9.173439832
+      "az_deg": 279.89053655,
+      "el_deg": 9.178119015
     },
     {
       "set": "late",
@@ -526,25 +526,25 @@
     {
       "set": "late",
       "body": "earth",
-      "lat": -45.444,
-      "lon": 177.599,
+      "lat": -45.457,
+      "lon": 177.589,
       "time_ut": "2033-Jun-21 03:17:00.000",
-      "az_deg": 183.861204171,
-      "el_deg": -44.346064092
+      "az_deg": 183.874273298,
+      "el_deg": -44.33266453
     },
     {
       "set": "late",
       "body": "earth",
-      "lat": -45.444,
-      "lon": 177.599,
+      "lat": -45.457,
+      "lon": 177.589,
       "time_ut": "2035-Sep-08 21:53:00.000",
-      "az_deg": 187.329529916,
-      "el_deg": -37.649522344
+      "az_deg": 187.340713867,
+      "el_deg": -37.635769408
     }
   ],
   "headers": {
     "sun -89.5,0": [
-      "Ephemeris / API_USER Mon Nov  9 23:19:25 2026 Pasadena, USA      / Horizons",
+      "Ephemeris / API_USER Tue Nov 10 00:56:35 2026 Pasadena, USA      / Horizons",
       "Target body name: Sun (10)                        {source: DE441}",
       "Center body name: Moon (301)                      {source: DE441}",
       "Center-site name: (user defined site below)",
@@ -594,7 +594,7 @@
       "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
     ],
     "earth -89.5,0": [
-      "Ephemeris / API_USER Mon Nov  9 23:19:31 2026 Pasadena, USA      / Horizons",
+      "Ephemeris / API_USER Tue Nov 10 00:56:44 2026 Pasadena, USA      / Horizons",
       "Target body name: Earth (399)                     {source: DE441}",
       "Center body name: Moon (301)                      {source: DE441}",
       "Center-site name: (user defined site below)",
@@ -644,7 +644,7 @@
       "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
     ],
     "sun 0.67416,23.47314": [
-      "Ephemeris / API_USER Mon Nov  9 23:19:27 2026 Pasadena, USA      / Horizons",
+      "Ephemeris / API_USER Tue Nov 10 00:56:38 2026 Pasadena, USA      / Horizons",
       "Target body name: Sun (10)                        {source: DE441}",
       "Center body name: Moon (301)                      {source: DE441}",
       "Center-site name: (user defined site below)",
@@ -653,28 +653,28 @@
       "Center cylindric: 23.47314, 1737.27973, 20.44232  {E-lon(deg),Dxy(km),Dz(km)}",
       "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
     ],
-    "sun -45.444,177.599": [
-      "Ephemeris / API_USER Mon Nov  9 23:19:29 2026 Pasadena, USA      / Horizons",
+    "sun -45.457,177.589": [
+      "Ephemeris / API_USER Tue Nov 10 00:56:41 2026 Pasadena, USA      / Horizons",
       "Target body name: Sun (10)                        {source: DE441}",
       "Center body name: Moon (301)                      {source: DE441}",
       "Center-site name: (user defined site below)",
       "Target radii    : 695700.0, 695700.0, 695700.0 km {Equator_a, b, pole_c}",
-      "Center geodetic : 177.599, -45.444, 0.0           {E-lon(deg),Lat(deg),Alt(km)}",
-      "Center cylindric: 177.599,1218.97035,-1238.01052  {E-lon(deg),Dxy(km),Dz(km)}",
+      "Center geodetic : 177.589, -45.457, -5.45875E-13  {E-lon(deg),Lat(deg),Alt(km)}",
+      "Center cylindric: 177.589,1218.68942,-1238.28706  {E-lon(deg),Dxy(km),Dz(km)}",
       "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
     ],
-    "sun 26.13222,3.63386": [
-      "Ephemeris / API_USER Mon Nov  9 23:19:16 2026 Pasadena, USA      / Horizons",
+    "sun 26.13239,3.6333": [
+      "Ephemeris / API_USER Tue Nov 10 00:56:25 2026 Pasadena, USA      / Horizons",
       "Target body name: Sun (10)                        {source: DE441}",
       "Center body name: Moon (301)                      {source: DE441}",
       "Center-site name: (user defined site below)",
       "Target radii    : 695700.0, 695700.0, 695700.0 km {Equator_a, b, pole_c}",
-      "Center geodetic : 3.63386, 26.13222, -4.31989E-13 {E-lon(deg),Lat(deg),Alt(km)}",
-      "Center cylindric: 3.63386, 1559.80303, 765.22758  {E-lon(deg),Dxy(km),Dz(km)}",
+      "Center geodetic : 3.6333, 26.13239, 0.0           {E-lon(deg),Lat(deg),Alt(km)}",
+      "Center cylindric: 3.6333, 1559.80076, 765.23221   {E-lon(deg),Dxy(km),Dz(km)}",
       "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
     ],
     "earth 0.67416,23.47314": [
-      "Ephemeris / API_USER Mon Nov  9 23:19:33 2026 Pasadena, USA      / Horizons",
+      "Ephemeris / API_USER Tue Nov 10 00:56:47 2026 Pasadena, USA      / Horizons",
       "Target body name: Earth (399)                     {source: DE441}",
       "Center body name: Moon (301)                      {source: DE441}",
       "Center-site name: (user defined site below)",
@@ -683,30 +683,30 @@
       "Center cylindric: 23.47314, 1737.27973, 20.44232  {E-lon(deg),Dxy(km),Dz(km)}",
       "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
     ],
-    "earth -45.444,177.599": [
-      "Ephemeris / API_USER Mon Nov  9 23:19:35 2026 Pasadena, USA      / Horizons",
+    "earth -45.457,177.589": [
+      "Ephemeris / API_USER Tue Nov 10 00:56:49 2026 Pasadena, USA      / Horizons",
       "Target body name: Earth (399)                     {source: DE441}",
       "Center body name: Moon (301)                      {source: DE441}",
       "Center-site name: (user defined site below)",
       "Target radii    : 6378.137, 6378.137, 6356.752 km {Equator_a, b, pole_c}",
-      "Center geodetic : 177.599, -45.444, 0.0           {E-lon(deg),Lat(deg),Alt(km)}",
-      "Center cylindric: 177.599,1218.97035,-1238.01052  {E-lon(deg),Dxy(km),Dz(km)}",
+      "Center geodetic : 177.589, -45.457, -5.45875E-13  {E-lon(deg),Lat(deg),Alt(km)}",
+      "Center cylindric: 177.589,1218.68942,-1238.28706  {E-lon(deg),Dxy(km),Dz(km)}",
       "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
     ],
-    "earth 26.13222,3.63386": [
-      "Ephemeris / API_USER Mon Nov  9 23:19:22 2026 Pasadena, USA      / Horizons",
+    "earth 26.13239,3.6333": [
+      "Ephemeris / API_USER Tue Nov 10 00:56:33 2026 Pasadena, USA      / Horizons",
       "Target body name: Earth (399)                     {source: DE441}",
       "Center body name: Moon (301)                      {source: DE441}",
       "Center-site name: (user defined site below)",
       "Target radii    : 6378.137, 6378.137, 6356.752 km {Equator_a, b, pole_c}",
-      "Center geodetic : 3.63386, 26.13222, -4.31989E-13 {E-lon(deg),Lat(deg),Alt(km)}",
-      "Center cylindric: 3.63386, 1559.80303, 765.22758  {E-lon(deg),Dxy(km),Dz(km)}",
+      "Center geodetic : 3.6333, 26.13239, 0.0           {E-lon(deg),Lat(deg),Alt(km)}",
+      "Center cylindric: 3.6333, 1559.80076, 765.23221   {E-lon(deg),Dxy(km),Dz(km)}",
       "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
     ]
   },
   "signature": {
-    "version": "1.2",
-    "source": "NASA/JPL Horizons API"
+    "source": "NASA/JPL Horizons API",
+    "version": "1.2"
   },
   "sets": {
     "polar": {
@@ -745,23 +745,23 @@
           23.47314
         ],
         [
-          -45.444,
-          177.599
+          -45.457,
+          177.589
         ],
         [
-          26.13222,
-          3.63386
+          26.13239,
+          3.6333
         ]
       ],
       "names": [
         "Apollo 11",
         "Chang'e-4",
-        "Apollo 15 (Hadley-Apennine)"
+        "Apollo 15"
       ],
       "sources": [
-        "https://en.wikipedia.org/wiki/Apollo_11 (Moon coordinates of the landing site, 0.67416 N 23.47314 E)",
-        "https://en.wikipedia.org/wiki/Chang%27e_4 (infobox landing site 45.444 S 177.599 E; cites Liu et al. 2019, Nature Communications)",
-        "https://en.wikipedia.org/wiki/Hadley%E2%80%93Apennine (26.13222 N 3.63386 E)"
+        "https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html (NASA NSSDCA, Apollo 11 Lunar Module 0.67416 N 23.47314 E; Wagner et al. 2017, Icarus 283, 92-103)",
+        "https://lroc.im-ldi.com/images/1087 (LROC, 'Chang'e 4 Lander Coordinates', 11 Jan 2019: 45.457 S, 177.589 E)",
+        "https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html (NASA NSSDCA, Apollo 15 Lunar Module 26.13239 N 3.63330 E)"
       ],
       "times_utc": [
         "2026-11-15 06:07",
@@ -780,8 +780,8 @@
           23.47314
         ],
         [
-          -45.444,
-          177.599
+          -45.457,
+          177.589
         ]
       ],
       "times_utc": [

@@ -27,19 +27,19 @@ POLAR_TIMES = ["2026-11-15 06:07", "2028-03-20 12:22", "2030-07-04 18:41"]
 SETS = {
     # (lat, lon east) test points in the polar map region
     "polar": {"sites": [(-89.5, 0), (-88, 90), (-86, 180), (-85, 270), (-84.5, 45)], "times_utc": POLAR_TIMES},
-    # Non-polar landing sites; coordinates from the cited pages (NASA NSSDCA was unreachable on 2026-11-10).
+    # Non-polar landing sites, official coordinates (lunar module / lander positions measured in LRO images).
     "nonpolar": {
-        "sites": [(0.67416, 23.47314), (-45.444, 177.599), (26.13222, 3.63386)],
-        "names": ["Apollo 11", "Chang'e-4", "Apollo 15 (Hadley-Apennine)"],
+        "sites": [(0.67416, 23.47314), (-45.457, 177.589), (26.13239, 3.63330)],
+        "names": ["Apollo 11", "Chang'e-4", "Apollo 15"],
         "sources": [
-            "https://en.wikipedia.org/wiki/Apollo_11 (Moon coordinates of the landing site, 0.67416 N 23.47314 E)",
-            "https://en.wikipedia.org/wiki/Chang%27e_4 (infobox landing site 45.444 S 177.599 E; cites Liu et al. 2019, Nature Communications)",
-            "https://en.wikipedia.org/wiki/Hadley%E2%80%93Apennine (26.13222 N 3.63386 E)",
+            "https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html (NASA NSSDCA, Apollo 11 Lunar Module 0.67416 N 23.47314 E; Wagner et al. 2017, Icarus 283, 92-103)",
+            "https://lroc.im-ldi.com/images/1087 (LROC, 'Chang'e 4 Lander Coordinates', 11 Jan 2019: 45.457 S, 177.589 E)",
+            "https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html (NASA NSSDCA, Apollo 15 Lunar Module 26.13239 N 3.63330 E)",
         ],
         "times_utc": POLAR_TIMES,
     },
     # Dates late in the extended ephemeris (2033-2035), one polar and two non-polar sites.
-    "late": {"sites": [(-89.5, 0), (0.67416, 23.47314), (-45.444, 177.599)],
+    "late": {"sites": [(-89.5, 0), (0.67416, 23.47314), (-45.457, 177.589)],
              "times_utc": ["2033-06-21 03:17", "2035-09-08 21:53"]},
 }
 

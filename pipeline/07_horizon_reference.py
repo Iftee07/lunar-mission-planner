@@ -20,7 +20,7 @@ from common import FIXTURES, MANIFEST, MOON_RADIUS_M, OUT, RAW, stereo_fwd
 # Test pins (lat, lon east) - arbitrary test inputs: near the pole, mid-map, near the map edge.
 PINS = [(-89.5, -45.0), (-87.0, 120.0), (-84.3, -160.0)]
 # Non-polar pins (Apollo 11; Chang'e-4, whose range crosses 180 E), coordinates as in 03_horizons_fixtures.py.
-GLOBAL_PINS = [(0.67416, 23.47314), (-45.444, 177.599)]
+GLOBAL_PINS = [(0.67416, 23.47314), (-45.457, 177.589)]
 LDEM = {"file": RAW / "global" / "ldem_16.img", "width": 5760, "height": 2880, "ppd": 16, "scale": 0.5}
 ANTENNA_M = 2.0
 N_AZ, AZ_STEP = 720, 0.5

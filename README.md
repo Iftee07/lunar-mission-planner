@@ -289,7 +289,8 @@ history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.m
 | Offline globe texture (display only): CGI Moon Kit 2025 colour map `lroc_color_16bit_srgb_4k.tif`, converted to `moon_fallback_4k.jpg` | NASA's Scientific Visualization Studio, https://svs.gsfc.nasa.gov/4720, with LROC data from NASA/GSFC/Arizona State University. Downloaded by hand into `data/raw/svs/` (the SVS host is not reachable from the build machine) | NASA data |
 | Globe imagery (from Phase 2): LRO WAC global mosaic `LRO_WAC_Mosaic_Global_303ppd_v02` | NASA Moon Trek WMTS, https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=moon (NASA/GSFC/Arizona State University) | NASA data |
 | For photometric science (not used by the app, whose numbers come from LOLA and SPICE): LROC WAC Hapke-normalized mosaic, 70°N-70°S | https://data.lroc.im-ldi.com/lroc/view_rdr/WAC_HAPKE; Sato, H., et al. (2014), *JGR Planets* 119, 1775-1805, doi:10.1002/2013JE004580 | NASA PDS data |
-| Coordinates of Apollo 11, Chang'e-4 and Apollo 15 (validation sites only) | Wikipedia articles cited in `pipeline/03_horizons_fixtures.py` (NASA NSSDCA was unreachable on 2026-11-10) | CC BY-SA text; coordinates are facts |
+| Landing-site coordinates (validation sites now, the site list in Phase 3): Apollo lunar module positions | NASA NSSDCA, https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html (Wagner et al. 2017, *Icarus* 283, 92-103) | NASA data |
+| Landing-site coordinates: Chang'e 3-6, Chandrayaan-3, SLIM, IM-1, IM-2, Blue Ghost | LROC featured images (NASA/GSFC/Arizona State University), https://lroc.im-ldi.com/images, one post per lander, listed with quotes in `pipeline/data/sites_source.csv`; cross-checked with the IAU "Statio" landing-site names in the Gazetteer | NASA data; IAU/USGS public domain |
 
 Citations:
 

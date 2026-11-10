@@ -76,7 +76,10 @@ uncompressed. The "planner opened" run clicks Skip and places no pin.
 | 2026-11-10 | 1 | Gate after that change | lint clean; 71 passed / 0 failed; build OK, entry 389.50 kB | green | pass |
 | 2026-11-10 | 1 | Offline texture from NASA SVS CGI Moon Kit (`lroc_color_16bit_srgb_4k.tif`, 4096 x 2048, 3 x uint16, downloaded by the team) replaces the Moon Trek stitch | longitude alignment vs the Moon Trek LRO WAC mosaic: best correlation at 0 px shift (step 0.70°), r = 0.585; `moon_fallback_4k.jpg` 1,411,546 B (was 2,561,962 B); `global_dem.bin` and `south_pole_hd.jpg` rebuilt byte-identical | aligned to 0°E | pass |
 
-Sources of the non-polar validation coordinates: Wikipedia pages listed in `pipeline/03_horizons_fixtures.py`
-(NASA NSSDCA and SVS were unreachable from the build machine on 2026-11-10); the team approved them on
-2026-11-10. The exact spot does not
+| 2026-11-10 | 1 | Validation sites moved to official coordinates (fetched through the team's VPN): Apollo 11 and Apollo 15 lunar modules from NASA NSSDCA (Wagner et al. 2017), Chang'e-4 from LROC post 1087 (45.457°S, 177.589°E; IAU Statio Tianhe 45.45°S, 177.60°E). Sets "nonpolar" and "late" re-queried; "polar" records unchanged | Horizons max: nonpolar 0.000044°, late 0.000039° (`05` and JS); global horizon JS vs Python 0.000001°; metrics JS = Python to 4 decimals; 71 tests pass | 0.1° / 0.2° / 0.25 h | pass |
+
+Sources of the non-polar validation coordinates: NASA NSSDCA (Apollo) and LROC (Chang'e-4), listed in
+`pipeline/03_horizons_fixtures.py`. Until this update they came from Wikipedia (Apollo 11 identical,
+Apollo 15 about 20 m off, Chang'e-4 about 1 km off), because NASA hosts did not answer this machine
+without the VPN. The exact spot does not
 affect this check, which compares our az/el with Horizons at the same coordinates.

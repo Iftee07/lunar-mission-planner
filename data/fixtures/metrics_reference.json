@@ -71,23 +71,23 @@
   },
   {
    "set": "global_pins",
-   "lat": -45.444,
-   "lon": 177.599,
+   "lat": -45.457,
+   "lon": 177.589,
    "timeUtc": "2027-03-10T06:00:00Z",
    "missionH": 156.0,
-   "sunlitFraction": 0.8113731971153846,
+   "sunlitFraction": 0.8111728766025641,
    "earthFraction": 0.0,
    "bothFraction": 0.0,
-   "sunUpEarthDownH": 126.57421875,
-   "longestDarkH": 29.42578125,
+   "sunUpEarthDownH": 126.54296875,
+   "longestDarkH": 29.45703125,
    "longestNoEarthH": 156.0,
-   "sunElevationNowDeg": 38.82928153873041,
-   "sunElevationMinDeg": -10.532650795368049,
-   "sunElevationMaxDeg": 38.82928153873041,
+   "sunElevationNowDeg": 38.82213807258513,
+   "sunElevationMinDeg": -10.523574592812768,
+   "sunElevationMaxDeg": 38.82213807258513,
    "sunIntervals": [
     [
      0.0,
-     126.57421875
+     126.54296875
     ]
    ],
    "earthIntervals": []
