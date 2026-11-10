@@ -49,7 +49,7 @@ venv\Scripts\python pipeline\06_validate_terrain.py
 venv\Scripts\python pipeline\07_horizon_reference.py # slow Python reference horizons (test fixtures)
 venv\Scripts\python pipeline\08_hours_reference.py   # Python reference light/Earth hours (test fixtures)
 venv\Scripts\python pipeline\09_build_features.py    # named craters (IAU gazetteer, ~24 MB download)
-venv\Scripts\python pipeline\10_build_global.py      # global DEM, offline globe texture, South Pole HD overlay (~33 MB download)
+venv\Scripts\python pipeline\10_build_global.py      # global DEM (~33 MB download), offline globe texture, South Pole HD overlay
 venv\Scripts\python pipeline\13_build_illumination.py # NASA average-sunlight and PSR layers (~84 MB download)
 
 cd web
@@ -68,6 +68,11 @@ Other web commands (run in `web/`):
 
 Only steps 01, 03, 09, 10 and 13 use the network, and each caches what it downloads in `data/raw/` or
 `data/fixtures/`. Step 07 reads the raw global DEM that step 10 downloads, so run 10 before 07.
+
+Step 10 also needs one file downloaded by hand (svs.gsfc.nasa.gov does not answer scripted requests from
+every network): `lroc_color_16bit_srgb_4k.tif` from the NASA SVS CGI Moon Kit page,
+https://svs.gsfc.nasa.gov/4720 (Download menu of the 2025 colour map), saved as
+`data/raw/svs/lroc_color_16bit_srgb_4k.tif`.
 
 ## Deploy
 
