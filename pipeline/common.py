@@ -109,7 +109,7 @@ def body_at(man, arr, unix_s):
 
 
 def stereo_fwd(lat_deg, lon_deg, r=MOON_RADIUS_M):
-    """PRD 5.3 south polar stereographic, true scale at the pole: (lat, lon) deg -> (x, y) m."""
+    """South polar stereographic, true scale at the pole: (lat, lon) deg -> (x, y) m."""
     lat, lon = np.radians(lat_deg), np.radians(lon_deg)
     rho = 2 * r * np.tan(np.pi / 4 + lat / 2)
     return rho * np.sin(lon), rho * np.cos(lon)
@@ -128,7 +128,7 @@ def stereo_rho(lat_deg, r=MOON_RADIUS_M):
 
 
 def az_el(lat_deg, lon_deg, body_km, height_m=0.0):
-    """PRD section 5.2: azimuth (deg, clockwise from north, [0,360)) and elevation (deg)."""
+    """Azimuth (deg, clockwise from north, [0,360)) and elevation (deg)."""
     lat, lon = math.radians(lat_deg), math.radians(lon_deg)
     up = np.array([math.cos(lat) * math.cos(lon), math.cos(lat) * math.sin(lon), math.sin(lat)])
     east = np.array([-math.sin(lon), math.cos(lon), 0.0])

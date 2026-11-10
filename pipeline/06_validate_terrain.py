@@ -1,4 +1,4 @@
-"""Phase 2: validate the terrain files against the manifest, pyproj and the raw LOLA file.
+"""Validate the terrain files against the manifest, pyproj and the raw LOLA file.
 
 Prints grid sizes, height range, nodata fraction inside the map disc, slope statistics,
 projection round-trip error at 10 random points, independent spot checks against LOLA,
@@ -101,7 +101,7 @@ def main():
     check("slope_plane <= slope_max + 1 at every pixel in disc", bad == 0,
           f"({bad} of {both.sum():,d} violate)")
 
-    print("\n4. Projection: closed form (PRD 5.3) vs pyproj, 10 random points")
+    print("\n4. Projection: closed form vs pyproj, 10 random points")
     tf = Transformer.from_crs("+proj=longlat +R=1737400 +no_defs", man["proj4"], always_xy=True)
     lat, lon = random_points_in_disc(10, MAP_LAT)
     px = near["pixel_m"]

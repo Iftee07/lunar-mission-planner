@@ -7,7 +7,7 @@ import { horizonAt } from "./horizon.js"
 export const SUN_REFERENCE_HEIGHT_M = 2 // Sun observer height, independent of the antenna control
 export const STEP_H = 0.25
 export const LOOKAHEAD_H = 1500
-export const BISECT_TOLERANCE_H = 0.01
+const BISECT_TOLERANCE_H = 0.01
 export const SUN_SEMIDIAMETER_DEG = 0.267
 const HOUR_MS = 3600000
 

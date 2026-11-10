@@ -1,4 +1,4 @@
-"""Phase 2: build the terrain files in web/public/data/ from LDEM_80S_20MPP_ADJ.TIF.
+"""Build the terrain files in web/public/data/ from LDEM_80S_20MPP_ADJ.TIF.
 
   dem_near.bin     int16 LE, height = value * 0.5 m, 120 m pixels (6x6 mean), lat <= -84 + 1 px margin
   dem_far.bin      int16 LE, same scaling, 240 m pixels (12x12 mean), lat <= -80

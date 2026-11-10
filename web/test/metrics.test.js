@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest"
 import { createDataLoader, siteAccessor } from "../src/engine/data.js"
 import { computeHorizon, groundAt } from "../src/engine/horizon.js"
 import { computeHorizonGlobal, sampleGlobal } from "../src/engine/horizonGlobal.js"
-import { siteMetrics } from "../src/engine/metrics.js"
+import { clearanceDeg, siteMetrics } from "../src/engine/metrics.js"
 import { longestGapHours, nextWindows, overlapHours, sampleVisibility, totalHours } from "../src/engine/series.js"
 import { terrainSourceFor, tierForSource } from "../src/engine/terrain.js"
 import { hasGlobalDem, loadGlobalDem, loadRealData, readFixture } from "./load.js"
@@ -59,6 +59,14 @@ describe("sampleVisibility (synthetic)", () => {
     expect(next.length).toBe(5)
     expect(next[0].openStart).toBe(true)
     expect(next.map((w) => Math.round(w.startH))).toEqual([0, 10, 20, 30, 50])
+  })
+
+  test("clearanceDeg: body elevation minus the horizon at the body's azimuth", () => {
+    const horizon = new Float32Array(720).fill(2)
+    horizon[180] = 5 // azimuth 90
+    expect(clearanceDeg({ azDeg: 90, elDeg: 5 }, horizon)).toBe(0)
+    expect(clearanceDeg({ azDeg: 270, elDeg: 1.5 }, horizon)).toBe(-0.5)
+    expect(clearanceDeg({ azDeg: 90.25, elDeg: 4 }, horizon)).toBeCloseTo(0.5, 6) // interpolated horizon 3.5
   })
 
   test("overlapHours of two interval lists", () => {

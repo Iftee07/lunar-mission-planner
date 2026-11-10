@@ -1,4 +1,4 @@
-"""Phase 0: check the Python environment and free disk space.
+"""Check the Python environment and free disk space.
 
 Prints library versions, imports everything the pipeline needs and checks
 that at least 10 GB is free on the drive that holds the repo.

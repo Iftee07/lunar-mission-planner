@@ -22,7 +22,7 @@ export const HOUR_MS = 3600000
 export const LANDING_RADIUS_M = 100
 export const ANTENNA_PRESETS_M = [2, 5, 10, 15] // affects Earth visibility only
 const ANTENNA_DEFAULT_M = 2
-export const MISSION_OPTIONS_H = [156, 336] // 6.5 d (Artemis III stay) and 14 d (one lunar day)
+const MISSION_OPTIONS_H = [156, 336] // 6.5 d (Artemis III stay) and 14 d (one lunar day)
 export const TIME_SLIDER_RANGE_H = 708.7
 export const SLIDER_STEP_H = 0.25
 export const PLAY_SPEEDS_H_PER_S = [6, 12, 24, 72] // shown as 0.25, 0.5, 1, 3 d/s
@@ -184,15 +184,16 @@ function makePin(latDeg, lonDeg, source, xy = null) {
   if (!terrain) return null
   const groundM = terrain.heightAt(latDeg, lonDeg)
   if (!Number.isFinite(groundM)) return null
-  const lon = ((((lonDeg + 180) % 360) + 360) % 360) - 180
-  const pin = { lat: latDeg, lon: lon === -180 ? 180 : lon, groundM, terrainSource: source, resolutionM: terrain.resolutionM }
+  let lon = lonDeg // east longitude in (-180, 180]; wrapped only when outside it (keeps typed values exact)
+  if (lon > 180 || lon <= -180) lon = ((((lon + 180) % 360) + 360) % 360) - 180 || 180
+  const pin = { lat: latDeg, lon, groundM, terrainSource: source, resolutionM: terrain.resolutionM }
   if (source === "polar-hd") Object.assign(pin, xy || project(latDeg, lonDeg, engineData.manifest.moon_radius_m))
   return pin
 }
 
 // Pin anywhere on the Moon: Polar HD at 84 S or further south, Global terrain elsewhere (loads it first).
 // Resolves with the pin, or null if the point has no terrain data.
-export async function setPinLatLon(latDeg, lonDeg) {
+async function setPinLatLon(latDeg, lonDeg) {
   await initData()
   const source = terrainSourceFor(latDeg, Boolean(engineData.manifest.grids))
   await ensureTier(tierForSource(source))
