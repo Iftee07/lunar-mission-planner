@@ -52,7 +52,7 @@ function nextChange(visible, startMs, from, state) {
 //   lookaheadTruncated   (true if LOOKAHEAD_H runs past the end of the ephemeris table)
 // }  or null if startUtcMs is outside the ephemeris.
 // tableAccessor = { pin: { lat, lon, groundM }, vectorAt(body, tMs) -> [x,y,z] km | null }
-// windowH: the rating window (ratings.js MISSION_STAY_H) over which windowVisibleHours is counted.
+// windowH: the mission window (store missionH) over which windowVisibleHours is counted for the ratings.
 export function computeHours(body, horizon, tableAccessor, startUtcMs, antennaM, sunMode, windowH) {
   const visible = makeVisibility(body, horizon, tableAccessor, antennaM, sunMode)
   const visibleNow = visible(startUtcMs)

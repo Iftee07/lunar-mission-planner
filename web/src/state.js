@@ -22,7 +22,7 @@ export const HOUR_MS = 3600000
 export const LANDING_RADIUS_M = 100
 export const ANTENNA_PRESETS_M = [2, 5, 10, 15] // affects Earth visibility only
 const ANTENNA_DEFAULT_M = 2
-const MISSION_OPTIONS_H = [156, 336] // 6.5 d (Artemis III stay) and 14 d (one lunar day)
+const MISSION_OPTIONS_H = [MISSION_STAY_H, 336] // 6.5 d (Artemis III stay) and 14 d (one lunar day)
 export const TIME_SLIDER_RANGE_H = 708.7
 export const SLIDER_STEP_H = 0.25
 export const PLAY_SPEEDS_H_PER_S = [6, 12, 24, 72] // shown as 0.25, 0.5, 1, 3 d/s
@@ -294,8 +294,8 @@ function recomputeHours() {
     tMs: selectEffectiveTimeMs(s),
     sunMode,
   }
-  // Ratings keep NASA's 6.5 d Artemis III window (rule 8); missionH sets the metrics window.
-  const computed = computeSiteHours({ ...args, windowH: MISSION_STAY_H })
+  // The ratings' window and the metrics both follow the chosen mission length.
+  const computed = computeSiteHours({ ...args, windowH: missionH })
   const metrics = siteMetrics({ ...args, missionH })
   useStore.setState((st) => ({ results: { ...st.results, status: "ready", error: null, ...computed, metrics } }))
 }

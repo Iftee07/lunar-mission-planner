@@ -35,6 +35,7 @@ export default function MobileSummary() {
   const sun = useStore((s) => s.results.sun)
   const earth = useStore((s) => s.results.earth)
   const slope = useStore((s) => s.results.slope)
+  const missionH = useStore((s) => s.missionH)
   const coarse = useStore((s) => s.pin?.terrainSource === "global")
   const ready = useStore((s) => s.results.horizonSun !== null && s.results.horizonEarth !== null)
   if (!dataReady) return null
@@ -57,8 +58,8 @@ export default function MobileSummary() {
         <span className="flex-1 text-lspb-warn">Date outside ephemeris range</span>
       ) : (
         <span className="grid flex-1 grid-cols-3 gap-2">
-          <Chip name="Sun" nameClass="text-lspb-sun" rating={ready && sun ? rateSun(sun) : null} />
-          <Chip name="Earth" nameClass="text-lspb-earth" rating={ready && earth ? rateEarth(earth) : null} />
+          <Chip name="Sun" nameClass="text-lspb-sun" rating={ready && sun ? rateSun(sun, missionH) : null} />
+          <Chip name="Earth" nameClass="text-lspb-earth" rating={ready && earth ? rateEarth(earth, missionH) : null} />
           <Chip name="Landing" rating={coarse ? NOT_ASSESSED : slope ? rateLanding(slope.planeDeg) : null} />
         </span>
       )}

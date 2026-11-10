@@ -72,6 +72,10 @@ uncompressed. The "planner opened" run clicks Skip and places no pin.
 | 2026-11-10 | 1 | Manual: north pole pin (89.45, 137.3) | Global terrain, ground -67 m, metrics computed, no marker on the polar map | works | pass |
 | 2026-11-10 | 1 | Manual, production preview at 1440 × 900 | welcome → Skip → Enter pins the map centre → cards fill with the terrain badge → `V` surface view; no console errors | as before | pass |
 
+| 2026-11-10 | 1 | Ratings follow the mission length (team decision): thresholds at the default 156 h | Sun Perfect 192 h, Good 156 h; Earth Perfect 156 h, Good 25% (unchanged published values); 14 d: 372 / 336 / 336 h / 25% of 336 h | equal at default | pass |
+| 2026-11-10 | 1 | Gate after that change | lint clean; 71 passed / 0 failed; build OK, entry 389.50 kB | green | pass |
+
 Sources of the non-polar validation coordinates: Wikipedia pages listed in `pipeline/03_horizons_fixtures.py`
-(NASA NSSDCA and SVS were unreachable from the build machine on 2026-11-10). The exact spot does not
+(NASA NSSDCA and SVS were unreachable from the build machine on 2026-11-10); the team approved them on
+2026-11-10. The exact spot does not
 affect this check, which compares our az/el with Horizons at the same coordinates.

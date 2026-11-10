@@ -2,13 +2,12 @@ import { CircleHelp, ExternalLink, Moon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
-  EARTH_GOOD_MIN_FRACTION,
-  MISSION_STAY_H,
   SLOPE_NASA_LIMIT_DEG,
   SLOPE_POSSIBLE_MAX_DEG,
-  SUN_PERFECT_MIN_H,
+  ratingThresholds,
 } from "@/engine/ratings.js"
 import { formatDays } from "@/lib/format.js"
+import { useStore } from "@/state.js"
 
 // Links open in a new tab on click only; nothing is fetched at runtime. Full citations are in the README.
 const SOURCES = [
@@ -33,7 +32,9 @@ function Kbd({ children }) {
 }
 
 function About() {
-  const pct = `${Math.round(EARTH_GOOD_MIN_FRACTION * 100)}%`
+  const missionH = useStore((s) => s.missionH)
+  const t = ratingThresholds(missionH)
+  const pct = `${Math.round(t.earthGoodMinFraction * 100)}%`
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -45,13 +46,13 @@ function About() {
         <p className="text-xs text-muted-foreground">NASA Space Apps 2026 challenge: Lunar Landing Site Navigator.</p>
         <p>
           Pick a point near the lunar south pole and a landing date. The cards rate the site for a{" "}
-          {formatDays(MISSION_STAY_H)} crewed-class stay.
+          {formatDays(missionH)} crewed-class stay.
         </p>
         <Section title="Ratings">
           <ul className="space-y-1">
             <li>
-              <span className="font-semibold text-lspb-sun">Sun:</span> Perfect with {formatDays(SUN_PERFECT_MIN_H)}+ of continuous
-              sunlight from landing, Good with {formatDays(MISSION_STAY_H)}+.
+              <span className="font-semibold text-lspb-sun">Sun:</span> Perfect with {formatDays(t.sunPerfectMinH)}+ of continuous
+              sunlight from landing, Good with {formatDays(t.sunGoodMinH)}+.
             </li>
             <li>
               <span className="font-semibold text-lspb-earth">Earth:</span> Perfect if in view for the whole stay, Good if in view

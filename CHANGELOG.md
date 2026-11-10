@@ -32,8 +32,8 @@ The Local Lead confirmed that building before the event is allowed.
   the polar terrain when the map opens (with a progress bar), the global terrain on first use.
 - New mission metrics in the engine (shown in later phases): share of time with sunlight, Earth in
   view and both; hours with power but no Earth link; longest dark and no-Earth stretches; the next
-  five windows; Sun elevation now, lowest and highest. Mission length 6.5 d or 14 d. Ratings keep
-  NASA's 6.5-day window.
+  five windows; Sun elevation now, lowest and highest. Mission length 6.5 d or 14 d, and the Sun and
+  Earth ratings follow it (team decision); at the default 6.5 d they are exactly NASA's values.
 - New data, all from NASA: LOLA global terrain (PDS), NASA's average-sunlight and permanent-shadow
   maps of the south pole (for the Phase 3 map layers), an offline Moon texture and a South Pole HD
   overlay (for the Phase 2 globe), and 1709 IAU feature names for globe labels.

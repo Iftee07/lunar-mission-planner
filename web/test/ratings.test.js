@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest"
 import { siteAccessor } from "../src/engine/data.js"
 import { computeHorizon } from "../src/engine/horizon.js"
 import { SUN_REFERENCE_HEIGHT_M, computeSiteHours } from "../src/engine/hours.js"
-import { MISSION_STAY_H, bodyDurations, rateEarth, rateLanding, rateSun } from "../src/engine/ratings.js"
+import { MISSION_STAY_H, bodyDurations, rateEarth, rateLanding, rateSun, ratingThresholds } from "../src/engine/ratings.js"
 import { formatDays } from "../src/lib/format.js"
 import { ANTENNA_PRESETS_M } from "../src/state.js"
 import { hasRealData, loadRealData, readFixture } from "./load.js"
@@ -47,6 +47,25 @@ describe("rateSun (continuous sunlight from T)", () => {
 
   test("colour tokens", () => {
     expect([rateSun(lit(200)).color, rateSun(lit(170)).color, rateSun(lit(10)).color]).toEqual(["ok", "warn", "bad"])
+  })
+})
+
+describe("ratings follow the mission length", () => {
+  test("default 6.5 d stay gives exactly the published thresholds", () => {
+    expect(ratingThresholds()).toEqual({ missionH: 156, sunPerfectMinH: 192, sunGoodMinH: 156, earthPerfectMinH: 156, earthGoodMinFraction: 0.25 })
+    expect(ratingThresholds(MISSION_STAY_H)).toEqual(ratingThresholds())
+  })
+
+  test("14 d mission: Sun Good needs 336 h, Perfect 372 h; Earth Good is 25% of 336 h", () => {
+    const m = 336
+    expect(ratingThresholds(m)).toMatchObject({ sunPerfectMinH: 372, sunGoodMinH: 336, earthPerfectMinH: 336 })
+    expect(rateSun(lit(200), m).level).toBe("bad") // Perfect for a 6.5 d stay, too short for 14 d
+    expect(rateSun(lit(340), m).level).toBe("good")
+    expect(rateSun(lit(372), m).level).toBe("perfect")
+    expect(rateEarth(dark(10, 0.25 * 336), m).level).toBe("good")
+    expect(rateEarth(dark(10, 0.25 * 336 - 0.25), m).level).toBe("bad")
+    expect(rateEarth(lit(200, 200), m).level).toBe("good") // in view 200 h of 336: not the whole stay
+    expect(rateEarth(lit(200, 200)).level).toBe("perfect") // same site, 6.5 d stay
   })
 })
 

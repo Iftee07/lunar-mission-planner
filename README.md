@@ -15,7 +15,7 @@ terrain the first time a point outside the polar region is used.
 - Region: the map covers 84°S to the pole at 120 m ("Polar HD"); the engine also computes any other
   point on the Moon from LOLA's global terrain at ~1.9 km ("Global", no landing rating). Dates:
   2026-01-01 to 2035-12-31 (UTC).
-- Ratings are tuned for a 6.5-day crewed-class surface stay (NASA Artemis III).
+- Ratings follow the mission length: 6.5 days by default (NASA's Artemis III crewed surface stay).
 - Licence: Apache-2.0 (see [LICENSE](LICENSE)).
 
 ## Contents
@@ -182,7 +182,7 @@ Mission metrics (`engine/metrics.js`) cover a mission window from T (6.5 d by de
 the share of time with the Sun up, with Earth in view and with both, the hours with power but no
 direct-to-Earth link, the longest dark and no-Earth stretches, the next five windows of each body, and
 the Sun's elevation now and its minimum and maximum over the window. Window edges are refined to
-0.01 h. The ratings below keep NASA's 6.5-day window whatever the mission length.
+0.01 h. The ratings below use the same mission window.
 
 ### Antenna model
 
@@ -204,7 +204,10 @@ the map. They are display only: clicking inside a crater places the pin exactly 
 
 ## Ratings
 
-Thresholds are constants in `web/src/engine/ratings.js`.
+Thresholds are in `web/src/engine/ratings.js` (`ratingThresholds(missionH)`). They follow the mission
+length (team decision, 2026-11-10); the table shows the default 6.5-day (156 h) stay, where they are
+exactly the published values. For another length L: Sun Perfect ≥ L + 1.5 d, Good ≥ L; Earth Perfect
+≥ L, Good ≥ 25% of the L window.
 
 | Card | Perfect (green) | Good (yellow) | Not recommended / Not possible (red) |
 |---|---|---|---|
@@ -224,8 +227,7 @@ Where the numbers come from:
   operations margin) and the 8° slope cut (NASA's 10° minus the typical 1.9° LOLA slope error, Barker et
   al.). The UI tooltips say so.
 
-What the ratings do not cover: boulders and small craters (slope only), shorter robotic missions (the
-6.5-day stay is a constant, `MISSION_STAY_H`), and communication relays. "Good" Earth means contact is
+What the ratings do not cover: boulders and small craters (slope only) and communication relays. "Good" Earth means contact is
 intermittent: plan scheduled contact windows or a relay.
 
 ## Validation
@@ -264,7 +266,8 @@ history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.m
   by the end of the ephemeris.
 - **Slope only.** The landing rating ignores boulders, small craters and surface roughness below the 20 m
   data.
-- **Fixed mission length.** Ratings assume a 6.5-day stay.
+- **Mission length.** Ratings and metrics follow the mission length (6.5 d by default; the 14 d option
+  gets its control in Phase 5). The 1.5-day Sun margin is the same for every length.
 - **Global terrain is coarse.** Outside 84°S horizons come from ~1.9 km terrain: hills smaller than a few
   kilometres are not in the skyline, and the landing rating is not given.
 
