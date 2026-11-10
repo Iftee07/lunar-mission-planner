@@ -6,14 +6,27 @@
 //   layers=slope,psr                     Polar HD map layers that are on
 //   cam=lat,lon,heightKm,heading,pitch   globe camera (degrees, km)
 //   map=xKm,yKm,zoom                     Polar HD map centre (polar stereographic, km) and zoom
+//   cmp=apollo11,shackleton_rim@708.73,-89.45:-137.3
+//                                        compared sites in column order: a site id or lat:lon, then @hours
+//                                        after the main time for a "same site, different date" column
 // Defaults are left out, so a link only says what differs. Bad values are ignored, one parameter at a time.
-// The compare list (cmp) arrives with the compare drawer (Phase 4).
 
+import { COMPARE_MAX } from "@/engine/compare.js"
 import { parseLatLon } from "@/lib/coords.js"
 import { ANTENNA_PRESETS_M, ANTENNA_DEFAULT_M, MISSION_OPTIONS_H, VIEWS, selectEffectiveTimeMs } from "@/state.js"
 import { LAYER_IDS } from "@/view/polarLayerModel.js"
 
-export const URL_KEYS = ["site", "pin", "t", "ant", "mission", "sun", "view", "layers", "cam", "map"]
+export const URL_KEYS = ["site", "pin", "t", "ant", "mission", "sun", "view", "layers", "cam", "map", "cmp"]
+
+// One compared column: "apollo11", "-89.45:-137.3", either with "@708.73" -> { siteId } | { lat, lon }, plus shiftH.
+function decodeCompareItem(text) {
+  const [place, shift = "0"] = text.split("@")
+  const shiftH = Number(shift)
+  if (!place || !Number.isFinite(shiftH)) return null
+  if (/^[a-z][a-z0-9_]*$/.test(place)) return { siteId: place, shiftH }
+  const p = parseLatLon(place.replace(":", ","))
+  return p.ok ? { lat: p.lat, lon: p.lon, shiftH } : null
+}
 
 const fixed = (x, digits) => String(Number(x.toFixed(digits))) // no trailing zeros
 const numbers = (text, n) => {
@@ -32,6 +45,7 @@ export function urlSnapshot(s) {
     view: s.view,
     layers: LAYER_IDS.filter((id) => s.layers[id]?.on),
     camera: s.camera,
+    compare: s.compare.map((c) => ({ siteId: c.pin.site?.id ?? null, lat: c.pin.lat, lon: c.pin.lon, shiftH: c.shiftH })),
   }
 }
 
@@ -50,11 +64,15 @@ export function encodeUrlState(snap) {
   if (g) q.set("cam", [fixed(g.lat, 4), fixed(g.lon, 4), fixed(g.heightM / 1000, 2), fixed(Number(fixed(g.headingDeg, 1)) % 360, 1), fixed(g.pitchDeg, 1)].join(","))
   const m = snap.camera?.polar
   if (m) q.set("map", [fixed(m.x / 1000, 2), fixed(m.y / 1000, 2), fixed(m.zoom, 2)].join(","))
+  if (snap.compare?.length) {
+    const item = (c) => (c.siteId ?? `${fixed(c.lat, 6)}:${fixed(c.lon, 6)}`) + (c.shiftH ? `@${fixed(c.shiftH, 2)}` : "")
+    q.set("cmp", snap.compare.map(item).join(","))
+  }
   return q
 }
 
 // Query string -> { found, patch (store fields), layersOn (layer ids, or null when absent),
-// place ({ siteId } | { lat, lon } | null) }.
+// place ({ siteId } | { lat, lon } | null), compare ([{ siteId } | { lat, lon }, each with shiftH], or null) }.
 // found: the link carries planner state, so it opens the planner instead of the welcome slides.
 export function decodeUrlState(search) {
   const q = new URLSearchParams(search)
@@ -89,5 +107,6 @@ export function decodeUrlState(search) {
   const m = numbers(q.get("map"), 3)
   if (m) camera.polar = { x: m[0] * 1000, y: m[1] * 1000, zoom: m[2] }
   if (camera.globe || camera.polar) patch.camera = { globe: camera.globe ?? null, polar: camera.polar ?? null }
-  return { found, patch, layersOn, place }
+  const compare = q.get("cmp") ? q.get("cmp").split(",").map(decodeCompareItem).filter(Boolean).slice(0, COMPARE_MAX) : null
+  return { found, patch, layersOn, place, compare }
 }

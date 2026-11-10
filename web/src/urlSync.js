@@ -4,15 +4,16 @@
 // are kept.
 
 import { URL_KEYS, decodeUrlState, encodeUrlState, urlSnapshot } from "@/lib/urlState.js"
-import { goToLatLon, loadSites, setPinLatLon, useStore } from "@/state.js"
+import { goToLatLon, loadSites, setCompareList, setPinLatLon, useStore } from "@/state.js"
 
 const SYNC_DELAY_MS = 300
 
 // Apply a link's state to the store. A link with planner state skips the welcome slides. The pin is placed
 // once its terrain (and, for site=, the site list) has loaded; it flies the globe there unless the link
-// also has a camera. Returns the decoded place ({ siteId } | { lat, lon } | null).
+// also has a camera. The compare columns are rebuilt the same way. Returns the decoded place
+// ({ siteId } | { lat, lon } | null).
 export function applyUrlState(search, { restorePlace = true } = {}) {
-  const { found, patch, layersOn, place } = decodeUrlState(search)
+  const { found, patch, layersOn, place, compare } = decodeUrlState(search)
   if (!found) return null
   useStore.setState((s) => {
     const next = { ...patch, screen: "app" }
@@ -29,6 +30,21 @@ export function applyUrlState(search, { restorePlace = true } = {}) {
       : placePin(place.lat, place.lon)
     pending.catch(() => {}) // a data error shows in <DataStatus>
   }
+  if (restorePlace && compare?.length) {
+    loadSites()
+      .then((pins) =>
+        setCompareList(
+          compare
+            .map((c) => {
+              if (!c.siteId) return c
+              const site = pins.find((q) => q.site.id === c.siteId)?.site
+              return site ? { lat: site.lat, lon: site.lon, site, shiftH: c.shiftH } : null // unknown id: skipped
+            })
+            .filter(Boolean),
+        ),
+      )
+      .catch(() => {}) // a data error shows in <DataStatus>
+  }
   return place
 }
 
@@ -39,12 +55,12 @@ function writeUrl() {
   const q = new URLSearchParams(location.search)
   for (const k of URL_KEYS) q.delete(k)
   for (const [k, v] of encodeUrlState(urlSnapshot(useStore.getState()))) q.set(k, v)
-  const qs = q.toString().replace(/%2C/g, ",").replace(/%3A/g, ":")
+  const qs = q.toString().replace(/%2C/g, ",").replace(/%3A/g, ":").replace(/%40/g, "@")
   const url = `${location.pathname}${qs ? `?${qs}` : ""}${location.hash}`
   if (url !== `${location.pathname}${location.search}${location.hash}`) history.replaceState(history.state, "", url)
 }
 
-const SYNCED = ["pin", "baseTimeUtcMs", "sliderOffsetH", "antennaM", "missionH", "sunMode", "view", "layers", "camera", "screen"]
+const SYNCED = ["pin", "baseTimeUtcMs", "sliderOffsetH", "antennaM", "missionH", "sunMode", "view", "layers", "camera", "compare", "screen"]
 
 export function startUrlSync() {
   useStore.subscribe((s, prev) => {

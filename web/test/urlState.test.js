@@ -59,6 +59,24 @@ describe("URL codec", () => {
     expect(place.lon).toBeCloseTo(180, 9)
   })
 
+  test("compare columns round-trip in order: site ids, places, date shifts; at most 4", () => {
+    const compare = [
+      { siteId: "apollo11", lat: 0.67416, lon: 23.47314, shiftH: 0 },
+      { siteId: "shackleton_rim", lat: -89.762, lon: -157.0672, shiftH: 708.734 },
+      { siteId: null, lat: -89.45, lon: -137.3, shiftH: -24 },
+    ]
+    const q = encodeUrlState(snapshot({ compare }))
+    expect(q.get("cmp")).toBe("apollo11,shackleton_rim@708.73,-89.45:-137.3@-24")
+    expect(decodeUrlState(`?${q}`).compare).toEqual([
+      { siteId: "apollo11", shiftH: 0 },
+      { siteId: "shackleton_rim", shiftH: 708.73 },
+      { lat: -89.45, lon: -137.3, shiftH: -24 },
+    ])
+    expect(decodeUrlState("?cmp=a1,b2,c3,d4,e5").compare).toHaveLength(4)
+    expect(decodeUrlState("?cmp=,91:0,x@y,apollo11").compare).toEqual([{ siteId: "apollo11", shiftH: 0 }])
+    expect(decodeUrlState("?cmp=apollo11").found).toBe(true)
+  })
+
   test("a heading of 359.97° travels as 0", () => {
     const cam = { lat: 0, lon: 0, heightM: 4.0e5, headingDeg: 359.97, pitchDeg: -90 }
     expect(encodeUrlState(snapshot({ camera: { globe: cam, polar: null } })).get("cam")).toBe("0,0,400,0,-90")

@@ -5,8 +5,8 @@
 import { create } from "zustand"
 import { createDataLoader, createGlobalDem, sampleBilinear, siteAccessor } from "@/engine/data.js"
 import { createHorizonWorker } from "@/engine/horizon.js"
-import { SUN_REFERENCE_HEIGHT_M, computeSiteHours } from "@/engine/hours.js"
-import { siteMetrics } from "@/engine/metrics.js"
+import { COMPARE_PRESETS, addCompareEntry, siteResults } from "@/engine/compare.js"
+import { SUN_REFERENCE_HEIGHT_M } from "@/engine/hours.js"
 import { project, unproject } from "@/engine/projection.js"
 import { MISSION_STAY_H } from "@/engine/ratings.js"
 import {
@@ -75,6 +75,10 @@ export const useStore = create((set) => ({
   tiers: { core: idleTier, polar: idleTier, global: idleTier }, // per-tier loading progress (bytes)
   ephemerisRange: null, // { startMs, endMs } from the manifest
   results: emptyResults,
+  // Compare (engine/compare.js): [{ id, pin, shiftH, color }], at most COMPARE_MAX. shiftH: hours after the main
+  // time (a "same site, different date" column). compareResults: id -> { status, error, tMs, results, slope }.
+  compare: [],
+  compareResults: {},
 
   // --- actions ---
   setBaseTime: (ms) => set({ baseTimeUtcMs: ms, sliderOffsetH: 0 }),
@@ -221,13 +225,18 @@ function makePin(latDeg, lonDeg, source, xy = null, site = null) {
 let pinRequest = 0
 export async function setPinLatLon(latDeg, lonDeg, site = null) {
   const request = ++pinRequest
+  const pin = await pinFor(latDeg, lonDeg, site)
+  if (request !== pinRequest) return null
+  if (pin) useStore.getState().setPin(pin)
+  return pin
+}
+
+// A pin object for (lat, lon) on the right terrain, loading that terrain first; null without terrain data.
+async function pinFor(latDeg, lonDeg, site = null) {
   await initData()
   const source = terrainSourceFor(latDeg, Boolean(engineData.manifest.grids))
   await ensureTier(tierForSource(source))
-  if (request !== pinRequest) return null
-  const pin = makePin(latDeg, lonDeg, source, null, site)
-  if (pin) useStore.getState().setPin(pin)
-  return pin
+  return makePin(latDeg, lonDeg, source, null, site)
 }
 
 // Fly the globe to (lat, lon) and pin it: picking a mission site, typed coordinates.
@@ -292,6 +301,23 @@ export function pickXY(x, y) {
 const latestRequest = { sun: 0, earth: 0 }
 let hoursFrame = 0
 
+// Horizons: one worker job at a time (main pin and compared sites share the queue), cached by place and
+// observer height, so a site picked again, compared, or duplicated at another date costs nothing.
+const HORIZON_CACHE_MAX = 24
+const horizonCache = new Map() // key -> Promise<{ horizon, ms }>
+let horizonQueue = Promise.resolve()
+function horizonFor(pin, heightM) {
+  const key = [pin.terrainSource, pin.lat, pin.lon, heightM].join("|")
+  const hit = horizonCache.get(key)
+  if (hit) return hit
+  const job = horizonQueue.then(() => worker.compute(pin.terrainSource, pin, heightM))
+  horizonQueue = job.catch(() => {})
+  horizonCache.set(key, job)
+  job.catch(() => horizonCache.delete(key))
+  if (horizonCache.size > HORIZON_CACHE_MAX) horizonCache.delete(horizonCache.keys().next().value)
+  return job
+}
+
 // Landing slope exists only on the Polar HD grids; Global terrain is too coarse to assess it.
 function slopeAt(pin) {
   if (pin.terrainSource !== "polar-hd") return null
@@ -326,10 +352,9 @@ async function recomputeHorizons(which) {
   }
   useStore.setState((s) => ({ results: { ...s.results, ...patch } }))
 
-  const job = (heightM) => worker.compute(pin.terrainSource, pin, heightM)
-  const sunJob = which.sun ? job(SUN_REFERENCE_HEIGHT_M) : null
-  // Same observer height: share the Sun horizon instead of computing it twice.
-  const earthJob = which.earth ? (sunJob && antennaM === SUN_REFERENCE_HEIGHT_M ? sunJob : job(antennaM)) : null
+  // Same observer height: the cache shares the Sun horizon instead of computing it twice.
+  const sunJob = which.sun ? horizonFor(pin, SUN_REFERENCE_HEIGHT_M) : null
+  const earthJob = which.earth ? horizonFor(pin, antennaM) : null
   const current = () => ids.sun === latestRequest.sun || ids.earth === latestRequest.earth
   try {
     const [sunRes, earthRes] = await Promise.all([sunJob, earthJob])
@@ -351,7 +376,8 @@ function recomputeHours() {
   const { pin, antennaM, sunMode, missionH } = s
   const { horizonSun, horizonEarth } = s.results
   if (!pin || !horizonSun || !horizonEarth || !engineData) return
-  const args = {
+  // The ratings' window and the metrics both follow the chosen mission length (compare columns: the same call).
+  const computed = siteResults({
     pin,
     horizonSun,
     horizonEarth,
@@ -359,11 +385,9 @@ function recomputeHours() {
     tableAccessor: siteAccessor(engineData.ephemeris, pin),
     tMs: selectEffectiveTimeMs(s),
     sunMode,
-  }
-  // The ratings' window and the metrics both follow the chosen mission length.
-  const computed = computeSiteHours({ ...args, windowH: missionH })
-  const metrics = siteMetrics({ ...args, missionH })
-  useStore.setState((st) => ({ results: { ...st.results, status: "ready", error: null, ...computed, metrics } }))
+    missionH,
+  })
+  useStore.setState((st) => ({ results: { ...st.results, status: "ready", error: null, ...computed } }))
 }
 
 // Coalesce rapid time changes (slider drag, Play) into one recompute per animation frame.
@@ -372,8 +396,124 @@ function scheduleHours() {
   hoursFrame = requestAnimationFrame(() => {
     hoursFrame = 0
     recomputeHours()
+    recomputeCompareHours()
   })
 }
+
+// --- compare ---
+// Horizons of compared sites stay out of React state: id -> { sun, earth, antennaM, slope }.
+const compareHorizons = new Map()
+let compareSeq = 0
+
+function addPinToCompare(pin, shiftH = 0) {
+  const r = addCompareEntry(useStore.getState().compare, { pin, shiftH }, `c${++compareSeq}`)
+  if (r.error) return { error: r.error }
+  useStore.setState({ compare: r.list })
+  return { id: r.list.at(-1).id }
+}
+
+// "+ Compare" on the sidebar: the current pin. Returns { id } or { error }.
+export function addCurrentPinToCompare() {
+  const { pin } = useStore.getState()
+  return pin ? addPinToCompare(pin) : { error: "Pick a site first" }
+}
+
+// "+ Compare" on a globe pin: any place (its terrain loads first). Resolves { id } or { error }.
+export async function addPlaceToCompare(latDeg, lonDeg, site = null) {
+  const pin = await pinFor(latDeg, lonDeg, site)
+  return pin ? addPinToCompare(pin) : { error: "No terrain data at this point" }
+}
+
+// "Same site, different date": a copy of a column with its own shift (hours after the main time).
+export function duplicateCompare(id, shiftH) {
+  const c = useStore.getState().compare.find((e) => e.id === id)
+  return c ? addPinToCompare(c.pin, shiftH) : { error: "Not in compare" }
+}
+
+export function removeFromCompare(id) {
+  useStore.setState((s) => ({ compare: s.compare.filter((c) => c.id !== id) }))
+}
+
+// Replace the whole list: presets and shared links. specs: [{ lat, lon, site?, shiftH? }]; places without
+// terrain data, duplicates and anything past COMPARE_MAX are skipped.
+export async function setCompareList(specs) {
+  const pins = await Promise.all(specs.map((sp) => pinFor(sp.lat, sp.lon, sp.site ?? null).catch(() => null)))
+  let list = []
+  pins.forEach((pin, i) => {
+    if (!pin) return
+    const r = addCompareEntry(list, { pin, shiftH: specs[i].shiftH ?? 0 }, `c${++compareSeq}`)
+    if (!r.error) list = r.list
+  })
+  useStore.setState({ compare: list })
+  return list
+}
+
+export async function loadComparePreset(presetId) {
+  const preset = COMPARE_PRESETS.find((p) => p.id === presetId)
+  if (!preset) return []
+  const pins = await loadSites()
+  const sites = preset.siteIds.map((id) => pins.find((p) => p.site.id === id)?.site).filter(Boolean)
+  return setCompareList(sites.map((site) => ({ lat: site.lat, lon: site.lon, site })))
+}
+
+// Horizons for every compared site at the current antenna height, through the shared queue; each column
+// fills in as soon as its horizons arrive. Results of removed columns are dropped.
+function syncCompareHorizons() {
+  const { compare, compareResults, antennaM } = useStore.getState()
+  const next = {}
+  for (const c of compare) {
+    const h = compareHorizons.get(c.id)
+    if (h && h.antennaM === antennaM && compareResults[c.id]) {
+      next[c.id] = compareResults[c.id]
+      continue
+    }
+    next[c.id] = { ...compareResults[c.id], status: "computing", error: null }
+    Promise.all([horizonFor(c.pin, SUN_REFERENCE_HEIGHT_M), horizonFor(c.pin, antennaM)])
+      .then(([sun, earth]) => {
+        const st = useStore.getState()
+        if (!st.compare.some((e) => e.id === c.id) || st.antennaM !== antennaM) return // removed, or antenna changed
+        compareHorizons.set(c.id, { sun: sun.horizon, earth: earth.horizon, antennaM, slope: slopeAt(c.pin) })
+        recomputeCompareHours([c.id])
+      })
+      .catch((err) => {
+        useStore.setState((st) => ({ compareResults: { ...st.compareResults, [c.id]: { status: "error", error: String(err.message || err) } } }))
+      })
+  }
+  for (const id of compareHorizons.keys()) if (!compare.some((c) => c.id === id)) compareHorizons.delete(id)
+  useStore.setState({ compareResults: next })
+}
+
+// Hours and metrics for compared sites (all, or only `ids`), each at the main time plus its own shift.
+function recomputeCompareHours(ids = null) {
+  const s = useStore.getState()
+  if (!engineData || !s.compare.length) return
+  const base = selectEffectiveTimeMs(s)
+  const out = { ...s.compareResults }
+  for (const c of s.compare) {
+    if (ids && !ids.includes(c.id)) continue
+    const h = compareHorizons.get(c.id)
+    if (!h || h.antennaM !== s.antennaM) continue
+    const tMs = base + c.shiftH * HOUR_MS
+    const results = siteResults({
+      pin: c.pin,
+      horizonSun: h.sun,
+      horizonEarth: h.earth,
+      antennaM: s.antennaM,
+      tableAccessor: siteAccessor(engineData.ephemeris, c.pin),
+      tMs,
+      sunMode: s.sunMode,
+      missionH: s.missionH,
+    })
+    out[c.id] = { status: "ready", error: null, tMs, results, slope: h.slope }
+  }
+  useStore.setState({ compareResults: out })
+}
+
+useStore.subscribe((s, prev) => {
+  if (s.dataReady && (s.compare !== prev.compare || s.antennaM !== prev.antennaM || s.dataReady !== prev.dataReady)) {
+    syncCompareHorizons()
+  }
+})
 
 useStore.subscribe((s, prev) => {
   if (s.dataReady && (s.pin !== prev.pin || s.dataReady !== prev.dataReady)) {
