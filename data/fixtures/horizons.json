@@ -1,32 +1,5 @@
 {
   "source": "https://ssd.jpl.nasa.gov/api/horizons.api",
-  "times_utc": [
-    "2026-11-15 06:07",
-    "2028-03-20 12:22",
-    "2030-07-04 18:41"
-  ],
-  "sites": [
-    [
-      -89.5,
-      0
-    ],
-    [
-      -88,
-      90
-    ],
-    [
-      -86,
-      180
-    ],
-    [
-      -85,
-      270
-    ],
-    [
-      -84.5,
-      45
-    ]
-  ],
   "records": [
     {
       "body": "sun",
@@ -34,7 +7,8 @@
       "lon": 0,
       "time_ut": "2026-Nov-15 06:07:00.000",
       "az_deg": 111.338367791,
-      "el_deg": 1.374243177
+      "el_deg": 1.374243177,
+      "set": "polar"
     },
     {
       "body": "sun",
@@ -42,7 +16,8 @@
       "lon": 0,
       "time_ut": "2028-Mar-20 12:22:00.000",
       "az_deg": 246.062030953,
-      "el_deg": -1.577869388
+      "el_deg": -1.577869388,
+      "set": "polar"
     },
     {
       "body": "sun",
@@ -50,7 +25,8 @@
       "lon": 0,
       "time_ut": "2030-Jul-04 18:41:00.000",
       "az_deg": 129.318912481,
-      "el_deg": 0.367929238
+      "el_deg": 0.367929238,
+      "set": "polar"
     },
     {
       "body": "sun",
@@ -58,7 +34,8 @@
       "lon": 90,
       "time_ut": "2026-Nov-15 06:07:00.000",
       "az_deg": 21.358082882,
-      "el_deg": 3.419005412
+      "el_deg": 3.419005412,
+      "set": "polar"
     },
     {
       "body": "sun",
@@ -66,7 +43,8 @@
       "lon": 90,
       "time_ut": "2028-Mar-20 12:22:00.000",
       "az_deg": 156.01779534,
-      "el_deg": -3.20255128
+      "el_deg": -3.20255128,
+      "set": "polar"
     },
     {
       "body": "sun",
@@ -74,7 +52,8 @@
       "lon": 90,
       "time_ut": "2030-Jul-04 18:41:00.000",
       "az_deg": 39.347641812,
-      "el_deg": 2.231784
+      "el_deg": 2.231784,
+      "set": "polar"
     },
     {
       "body": "sun",
@@ -82,7 +61,8 @@
       "lon": 180,
       "time_ut": "2026-Nov-15 06:07:00.000",
       "az_deg": 291.177830572,
-      "el_deg": 3.006538329
+      "el_deg": 3.006538329,
+      "set": "polar"
     },
     {
       "body": "sun",
@@ -90,7 +70,8 @@
       "lon": 180,
       "time_ut": "2028-Mar-20 12:22:00.000",
       "az_deg": 66.014418618,
-      "el_deg": 0.250487254
+      "el_deg": 0.250487254,
+      "set": "polar"
     },
     {
       "body": "sun",
@@ -98,7 +79,8 @@
       "lon": 180,
       "time_ut": "2030-Jul-04 18:41:00.000",
       "az_deg": 309.209788781,
-      "el_deg": 3.216856058
+      "el_deg": 3.216856058,
+      "set": "polar"
     },
     {
       "body": "sun",
@@ -106,7 +88,8 @@
       "lon": 270,
       "time_ut": "2026-Nov-15 06:07:00.000",
       "az_deg": 201.350981116,
-      "el_deg": -3.101485116
+      "el_deg": -3.101485116,
+      "set": "polar"
     },
     {
       "body": "sun",
@@ -114,7 +97,8 @@
       "lon": 270,
       "time_ut": "2028-Mar-20 12:22:00.000",
       "az_deg": 336.017963165,
-      "el_deg": 3.194468815
+      "el_deg": 3.194468815,
+      "set": "polar"
     },
     {
       "body": "sun",
@@ -122,7 +106,8 @@
       "lon": 270,
       "time_ut": "2030-Jul-04 18:41:00.000",
       "az_deg": 219.384480996,
-      "el_deg": -3.182690158
+      "el_deg": -3.182690158,
+      "set": "polar"
     },
     {
       "body": "sun",
@@ -130,7 +115,8 @@
       "lon": 45,
       "time_ut": "2026-Nov-15 06:07:00.000",
       "az_deg": 66.560557999,
-      "el_deg": 3.755650654
+      "el_deg": 3.755650654,
+      "set": "polar"
     },
     {
       "body": "sun",
@@ -138,7 +124,8 @@
       "lon": 45,
       "time_ut": "2028-Mar-20 12:22:00.000",
       "az_deg": 201.186842347,
-      "el_deg": -6.50606169
+      "el_deg": -6.50606169,
+      "set": "polar"
     },
     {
       "body": "sun",
@@ -146,7 +133,8 @@
       "lon": 45,
       "time_ut": "2030-Jul-04 18:41:00.000",
       "az_deg": 84.406740463,
-      "el_deg": 1.225575382
+      "el_deg": 1.225575382,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -154,7 +142,8 @@
       "lon": 0,
       "time_ut": "2026-Nov-15 06:07:00.000",
       "az_deg": 357.028470288,
-      "el_deg": -2.749448414
+      "el_deg": -2.749448414,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -162,7 +151,8 @@
       "lon": 0,
       "time_ut": "2028-Mar-20 12:22:00.000",
       "az_deg": 4.229471678,
-      "el_deg": 0.080764745
+      "el_deg": 0.080764745,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -170,7 +160,8 @@
       "lon": 0,
       "time_ut": "2030-Jul-04 18:41:00.000",
       "az_deg": 353.895386456,
-      "el_deg": -6.168998964
+      "el_deg": -6.168998964,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -178,7 +169,8 @@
       "lon": 90,
       "time_ut": "2026-Nov-15 06:07:00.000",
       "az_deg": 267.133794998,
-      "el_deg": -3.350514156
+      "el_deg": -3.350514156,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -186,7 +178,8 @@
       "lon": 90,
       "time_ut": "2028-Mar-20 12:22:00.000",
       "az_deg": 274.232803563,
-      "el_deg": -0.270296736
+      "el_deg": -0.270296736,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -194,7 +187,8 @@
       "lon": 90,
       "time_ut": "2030-Jul-04 18:41:00.000",
       "az_deg": 264.116881398,
-      "el_deg": -6.874768978
+      "el_deg": -6.874768978,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -202,7 +196,8 @@
       "lon": 180,
       "time_ut": "2026-Nov-15 06:07:00.000",
       "az_deg": 177.009010701,
-      "el_deg": -7.241684044
+      "el_deg": -7.241684044,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -210,7 +205,8 @@
       "lon": 180,
       "time_ut": "2028-Mar-20 12:22:00.000",
       "az_deg": 184.240595172,
-      "el_deg": -4.406231053
+      "el_deg": -4.406231053,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -218,7 +214,8 @@
       "lon": 180,
       "time_ut": "2030-Jul-04 18:41:00.000",
       "az_deg": 173.826411643,
-      "el_deg": -10.640308399
+      "el_deg": -10.640308399,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -226,7 +223,8 @@
       "lon": 270,
       "time_ut": "2026-Nov-15 06:07:00.000",
       "az_deg": 86.776969032,
-      "el_deg": -2.978343552
+      "el_deg": -2.978343552,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -234,7 +232,8 @@
       "lon": 270,
       "time_ut": "2028-Mar-20 12:22:00.000",
       "az_deg": 94.198526369,
-      "el_deg": -0.785489902
+      "el_deg": -0.785489902,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -242,7 +241,8 @@
       "lon": 270,
       "time_ut": "2030-Jul-04 18:41:00.000",
       "az_deg": 83.35523569,
-      "el_deg": -6.110435813
+      "el_deg": -6.110435813,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -250,7 +250,8 @@
       "lon": 45,
       "time_ut": "2026-Nov-15 06:07:00.000",
       "az_deg": 312.109926919,
-      "el_deg": 0.437616403
+      "el_deg": 0.437616403,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -258,7 +259,8 @@
       "lon": 45,
       "time_ut": "2028-Mar-20 12:22:00.000",
       "az_deg": 319.109375203,
-      "el_deg": 3.745574895
+      "el_deg": 3.745574895,
+      "set": "polar"
     },
     {
       "body": "earth",
@@ -266,12 +268,283 @@
       "lon": 45,
       "time_ut": "2030-Jul-04 18:41:00.000",
       "az_deg": 309.23938986,
-      "el_deg": -3.199547205
+      "el_deg": -3.199547205,
+      "set": "polar"
+    },
+    {
+      "set": "nonpolar",
+      "body": "sun",
+      "lat": 0.67416,
+      "lon": 23.47314,
+      "time_ut": "2026-Nov-15 06:07:00.000",
+      "az_deg": 91.583042357,
+      "el_deg": 2.12674821
+    },
+    {
+      "set": "nonpolar",
+      "body": "sun",
+      "lat": 0.67416,
+      "lon": 23.47314,
+      "time_ut": "2028-Mar-20 12:22:00.000",
+      "az_deg": 272.763028142,
+      "el_deg": -47.377206235
+    },
+    {
+      "set": "nonpolar",
+      "body": "sun",
+      "lat": 0.67416,
+      "lon": 23.47314,
+      "time_ut": "2030-Jul-04 18:41:00.000",
+      "az_deg": 90.521123306,
+      "el_deg": -15.84893894
+    },
+    {
+      "set": "nonpolar",
+      "body": "sun",
+      "lat": -45.444,
+      "lon": 177.599,
+      "time_ut": "2026-Nov-15 06:07:00.000",
+      "az_deg": 286.29746576,
+      "el_deg": 17.551375924
+    },
+    {
+      "set": "nonpolar",
+      "body": "sun",
+      "lat": -45.444,
+      "lon": 177.599,
+      "time_ut": "2028-Mar-20 12:22:00.000",
+      "az_deg": 73.327888503,
+      "el_deg": 13.917224823
+    },
+    {
+      "set": "nonpolar",
+      "body": "sun",
+      "lat": -45.444,
+      "lon": 177.599,
+      "time_ut": "2030-Jul-04 18:41:00.000",
+      "az_deg": 301.963874462,
+      "el_deg": 28.382833869
+    },
+    {
+      "set": "nonpolar",
+      "body": "sun",
+      "lat": 26.13222,
+      "lon": 3.63386,
+      "time_ut": "2026-Nov-15 06:07:00.000",
+      "az_deg": 83.446050231,
+      "el_deg": -16.542129369
+    },
+    {
+      "set": "nonpolar",
+      "body": "sun",
+      "lat": 26.13222,
+      "lon": 3.63386,
+      "time_ut": "2028-Mar-20 12:22:00.000",
+      "az_deg": 284.273170444,
+      "el_deg": -23.893448954
+    },
+    {
+      "set": "nonpolar",
+      "body": "sun",
+      "lat": 26.13222,
+      "lon": 3.63386,
+      "time_ut": "2030-Jul-04 18:41:00.000",
+      "az_deg": 73.140396137,
+      "el_deg": -31.930860959
+    },
+    {
+      "set": "nonpolar",
+      "body": "earth",
+      "lat": 0.67416,
+      "lon": 23.47314,
+      "time_ut": "2026-Nov-15 06:07:00.000",
+      "az_deg": 275.377223381,
+      "el_deg": 63.356989055
+    },
+    {
+      "set": "nonpolar",
+      "body": "earth",
+      "lat": 0.67416,
+      "lon": 23.47314,
+      "time_ut": "2028-Mar-20 12:22:00.000",
+      "az_deg": 268.587763697,
+      "el_deg": 70.668551186
+    },
+    {
+      "set": "nonpolar",
+      "body": "earth",
+      "lat": 0.67416,
+      "lon": 23.47314,
+      "time_ut": "2030-Jul-04 18:41:00.000",
+      "az_deg": 281.689760149,
+      "el_deg": 59.805838651
+    },
+    {
+      "set": "nonpolar",
+      "body": "earth",
+      "lat": -45.444,
+      "lon": 177.599,
+      "time_ut": "2026-Nov-15 06:07:00.000",
+      "az_deg": 179.153906036,
+      "el_deg": -47.721528365
+    },
+    {
+      "set": "nonpolar",
+      "body": "earth",
+      "lat": -45.444,
+      "lon": 177.599,
+      "time_ut": "2028-Mar-20 12:22:00.000",
+      "az_deg": 189.292153756,
+      "el_deg": -44.525779559
+    },
+    {
+      "set": "nonpolar",
+      "body": "earth",
+      "lat": -45.444,
+      "lon": 177.599,
+      "time_ut": "2030-Jul-04 18:41:00.000",
+      "az_deg": 174.157248484,
+      "el_deg": -50.996326192
+    },
+    {
+      "set": "nonpolar",
+      "body": "earth",
+      "lat": 26.13222,
+      "lon": 3.63386,
+      "time_ut": "2026-Nov-15 06:07:00.000",
+      "az_deg": 196.419484944,
+      "el_deg": 65.916644778
+    },
+    {
+      "set": "nonpolar",
+      "body": "earth",
+      "lat": 26.13222,
+      "lon": 3.63386,
+      "time_ut": "2028-Mar-20 12:22:00.000",
+      "az_deg": 178.6397459,
+      "el_deg": 63.923827927
+    },
+    {
+      "set": "nonpolar",
+      "body": "earth",
+      "lat": 26.13222,
+      "lon": 3.63386,
+      "time_ut": "2030-Jul-04 18:41:00.000",
+      "az_deg": 206.929031225,
+      "el_deg": 68.104302094
+    },
+    {
+      "set": "late",
+      "body": "sun",
+      "lat": -89.5,
+      "lon": 0,
+      "time_ut": "2033-Jun-21 03:17:00.000",
+      "az_deg": 255.205939632,
+      "el_deg": 1.319927949
+    },
+    {
+      "set": "late",
+      "body": "sun",
+      "lat": -89.5,
+      "lon": 0,
+      "time_ut": "2035-Sep-08 21:53:00.000",
+      "az_deg": 101.044978443,
+      "el_deg": -0.39734253
+    },
+    {
+      "set": "late",
+      "body": "sun",
+      "lat": 0.67416,
+      "lon": 23.47314,
+      "time_ut": "2033-Jun-21 03:17:00.000",
+      "az_deg": 268.687277016,
+      "el_deg": -38.260172565
+    },
+    {
+      "set": "late",
+      "body": "sun",
+      "lat": 0.67416,
+      "lon": 23.47314,
+      "time_ut": "2035-Sep-08 21:53:00.000",
+      "az_deg": 89.840454773,
+      "el_deg": 12.427105958
+    },
+    {
+      "set": "late",
+      "body": "sun",
+      "lat": -45.444,
+      "lon": 177.599,
+      "time_ut": "2033-Jun-21 03:17:00.000",
+      "az_deg": 82.127916899,
+      "el_deg": 9.694024161
+    },
+    {
+      "set": "late",
+      "body": "sun",
+      "lat": -45.444,
+      "lon": 177.599,
+      "time_ut": "2035-Sep-08 21:53:00.000",
+      "az_deg": 279.881146668,
+      "el_deg": 9.173439832
+    },
+    {
+      "set": "late",
+      "body": "earth",
+      "lat": -89.5,
+      "lon": 0,
+      "time_ut": "2033-Jun-21 03:17:00.000",
+      "az_deg": 0.368390065,
+      "el_deg": 0.567726433
+    },
+    {
+      "set": "late",
+      "body": "earth",
+      "lat": -89.5,
+      "lon": 0,
+      "time_ut": "2035-Sep-08 21:53:00.000",
+      "az_deg": 3.45721321,
+      "el_deg": 7.093154541
+    },
+    {
+      "set": "late",
+      "body": "earth",
+      "lat": 0.67416,
+      "lon": 23.47314,
+      "time_ut": "2033-Jun-21 03:17:00.000",
+      "az_deg": 267.562287025,
+      "el_deg": 66.767232123
+    },
+    {
+      "set": "late",
+      "body": "earth",
+      "lat": 0.67416,
+      "lon": 23.47314,
+      "time_ut": "2035-Sep-08 21:53:00.000",
+      "az_deg": 249.060602499,
+      "el_deg": 68.566996563
+    },
+    {
+      "set": "late",
+      "body": "earth",
+      "lat": -45.444,
+      "lon": 177.599,
+      "time_ut": "2033-Jun-21 03:17:00.000",
+      "az_deg": 183.861204171,
+      "el_deg": -44.346064092
+    },
+    {
+      "set": "late",
+      "body": "earth",
+      "lat": -45.444,
+      "lon": 177.599,
+      "time_ut": "2035-Sep-08 21:53:00.000",
+      "az_deg": 187.329529916,
+      "el_deg": -37.649522344
     }
   ],
   "headers": {
     "sun -89.5,0": [
-      "Ephemeris / API_USER Fri Oct  9 03:38:37 2026 Pasadena, USA      / Horizons",
+      "Ephemeris / API_USER Mon Nov  9 23:19:25 2026 Pasadena, USA      / Horizons",
       "Target body name: Sun (10)                        {source: DE441}",
       "Center body name: Moon (301)                      {source: DE441}",
       "Center-site name: (user defined site below)",
@@ -321,7 +594,7 @@
       "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
     ],
     "earth -89.5,0": [
-      "Ephemeris / API_USER Fri Oct  9 03:38:48 2026 Pasadena, USA      / Horizons",
+      "Ephemeris / API_USER Mon Nov  9 23:19:31 2026 Pasadena, USA      / Horizons",
       "Target body name: Earth (399)                     {source: DE441}",
       "Center body name: Moon (301)                      {source: DE441}",
       "Center-site name: (user defined site below)",
@@ -369,10 +642,152 @@
       "Center geodetic : 45.0, -84.5, 3.87284E-13        {E-lon(deg),Lat(deg),Alt(km)}",
       "Center cylindric: 45.0, 166.52241, -1729.4014     {E-lon(deg),Dxy(km),Dz(km)}",
       "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
+    ],
+    "sun 0.67416,23.47314": [
+      "Ephemeris / API_USER Mon Nov  9 23:19:27 2026 Pasadena, USA      / Horizons",
+      "Target body name: Sun (10)                        {source: DE441}",
+      "Center body name: Moon (301)                      {source: DE441}",
+      "Center-site name: (user defined site below)",
+      "Target radii    : 695700.0, 695700.0, 695700.0 km {Equator_a, b, pole_c}",
+      "Center geodetic : 23.47314, .67416, -4.31358E-13  {E-lon(deg),Lat(deg),Alt(km)}",
+      "Center cylindric: 23.47314, 1737.27973, 20.44232  {E-lon(deg),Dxy(km),Dz(km)}",
+      "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
+    ],
+    "sun -45.444,177.599": [
+      "Ephemeris / API_USER Mon Nov  9 23:19:29 2026 Pasadena, USA      / Horizons",
+      "Target body name: Sun (10)                        {source: DE441}",
+      "Center body name: Moon (301)                      {source: DE441}",
+      "Center-site name: (user defined site below)",
+      "Target radii    : 695700.0, 695700.0, 695700.0 km {Equator_a, b, pole_c}",
+      "Center geodetic : 177.599, -45.444, 0.0           {E-lon(deg),Lat(deg),Alt(km)}",
+      "Center cylindric: 177.599,1218.97035,-1238.01052  {E-lon(deg),Dxy(km),Dz(km)}",
+      "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
+    ],
+    "sun 26.13222,3.63386": [
+      "Ephemeris / API_USER Mon Nov  9 23:19:16 2026 Pasadena, USA      / Horizons",
+      "Target body name: Sun (10)                        {source: DE441}",
+      "Center body name: Moon (301)                      {source: DE441}",
+      "Center-site name: (user defined site below)",
+      "Target radii    : 695700.0, 695700.0, 695700.0 km {Equator_a, b, pole_c}",
+      "Center geodetic : 3.63386, 26.13222, -4.31989E-13 {E-lon(deg),Lat(deg),Alt(km)}",
+      "Center cylindric: 3.63386, 1559.80303, 765.22758  {E-lon(deg),Dxy(km),Dz(km)}",
+      "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
+    ],
+    "earth 0.67416,23.47314": [
+      "Ephemeris / API_USER Mon Nov  9 23:19:33 2026 Pasadena, USA      / Horizons",
+      "Target body name: Earth (399)                     {source: DE441}",
+      "Center body name: Moon (301)                      {source: DE441}",
+      "Center-site name: (user defined site below)",
+      "Target radii    : 6378.137, 6378.137, 6356.752 km {Equator_a, b, pole_c}",
+      "Center geodetic : 23.47314, .67416, -4.31358E-13  {E-lon(deg),Lat(deg),Alt(km)}",
+      "Center cylindric: 23.47314, 1737.27973, 20.44232  {E-lon(deg),Dxy(km),Dz(km)}",
+      "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
+    ],
+    "earth -45.444,177.599": [
+      "Ephemeris / API_USER Mon Nov  9 23:19:35 2026 Pasadena, USA      / Horizons",
+      "Target body name: Earth (399)                     {source: DE441}",
+      "Center body name: Moon (301)                      {source: DE441}",
+      "Center-site name: (user defined site below)",
+      "Target radii    : 6378.137, 6378.137, 6356.752 km {Equator_a, b, pole_c}",
+      "Center geodetic : 177.599, -45.444, 0.0           {E-lon(deg),Lat(deg),Alt(km)}",
+      "Center cylindric: 177.599,1218.97035,-1238.01052  {E-lon(deg),Dxy(km),Dz(km)}",
+      "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
+    ],
+    "earth 26.13222,3.63386": [
+      "Ephemeris / API_USER Mon Nov  9 23:19:22 2026 Pasadena, USA      / Horizons",
+      "Target body name: Earth (399)                     {source: DE441}",
+      "Center body name: Moon (301)                      {source: DE441}",
+      "Center-site name: (user defined site below)",
+      "Target radii    : 6378.137, 6378.137, 6356.752 km {Equator_a, b, pole_c}",
+      "Center geodetic : 3.63386, 26.13222, -4.31989E-13 {E-lon(deg),Lat(deg),Alt(km)}",
+      "Center cylindric: 3.63386, 1559.80303, 765.22758  {E-lon(deg),Dxy(km),Dz(km)}",
+      "Center radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}"
     ]
   },
   "signature": {
     "version": "1.2",
     "source": "NASA/JPL Horizons API"
+  },
+  "sets": {
+    "polar": {
+      "sites": [
+        [
+          -89.5,
+          0
+        ],
+        [
+          -88,
+          90
+        ],
+        [
+          -86,
+          180
+        ],
+        [
+          -85,
+          270
+        ],
+        [
+          -84.5,
+          45
+        ]
+      ],
+      "times_utc": [
+        "2026-11-15 06:07",
+        "2028-03-20 12:22",
+        "2030-07-04 18:41"
+      ]
+    },
+    "nonpolar": {
+      "sites": [
+        [
+          0.67416,
+          23.47314
+        ],
+        [
+          -45.444,
+          177.599
+        ],
+        [
+          26.13222,
+          3.63386
+        ]
+      ],
+      "names": [
+        "Apollo 11",
+        "Chang'e-4",
+        "Apollo 15 (Hadley-Apennine)"
+      ],
+      "sources": [
+        "https://en.wikipedia.org/wiki/Apollo_11 (Moon coordinates of the landing site, 0.67416 N 23.47314 E)",
+        "https://en.wikipedia.org/wiki/Chang%27e_4 (infobox landing site 45.444 S 177.599 E; cites Liu et al. 2019, Nature Communications)",
+        "https://en.wikipedia.org/wiki/Hadley%E2%80%93Apennine (26.13222 N 3.63386 E)"
+      ],
+      "times_utc": [
+        "2026-11-15 06:07",
+        "2028-03-20 12:22",
+        "2030-07-04 18:41"
+      ]
+    },
+    "late": {
+      "sites": [
+        [
+          -89.5,
+          0
+        ],
+        [
+          0.67416,
+          23.47314
+        ],
+        [
+          -45.444,
+          177.599
+        ]
+      ],
+      "times_utc": [
+        "2033-06-21 03:17",
+        "2035-09-08 21:53"
+      ]
+    }
   }
 }

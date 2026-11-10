@@ -1,6 +1,7 @@
-"""Phase 1: compare our azimuth/elevation (ephemeris.bin + PRD section 5.2 on a smooth
-1737.4 km sphere, height 0) with the cached JPL Horizons fixtures.
-Pass: max |d_az| and max |d_el| <= 0.1 deg for both Sun and Earth.
+"""Compare our azimuth/elevation (ephemeris.bin + az_el() on a smooth 1737.4 km sphere,
+height 0) with the cached JPL Horizons fixtures: polar test points, non-polar landing sites
+(Apollo 11, Chang'e-4, Apollo 15) and dates late in the range (2033-2035).
+Pass: max |d_az| and max |d_el| <= 0.1 deg for both Sun and Earth, overall and in every set.
 """
 import json
 import sys
@@ -28,6 +29,7 @@ def main():
     print(f"{'body':<6}{'lat':>7}{'lon':>6}  {'time (UTC)':<22}"
           f"{'az ours':>10}{'az HZN':>10}{'d_az':>8}{'el ours':>10}{'el HZN':>10}{'d_el':>8}")
     worst = {"sun": [0.0, 0.0], "earth": [0.0, 0.0]}
+    per_set = {}
     for rec in fx["records"]:
         t = parse_time(rec["time_ut"])
         sun, earth = body_at(man, arr, t)
@@ -36,8 +38,12 @@ def main():
         d_el = el - rec["el_deg"]
         w = worst[rec["body"]]
         w[0], w[1] = max(w[0], abs(d_az)), max(w[1], abs(d_el))
+        ps = per_set.setdefault(rec.get("set", "polar"), [0.0, 0])
+        ps[0], ps[1] = max(ps[0], abs(d_az), abs(d_el)), ps[1] + 1
         print(f"{rec['body']:<6}{rec['lat']:>7}{rec['lon']:>6}  {rec['time_ut']:<22}"
               f"{az:>10.4f}{rec['az_deg']:>10.4f}{d_az:>8.4f}{el:>10.4f}{rec['el_deg']:>10.4f}{d_el:>8.4f}")
+    for name, (worst_deg, n) in per_set.items():
+        print(f"set {name:<9} {n:>3} records  max |d_az|,|d_el| {worst_deg:.6f} deg")
     ok = True
     for body, (da, de) in worst.items():
         good = da <= TOL_DEG and de <= TOL_DEG

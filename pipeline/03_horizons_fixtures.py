@@ -1,6 +1,9 @@
-"""Phase 1: query JPL Horizons once for apparent azimuth/elevation of the Sun and Earth
-at 5 lunar surface sites x 3 UTC times. Caches to data/fixtures/horizons.json and
-skips the network entirely if that file already exists (delete it to re-query).
+"""Query JPL Horizons for apparent azimuth/elevation of the Sun and Earth at lunar surface sites
+and cache the results in data/fixtures/horizons.json.
+
+The fixture is built from named sets of (sites x UTC times). A set already in the file is never
+re-queried (its records are validation evidence); only missing sets go to the network. Delete the
+file to re-query everything.
 
 Horizons settings: observer table, CENTER='coord@301' (Moon), GEODETIC site
 (east longitude deg, latitude deg, altitude km), QUANTITIES='4' (apparent AZ & EL),
@@ -17,14 +20,31 @@ from common import FIXTURES
 
 API = "https://ssd.jpl.nasa.gov/api/horizons.api"
 OUT_FILE = FIXTURES / "horizons.json"
-
-SITES = [(-89.5, 0), (-88, 90), (-86, 180), (-85, 270), (-84.5, 45)]   # (lat, lon east)
-# Off the 15-minute grid on purpose, so the validation also exercises interpolation.
-TIMES_UTC = ["2026-11-15 06:07", "2028-03-20 12:22", "2030-07-04 18:41"]
 BODIES = {"sun": "10", "earth": "399"}
 
+# Times are off the ephemeris grid on purpose, so the validation also exercises interpolation.
+POLAR_TIMES = ["2026-11-15 06:07", "2028-03-20 12:22", "2030-07-04 18:41"]
+SETS = {
+    # (lat, lon east) test points in the polar map region
+    "polar": {"sites": [(-89.5, 0), (-88, 90), (-86, 180), (-85, 270), (-84.5, 45)], "times_utc": POLAR_TIMES},
+    # Non-polar landing sites; coordinates from the cited pages (NASA NSSDCA was unreachable on 2026-11-10).
+    "nonpolar": {
+        "sites": [(0.67416, 23.47314), (-45.444, 177.599), (26.13222, 3.63386)],
+        "names": ["Apollo 11", "Chang'e-4", "Apollo 15 (Hadley-Apennine)"],
+        "sources": [
+            "https://en.wikipedia.org/wiki/Apollo_11 (Moon coordinates of the landing site, 0.67416 N 23.47314 E)",
+            "https://en.wikipedia.org/wiki/Chang%27e_4 (infobox landing site 45.444 S 177.599 E; cites Liu et al. 2019, Nature Communications)",
+            "https://en.wikipedia.org/wiki/Hadley%E2%80%93Apennine (26.13222 N 3.63386 E)",
+        ],
+        "times_utc": POLAR_TIMES,
+    },
+    # Dates late in the extended ephemeris (2033-2035), one polar and two non-polar sites.
+    "late": {"sites": [(-89.5, 0), (0.67416, 23.47314), (-45.444, 177.599)],
+             "times_utc": ["2033-06-21 03:17", "2035-09-08 21:53"]},
+}
 
-def query(body_id, lat, lon):
+
+def query(body_id, lat, lon, times):
     params = {
         "format": "json",
         "COMMAND": f"'{body_id}'",
@@ -34,7 +54,7 @@ def query(body_id, lat, lon):
         "CENTER": "'coord@301'",
         "COORD_TYPE": "'GEODETIC'",
         "SITE_COORD": f"'{lon},{lat},0'",
-        "TLIST": " ".join(f"'{t}'" for t in TIMES_UTC),
+        "TLIST": " ".join(f"'{t}'" for t in times),
         "TLIST_TYPE": "CAL",
         "TIME_TYPE": "UT",
         "QUANTITIES": "'4'",
@@ -68,29 +88,39 @@ def header_lines(text):
     return [ln.strip() for ln in text.splitlines() if ln.strip().startswith(keys)]
 
 
+def load_existing():
+    if not OUT_FILE.exists():
+        return {"source": API, "sets": {}, "records": [], "headers": {}}
+    fx = json.loads(OUT_FILE.read_text())
+    if "sets" not in fx:  # first version of the file held only the polar set at the top level
+        fx["sets"] = {"polar": {"sites": fx.pop("sites"), "times_utc": fx.pop("times_utc")}}
+        for rec in fx["records"]:
+            rec.setdefault("set", "polar")
+    return fx
+
+
 def main():
-    if OUT_FILE.exists():
-        print(f"{OUT_FILE} exists: skipping Horizons (delete it to re-query)")
-        return
     FIXTURES.mkdir(parents=True, exist_ok=True)
-    out = {"source": API, "times_utc": TIMES_UTC, "sites": SITES, "records": [], "headers": {}}
-    for body, bid in BODIES.items():
-        for lat, lon in SITES:
-            text, sig = query(bid, lat, lon)
-            rows = parse(text)
-            if len(rows) != len(TIMES_UTC):
-                raise RuntimeError(f"expected {len(TIMES_UTC)} rows, got {len(rows)}:\n{text}")
-            for row in rows:
-                out["records"].append({"body": body, "lat": lat, "lon": lon, **row})
-            out["headers"][f"{body} {lat},{lon}"] = header_lines(text)
-            out["signature"] = sig
-            print(f"{body:<5} site ({lat:>6}, {lon:>4}): {len(rows)} rows")
-            time.sleep(1)  # be polite to the API
-    OUT_FILE.write_text(json.dumps(out, indent=2))
-    print("Horizons header (first query):")
-    for ln in next(iter(out["headers"].values())):
-        print("  " + ln)
-    print(f"wrote {OUT_FILE} ({len(out['records'])} records)")
+    fx = load_existing()
+    for name, spec in SETS.items():
+        if name in fx["sets"]:
+            print(f"set {name!r}: cached ({sum(r.get('set') == name for r in fx['records'])} records)")
+            continue
+        for body, bid in BODIES.items():
+            for lat, lon in spec["sites"]:
+                text, sig = query(bid, lat, lon, spec["times_utc"])
+                rows = parse(text)
+                if len(rows) != len(spec["times_utc"]):
+                    raise RuntimeError(f"expected {len(spec['times_utc'])} rows, got {len(rows)}:\n{text}")
+                for row in rows:
+                    fx["records"].append({"set": name, "body": body, "lat": lat, "lon": lon, **row})
+                fx["headers"][f"{body} {lat},{lon}"] = header_lines(text)
+                fx["signature"] = sig
+                print(f"set {name!r}: {body:<5} site ({lat:>9}, {lon:>9}): {len(rows)} rows")
+                time.sleep(1)  # be polite to the API
+        fx["sets"][name] = {k: v for k, v in spec.items()}
+        OUT_FILE.write_text(json.dumps(fx, indent=2))
+    print(f"wrote {OUT_FILE} ({len(fx['records'])} records in sets {', '.join(fx['sets'])})")
 
 
 if __name__ == "__main__":
