@@ -37,17 +37,21 @@ files in `src/components/ui/` are imported, all 15 dependencies and 7 dev depend
 
 | Phase | Item | What replaces it |
 |---|---|---|
-| P1 | [ ] `loadAll()` in `engine/data.js` loads every file at start (54 MB, see VALIDATION.md) | Tiered `core` / `globe` / `global` / `polar` loading; `DataStatus` shows per-tier progress |
-| P1 | [ ] Hard-coded `EPHEMERIS_START_UTC_MS` / `EPHEMERIS_END_UTC_MS` in `state.js` (used by `DatePicker`, `BodyCard`) | Derived from `manifest.json` |
-| P1 | [ ] `MISSION_STAY_H` used as a fixed constant (`ratings.js`; used by `AppBar`, `SunCard`, `EarthCard`) **and** the duplicate `WINDOW_H = 156` in `hours.js` | One `missionH` in the store. Do not change rating thresholds (rule 8) |
-| P1 | [ ] `HORIZON_SAMPLES`, `HORIZON_AZ_STEP_DEG`, `HORIZON_MAX_RANGE_M` exported from `horizon.js` with no importer | `horizonGlobal.js` imports them (one source of truth). Unexport if it doesn't |
-| P1 | [ ] `STEP_H`, `BISECT_TOLERANCE_H` exported from `hours.js` with no importer | `series.js` imports them. Unexport if it doesn't |
-| P1 | [ ] `MAP_LAT_LIMIT_DEG` exported from `state.js` with no importer | The terrain-source router uses it. Unexport if it doesn't |
-| P1 | [ ] "Phase N" / "PRD section N" tags in pipeline docstrings (`00`–`09`, `common.py`) | Reword when `02`, `03`, `05`, `07`, `09` are edited; the rest in P7. Comment-only for `05`–`08` |
-| P1/P2 | [ ] "2026 to 2030" and "south pole only" wording: `index.html` meta description, README intro and "Region" line, About popover first line | Reworded when dates reach 2035 (P1) and the globe ships (P2) |
+| P1 | [x] `loadAll()` in `engine/data.js` loads every file at start (54 MB, see VALIDATION.md) | Done: `createDataLoader()` with `core` / `globe` / `polar` / `global` tiers; `DataStatus` shows per-tier byte progress; first load 4.6 MB |
+| P1 | [x] Hard-coded `EPHEMERIS_START_UTC_MS` / `EPHEMERIS_END_UTC_MS` in `state.js` (used by `DatePicker`, `BodyCard`) | Done: `ephemerisRange` in the store, from the manifest |
+| P1 | [x] `MISSION_STAY_H` used as a fixed constant (`ratings.js`; used by `AppBar`, `SunCard`, `EarthCard`) **and** the duplicate `WINDOW_H = 156` in `hours.js` | Done: `WINDOW_H` deleted; `missionH` (156 / 336 h) in the store drives the metrics window. `MISSION_STAY_H` stays as the one rating-window constant, because the ratings are defined on NASA's 6.5 d stay (rule 8). Whether ratings should follow `missionH` is a human decision for Phase 5 |
+| P1 | [x] `HORIZON_SAMPLES`, `HORIZON_AZ_STEP_DEG`, `HORIZON_MAX_RANGE_M` exported from `horizon.js` with no importer | Done: `horizonGlobal.js` imports them |
+| P1 | [x] `STEP_H`, `BISECT_TOLERANCE_H` exported from `hours.js` with no importer | Done: `series.js` / `metrics.js` import `STEP_H` and the shared `bisect()`; `BISECT_TOLERANCE_H` unexported |
+| P1 | [x] `MAP_LAT_LIMIT_DEG` exported from `state.js` with no importer | Done: replaced by `POLAR_HD_LAT_LIMIT_DEG` in `engine/terrain.js` (the router) |
+| P1 | [x] "Phase N" / "PRD section N" tags in pipeline docstrings (`00`–`09`, `common.py`) | Done (all of them, comment-only for `05`–`08`) |
+| P1/P2 | [ ] "2026 to 2030" and "south pole only" wording: `index.html` meta description, README intro and "Region" line, About popover first line | P1 done: dates read 2035 everywhere, README Region line names Polar HD and Global. P2: the About popover and meta description still say "near the lunar south pole" until the globe ships |
 | P2 | [ ] README "The app makes no network requests at runtime" | Reworded: Moon Trek imagery tiles are the only runtime network use (rule 3) |
 | P2 | [ ] `latLonToUnit` exported from `geometry.js` with no importer | `globe.js` imports it. Unexport if it doesn't |
-| P2 | [ ] `MapPanel.jsx` + `map/map.js` | **Renamed** to the Polar HD view, not duplicated |
+| P2 | [ ] `MapPanel.jsx` + `map/map.js` | **Renamed** to the Polar HD view, not duplicated (P1 already made it load the `polar` tier itself) |
+| P2 | [ ] `setPinLatLon` in `state.js` (dev hook only for now) | Exported again when the globe / typed coordinates (P2/P3) call it |
+| P2 | [ ] `globe` data tier (`engine/data.js`) returns URLs nobody reads yet | `globe.js` uses `fallbackTextureUrl`, `southPoleHdUrl`, `featuresUrl` |
+| P3 | [ ] `polar` tier `layerUrls` (`illum_avg.png`, `psr.png`) not shown yet | Polar HD map layers (P3.4) |
+| P5 | [ ] `results.metrics` (mission metrics, next windows) not shown yet | Cards, countdowns, timeline and Details list |
 | P2 | [ ] `ViewToggle` `Map \| Surface` | Same component becomes `Globe \| Polar HD \| Surface` |
 | P3 | [ ] Dev-only URL parsing: `devParams` in `state.js` (`?screen&pin&t&view`) and `devStartSlide` (`?slide=`) in `WelcomeFlow.jsx` | Production URL state; delete the dev-only parsers, don't keep both |
 | P5 | [ ] `TimeBar.jsx` slider and Play | `TimelineStrip` playhead: **one** time control. `PLAY_SPEEDS_H_PER_S` changes from `[6, 12, 24, 72]` to `[1, 6, 24, 72]` |

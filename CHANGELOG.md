@@ -20,6 +20,26 @@ The Local Lead confirmed that building before the event is allowed.
   and stale PRD/phase tags in code comments. No change in behaviour.
 - Added `CLAUDE.md` (working rules for Claude Code) and documented the Vercel deploy in the README.
 
+### Phase 1: global data and engine (2026-11-10)
+
+- **Dates now run 2026 to 2035.** The ephemeris is sampled every 30 minutes (same 4.2 MB file);
+  interpolation error against SPICE is at most 0.000033°.
+- **Any point on the Moon can be computed.** Outside 84°S the engine uses LOLA's global terrain
+  (~1.9 km), and the Landing card says "Not assessed (coarse terrain)" there. Every result shows its
+  terrain source ("Polar HD · 120 m" or "Global · ~1.9 km"). The globe that lets you pick such points
+  arrives in Phase 2; for now it works through the dev hooks.
+- **Much faster first load: 4.6 MB instead of 54 MB.** Data loads in tiers: the ephemeris at start,
+  the polar terrain when the map opens (with a progress bar), the global terrain on first use.
+- New mission metrics in the engine (shown in later phases): share of time with sunlight, Earth in
+  view and both; hours with power but no Earth link; longest dark and no-Earth stretches; the next
+  five windows; Sun elevation now, lowest and highest. Mission length 6.5 d or 14 d. Ratings keep
+  NASA's 6.5-day window.
+- New data, all from NASA: LOLA global terrain (PDS), NASA's average-sunlight and permanent-shadow
+  maps of the south pole (for the Phase 3 map layers), an offline Moon texture and a South Pole HD
+  overlay (for the Phase 2 globe), and 1709 IAU feature names for globe labels.
+- Validation extended: JPL Horizons at Apollo 11, Chang'e-4, Apollo 15 and in 2033-2035; Python
+  references for the global horizon and the metrics. 69 tests pass.
+
 ### Earlier (before 2026-11-10)
 
 - South-pole landing site planner: Sun and Earth visibility from SPICE ephemeris and LOLA terrain
