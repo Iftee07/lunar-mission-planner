@@ -47,6 +47,12 @@ export function formatShortDate(ms) {
   return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`
 }
 
+// UTC ms -> "12 Apr 06:00" (Details windows).
+export function formatDayTime(ms) {
+  const d = new Date(ms)
+  return `${formatShortDate(ms)} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`
+}
+
 // Fraction 0..1 -> "42%"
 export const formatPercent = (fraction) => `${Math.round(fraction * 100)}%`
 

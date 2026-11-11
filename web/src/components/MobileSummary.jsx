@@ -1,5 +1,7 @@
 import { ChevronDown, LoaderCircle, MousePointerClick } from "lucide-react"
+import { countdown } from "@/engine/countdown.js"
 import { rateEarth, rateLanding, rateSun } from "@/engine/ratings.js"
+import { formatCountdown } from "@/lib/format.js"
 import { cn } from "@/lib/utils"
 import { selectOutOfRange, useStore } from "@/state.js"
 
@@ -9,10 +11,14 @@ const TONE = {
   bad: "bg-lspb-bad text-background",
   none: "border text-muted-foreground",
 }
+const COUNT_TONE = { ok: "text-lspb-ok", warn: "text-lspb-warn", bad: "text-lspb-bad", none: "text-muted-foreground" }
+const EVENT = { set: "set", rise: "rise" }
 // Global terrain (~1.9 km) is too coarse for a slope: no landing rating there (BUILD_PLAN rule 10).
 const NOT_ASSESSED = { label: "Not assessed", color: "none" }
 
-function Chip({ name, nameClass, rating }) {
+// One body or the landing: name, rating badge, and the same countdown as its card ("set 42 h").
+function Chip({ name, nameClass, rating, hours }) {
+  const c = hours ? countdown(hours) : null
   return (
     <span className="flex min-w-0 flex-col items-center gap-0.5">
       <span className={cn("text-xs font-semibold tracking-wider uppercase", nameClass)}>{name}</span>
@@ -21,12 +27,17 @@ function Chip({ name, nameClass, rating }) {
       ) : (
         <LoaderCircle className="size-4 animate-spin text-muted-foreground" aria-label="Computing" />
       )}
+      {c && (
+        <span className={cn("font-mono text-xs whitespace-nowrap tabular-nums", COUNT_TONE[c.tone])}>
+          {EVENT[c.event]} {formatCountdown(c.inH)}
+        </span>
+      )}
     </span>
   )
 }
 
 // Phones and tablets (< 1024 px): the cards sit below the map, so this strip over the bottom of the main
-// view shows the three ratings at once; tapping it scrolls to the full cards.
+// view summarises them (ratings and the set / rise countdowns); tapping it scrolls to the full cards.
 export default function MobileSummary() {
   const dataReady = useStore((s) => s.dataReady)
   const hasPin = useStore((s) => s.pin !== null)
@@ -58,8 +69,8 @@ export default function MobileSummary() {
         <span className="flex-1 text-lspb-warn">Date outside ephemeris range</span>
       ) : (
         <span className="grid flex-1 grid-cols-3 gap-2">
-          <Chip name="Sun" nameClass="text-lspb-sun" rating={ready && sun ? rateSun(sun, missionH) : null} />
-          <Chip name="Earth" nameClass="text-lspb-earth" rating={ready && earth ? rateEarth(earth, missionH) : null} />
+          <Chip name="Sun" nameClass="text-lspb-sun" rating={ready && sun ? rateSun(sun, missionH) : null} hours={ready ? sun : null} />
+          <Chip name="Earth" nameClass="text-lspb-earth" rating={ready && earth ? rateEarth(earth, missionH) : null} hours={ready ? earth : null} />
           <Chip name="Landing" rating={coarse ? NOT_ASSESSED : slope ? rateLanding(slope.planeDeg) : null} />
         </span>
       )}

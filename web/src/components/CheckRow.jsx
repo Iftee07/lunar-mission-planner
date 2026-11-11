@@ -1,4 +1,4 @@
-// A labelled checkbox row for the map Layers popovers (globe and Polar HD).
+// A labelled checkbox row (the map Layers popovers, the Details card).
 export default function CheckRow({ checked, onChange, children }) {
   return (
     <label className="flex cursor-pointer items-center gap-2 py-0.5">

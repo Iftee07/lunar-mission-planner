@@ -3,6 +3,7 @@ import { motion } from "motion/react"
 import { useStore } from "@/state.js"
 import AntennaCard from "./AntennaCard"
 import CompareButton from "./CompareButton"
+import DetailsCard from "./DetailsCard"
 import EarthCard from "./EarthCard"
 import LandingCard from "./LandingCard"
 import { CardMessage, MetricCard, SkeletonRows } from "./MetricCard"
@@ -33,7 +34,7 @@ function EmptyState() {
   )
 }
 
-// Right sidebar: Site line, + Compare, then Sun, Earth, Landing, Antenna cards.
+// Right sidebar: Site line, + Compare, then Sun, Earth, Landing, Details, Antenna cards.
 export default function Sidebar() {
   const dataReady = useStore((s) => s.dataReady)
   const dataError = useStore((s) => s.dataError)
@@ -51,7 +52,7 @@ export default function Sidebar() {
   else
     main = (
       <motion.div variants={list} initial="hidden" animate="show" className="space-y-3">
-        {[["site", SiteLine], ["compare", CompareButton], ["sun", SunCard], ["earth", EarthCard], ["landing", LandingCard]].map(([key, Card]) => (
+        {[["site", SiteLine], ["compare", CompareButton], ["sun", SunCard], ["earth", EarthCard], ["landing", LandingCard], ["details", DetailsCard]].map(([key, Card]) => (
           <motion.div key={key} variants={item}>
             <Card />
           </motion.div>

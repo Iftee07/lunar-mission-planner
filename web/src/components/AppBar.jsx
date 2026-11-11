@@ -71,7 +71,7 @@ function About() {
           <p className="text-xs text-muted-foreground">Each badge&apos;s (?) explains its rule with live numbers.</p>
         </Section>
         <Section title="Units">
-          <p>Durations in Earth days (d). All times are UTC.</p>
+          <p>Durations in Earth days (d); countdowns under 2 days in hours (h). All times are UTC.</p>
         </Section>
         <Section title="Keyboard">
           <ul className="space-y-1">
@@ -90,6 +90,10 @@ function About() {
             </li>
             <li>
               Surface: <Kbd>←↑→↓</Kbd> look around, <Kbd>+</Kbd> <Kbd>−</Kbd> zoom
+            </li>
+            <li>
+              Timeline: <Kbd>←</Kbd> <Kbd>→</Kbd> 15 min, <Kbd>Shift</Kbd> + <Kbd>←</Kbd> <Kbd>→</Kbd> 1 day, <Kbd>Home</Kbd>{" "}
+              <Kbd>End</Kbd> the ends. Click a bar to jump to its start
             </li>
           </ul>
         </Section>
