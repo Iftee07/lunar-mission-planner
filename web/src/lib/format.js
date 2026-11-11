@@ -33,7 +33,7 @@ export const formatPlaySpeed = (hPerS) => (hPerS < HOURS_PER_DAY ? `${hPerS} h/s
 
 // Countdown (hours until a set or rise): under 2 days in hours ("9.4 h", "42 h"), otherwise in days
 // ("3.2 d"); Infinity or null -> "62.5+ d" (no change within the lookahead).
-export const COUNTDOWN_HOURS_BELOW_H = 2 * HOURS_PER_DAY
+const COUNTDOWN_HOURS_BELOW_H = 2 * HOURS_PER_DAY
 export function formatCountdown(hours) {
   if (hours === null || hours === Infinity || hours >= COUNTDOWN_HOURS_BELOW_H) return formatDays(hours)
   return `${hours < 10 ? hours.toFixed(1) : Math.round(hours)} h`

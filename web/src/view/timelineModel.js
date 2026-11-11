@@ -4,8 +4,8 @@
 export const TIMELINE_ROWS = ["sun", "earth", "both"]
 const HOUR_MS = 3600000
 const DAY_H = 24
-export const KEY_STEP_H = 0.25 // arrow keys
-export const KEY_STEP_LARGE_H = 24 // Shift + arrow, Page Up / Page Down
+const KEY_STEP_H = 0.25 // arrow keys
+const KEY_STEP_LARGE_H = 24 // Shift + arrow, Page Up / Page Down
 const TOP_H = 14 // mission bracket and the playhead's handle
 const AXIS_H = 16 // day labels
 const ROW_GAP = 2
