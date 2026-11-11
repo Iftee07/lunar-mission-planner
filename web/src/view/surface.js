@@ -8,8 +8,9 @@
 //   2. terrain: polar grid draped on the pin's terrain (fill in background colour + polygon offset, lines on top)
 //   3. overlay: skyline (heaviest line); nearer ridgelines below it (the terrain horizon limited to
 //               RIDGE_RANGES_M, so they show where closer terrain rises and give the ground depth);
-//               Sun and Earth discs, their paths; always visible,
-//               a body below the skyline is dashed in the "blocked" colour
+//               Sun and Earth discs, their paths ahead and short fading trails behind (so a time-lapse shows
+//               them moving while the skyline stays fixed); always visible, a body below the skyline is
+//               dashed in the "blocked" colour; faint "ghost" discs at the time hovered on the timeline
 // Antenna model: the drawn skyline is the Earth/antenna-height skyline (horizonEarth). The Sun
 // is placed and tested from SUN_REFERENCE_HEIGHT_M against horizonSun, so the Sun's "(blocked)" label
 // can occasionally disagree slightly with the drawn skyline.
@@ -30,6 +31,9 @@ const SKY_R = 100
 const EARTH_RADIUS_KM = 6371
 const PATH_SPAN_H = 156
 const PATH_STEP_H = 1
+const TRAIL_H = 12 // fading trail behind each body
+const TRAIL_STEP_H = 0.5
+const GHOST_OPACITY = 0.35
 const HOUR_MS = 3600000
 const PITCH_MIN = -20
 const PITCH_MAX = 60
@@ -329,11 +333,23 @@ export function createSurface(container, { engineData }) {
     path.visible = false
     overlayGroup.add(path)
 
+    // trail: the last TRAIL_H, opacity fading to 0 at its far end (RGBA vertex colours)
+    const trailMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthTest: false })
+    const trail = new THREE.Line(new THREE.BufferGeometry(), trailMat)
+    trail.renderOrder = 2
+    trail.visible = false
+    overlayGroup.add(trail)
+    const ghostMat = new THREE.LineBasicMaterial({ color: col(theme[colorToken]), transparent: true, opacity: GHOST_OPACITY, depthTest: false })
+    const ghost = new THREE.Line(disc.geometry, ghostMat)
+    ghost.renderOrder = 2
+    ghost.visible = false
+    overlayGroup.add(ghost)
+
     const reticle = document.createElement("div")
     reticle.className = `lspb-reticle lspb-reticle-${name}`
     labelLayer.appendChild(reticle)
     const label = addLabel("", `lspb-surface-label-${name}`, () => g.position.clone().add(camera.position))
-    return { name, g, disc, solid, dashed, path, reticle, label, azEl: null, blocked: false }
+    return { name, g, disc, solid, dashed, path, trail, ghost, rgb: col(theme[colorToken]), reticle, label, azEl: null, blocked: false }
   }
   const sun = makeBody("sun", "sun")
   const earth = makeBody("earth", "earth")
@@ -360,10 +376,46 @@ export function createSurface(container, { engineData }) {
     b.path.visible = pts.length > 1
   }
 
+  // pts oldest first; alpha ramps from 0 (oldest) to 0.9 (now)
+  function setTrail(b, pts) {
+    b.trail.geometry.dispose()
+    const geom = new THREE.BufferGeometry().setFromPoints(pts)
+    const rgba = new Float32Array(pts.length * 4)
+    pts.forEach((_, i) => rgba.set([b.rgb.r, b.rgb.g, b.rgb.b, pts.length > 1 ? (0.9 * i) / (pts.length - 1) : 0], i * 4))
+    geom.setAttribute("color", new THREE.BufferAttribute(rgba, 4))
+    b.trail.geometry = geom
+    b.trail.visible = pts.length > 1
+  }
+
+  // Faint discs where the bodies are at timeMs (the timeline hover), or none (null).
+  let ghostMs = null
+  function setGhost(timeMs) {
+    ghostMs = timeMs
+    const eph = engineData.ephemeris
+    const sv = site && timeMs !== null ? eph.vectorAt("sun", timeMs) : null
+    const ev = site && timeMs !== null ? eph.vectorAt("earth", timeMs) : null
+    if (!sv || !ev || !sun.g.visible) {
+      sun.ghost.visible = earth.ghost.visible = false
+      return
+    }
+    const place = (b, azEl, angDeg) => {
+      b.ghost.position.copy(dirFromAzEl(azEl.azDeg, azEl.elDeg, SKY_R))
+      b.ghost.lookAt(0, 0, 0)
+      const r = SKY_R * Math.tan(angDeg * D2R)
+      b.ghost.scale.set(r, r, r)
+      b.ghost.visible = true
+    }
+    place(sun, azElFromSite(site.sunGeom, sv), SUN_SEMIDIAMETER_DEG)
+    const e = azElFromSite(site.geom, ev)
+    place(earth, e, angularRadiusDeg(EARTH_RADIUS_KM, e.distKm))
+  }
+
   function hideBodies() {
     for (const b of [sun, earth]) {
       b.g.visible = false
       b.path.visible = false
+      b.trail.visible = false
+      b.ghost.visible = false
       b.azEl = null
       b.label.el.textContent = ""
     }
@@ -425,6 +477,21 @@ export function createSurface(container, { engineData }) {
     }
     setPath(sun, ps)
     setPath(earth, pe)
+    const ts = []
+    const te = []
+    for (let h = -TRAIL_H; h <= 1e-9; h += TRAIL_STEP_H) {
+      const t = timeMs + h * HOUR_MS
+      const a = eph.vectorAt("sun", t)
+      const b = eph.vectorAt("earth", t)
+      if (!a || !b) continue
+      const x = azElFromSite(site.sunGeom, a)
+      const y = azElFromSite(site.geom, b)
+      ts.push(dirFromAzEl(x.azDeg, x.elDeg, SKY_R))
+      te.push(dirFromAzEl(y.azDeg, y.elDeg, SKY_R))
+    }
+    setTrail(sun, ts)
+    setTrail(earth, te)
+    setGhost(ghostMs)
 
     if (pinChanged) {
       // initial view: toward the Sun if it is above the skyline, else north
@@ -633,6 +700,7 @@ export function createSurface(container, { engineData }) {
 
   return {
     update,
+    setGhost,
     start,
     stop,
     destroy,

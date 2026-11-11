@@ -41,6 +41,7 @@ export default function SurfacePanel({ active }) {
       ) {
         api.update(viewState(s), s.results)
       }
+      if (s.ghostTimeMs !== prev.ghostTimeMs) api.setGhost(s.ghostTimeMs) // timeline hover: faint Sun and Earth
     })
     if (import.meta.env.DEV && window.lspb) window.lspb.surface = api
     return () => {
