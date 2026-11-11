@@ -133,8 +133,15 @@ The site is deployed on Vercel straight from git, as a static Vite build:
    and Surface) shows the sky from the pin: the terrain
    skyline, the Sun and Earth and their paths over the next 6.5 days. Drag or use the arrow keys to look
    around, wheel or `+`/`-` to zoom (pinch on a touch screen).
-8. **Share it.** The address bar always holds the current view: site or pin, time, antenna height,
-   mission length, view, map layers and camera (for example
+8. **Compare.** "+ Compare" (under the site name, or in a mission pin's tooltip on the globe) adds the site
+   to the compare drawer above the time bar: up to 4 columns with terrain, Sun elevation now, Power, Talk to
+   Earth, Landing, the sunlit / Earth / both shares over the mission, power without Earth, the longest dark
+   spell and when the Sun and Earth set. The best value in each row glows. The calendar button on a column
+   adds the same site one lunar day (29.5 d) or one month later, or at a typed UTC time: the "schedule slipped"
+   case. One-tap presets: "Equator vs pole" (Apollo 11 vs Shackleton rim) and "Two Artemis III regions". On
+   the globe, compared sites get numbered markers joined by arcs. On a phone the columns swipe sideways.
+9. **Share it.** The address bar always holds the current view: site or pin, time, antenna height,
+   mission length, view, map layers, compared sites and camera (for example
    `?site=shackleton_rim&t=2026-03-26T00:00Z&view=polar&layers=slope`). "Copy link" copies it. Opening
    such a link skips the welcome slides and restores the view: when a schedule slips, send the
    alternative site or date as a link.
@@ -318,8 +325,10 @@ All numbers below were measured on this repository's generated data.
 | Polar HD layers at Shackleton (cursor readout) | floor: 0% sunlit, permanent shadow; rim: 80% sunlit, slope 3.3° |
 | Typed coordinates (26 cases: signed, N/S/E/W, 0-360 east, errors) | all parse or fail as expected |
 | Shareable link: store -> URL -> store, and reload in the browser | same state; same URL after a reload |
+| Compare column vs the single-site cards (same time; +1 lunar day vs the cards at that time) | identical, well within 0.01 h |
+| Compare: 4 new sites, terrain already loaded (Polar HD / Global / mixed) | 0.74 / 0.19 / 0.48 s (budget 1.5 s) |
 
-Run them yourself: `npm test` in `web/` (132 tests) and the `05` to `08` pipeline scripts. The full
+Run them yourself: `npm test` in `web/` (143 tests) and the `05` to `08` pipeline scripts. The full
 history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 ## Known limits

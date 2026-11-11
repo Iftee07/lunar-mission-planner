@@ -65,7 +65,7 @@ files in `src/components/ui/` are imported, all 15 dependencies and 7 dev depend
 | P6e | [ ] About popover "Ratings" section (repeats the badge rules) | Text comes from `explanations.js` |
 | P7 | [ ] `ATTRIBUTIONS.md` wording ("PRD rule 11", "PRD v3", "Phase 7") | Reword only; the file itself stays |
 | P7 | [ ] One-off `npx knip` (blocked in Phase 0) | Run it and fix everything it finds. Needs the human to allow the download |
-| P7 | [ ] `lspb.globe.benchmark()` and `lspb.surface.debugCheck()` (dev-only validation aids, reached through the dev hooks) | Keep while performance is still being recorded; decide in the final sweep |
+| P7 | [ ] `lspb.globe.benchmark()`, `lspb.surface.debugCheck()` and `lspb.setCompareList()` (dev-only validation aids, reached through the dev hooks; the last times the compare budget) | Keep while performance is still being recorded; decide in the final sweep |
 
 ## Keep (why)
 

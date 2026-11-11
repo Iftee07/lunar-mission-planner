@@ -165,3 +165,37 @@ Browser checks ran in Chrome (headless, real GPU through ANGLE / Direct3D 11) ov
 
 Not re-run in Phase 3 (no engine, ephemeris, terrain or site-data change): pipeline `05`-`08` and `11`. Their
 fixtures and `sites.json` are checked by `npm test`, which passed.
+
+## Phase 4 — 2026-11-11
+
+Browser checks as in Phase 3 (headless Chrome over the DevTools Protocol, real GPU), against `npm run preview`
+unless marked "dev" (`npm run dev`, used where a timing needs the `lspb` console hooks; dev is unminified, so
+slower than production).
+
+| Date | Phase | Check | Value | Tolerance / budget | Result |
+|---|---|---|---|---|---|
+| 2026-11-11 | 4 | Compared site vs the single-site path (`compare.test.js`, real data, (-89.5, -45), antenna 10 m, 2027-04-10 12:00) | hours to change (Sun, Earth), window hours, longest dark and power-without-Earth identical (difference 0; both paths call `siteResults`) | 0.01 h | pass |
+| 2026-11-11 | 4 | A 5th site is rejected | `addCompareEntry` returns "Compare holds 4 sites at most"; in the browser the sidebar button turns off ("Compare is full (4 sites)") | rejected | pass |
+| 2026-11-11 | 4 | A date-shifted column uses its own time | +1 lunar day column = the single-site path at main time + 708.73 h (all durations identical); its Sun elevation differs from the unshifted column; in the browser the copy of Shackleton rim reads "+29.5 d · 2026-04-24 12:44 UTC", Sun -1.4° vs -0.8°, Talk to Earth "Not recommended" vs "Good" | own time | pass |
+| 2026-11-11 | 4 | Date shifts | +1 lunar day = 29.530589 d (mean synodic month); +1 month keeps the day and time and clamps to the month's end (31 Jan 2028 -> 29 Feb 2028) | as defined | pass |
+| 2026-11-11 | 4 | Best value per row | max or min per row; ties all glow; nothing glows with fewer than two values or all equal; "no sunset within the lookahead" beats any finite time | as defined | pass |
+| 2026-11-11 | 4 | Presets point at verified sites | Equator vs pole (apollo11, shackleton_rim), Two Artemis III regions (artemis_peak_near_shackleton, artemis_de_gerlache_rim): all in `sites.json`, verified | verified | pass |
+| 2026-11-11 | 4 | Preset "IM-2: planned target vs where it ended up" | not built: LROC "IM-2 Athena Seen Obliquely" (https://lroc.im-ldi.com/images/1408, fetched 2026-11-11) gives the landing point (84.7906° S, 29.1957° E) and "near the center of Mons Mouton", but no planned-target coordinates. Rule 4: no invented coordinates | both verified | not built |
+| 2026-11-11 | 4 | `cmp` link parameter | encode / decode round trip in column order, `@` shift in hours, lat:lon for unnamed places, at most 4, bad items skipped (`urlState.test.js`); browser: `cmp=apollo11,shackleton_rim,change4,shackleton_rim@708.73` after the date copy | restores | pass |
+| 2026-11-11 | 4 | **4 sites, terrain already loaded** (dev, `lspb.setCompareList`, new places so no cache) | 4 Polar HD: 735 ms; 4 Global: 186 ms; 2 + 2: 475 ms | < 1.5 s | pass |
+| 2026-11-11 | 4 | 4 sites from a cold link (preview; includes downloading and decoding the polar and global terrain) | 1984 ms, 2055 ms | info | — |
+| 2026-11-11 | 4 | Play at 0.25 d/s on a 1440 × 900 window (preview) | main pin only: 60.3 fps (worst frame 17 ms); main pin + 4 compare columns: 52.5 fps (worst frame 34 ms) | ≥ 50 fps desktop | pass |
+| 2026-11-11 | 4 | Compare values, 2026-03-26 00:00 UTC (preview) | Apollo 11: Sun +23.1°, Power Perfect, Earth Perfect, sunlit 100%, glows in every row it leads; Shackleton rim: -0.8°, Not recommended / Good / Landing Possible, 62% sunlit; Peak Near Shackleton: +0.3°, 79% sunlit, power-without-Earth 0 d (glows); Chang'e 4 (far side): Earth in view 0%, "Earth down now" | plausible (far side never sees Earth) | pass |
+| 2026-11-11 | 4 | Remove a column, renumbering, colours | ✕ on column 3: 3 columns remain, numbers follow the order, freed colour reused by the next site | works | pass |
+| 2026-11-11 | 4 | Globe markers and arcs | numbered markers in the column colours, arcs drawn along great circles at 1.5 km height; after removing / adding columns no render error. Found and fixed: Cesium destroys a polyline's material with it, so lines sharing one material threw on the second removal (also latent in the lat/lon grid) | no errors | pass |
+| 2026-11-11 | 4 | Compare palette contrast on `--lspb-bg` | cyan 7.86, orange 6.06, magenta 4.86 (lightened from Tol's #ee3377, 4.45), teal 6.03 | ≥ 4.5:1 | pass |
+| 2026-11-11 | 4 | 360 px phone | swipe carousel with snap (`x mandatory`), columns 259 px, row labels pinned; page scrollWidth 360. Found and fixed: the cells' sr-only labels escaped the scroll box and widened the page to 973 px | no horizontal scroll | pass |
+| 2026-11-11 | 4 | Console errors during the browser checks (after the two fixes) | none | 0 | pass |
+| 2026-11-11 | 4 | `npm run lint` | 0 warnings, 0 errors | clean | pass |
+| 2026-11-11 | 4 | `npm test` | 13 files, 143 passed / 0 skipped / 0 failed (+10: `compare` 9, `urlState` 1) | 0 failed | pass |
+| 2026-11-11 | 4 | `npm run build` (raw / gzip) | entry `index` 404.19 / 131.91 kB (Phase 3: 399.03); `Planner` 426.83 / 130.91 kB (414.54); `SurfacePanel` 566.71 / 143.25 kB; `GlobePanel` 3,947.57 / 1,049.57 kB | builds | pass |
+| 2026-11-11 | 4 | **First-load transfer** (cache off) | welcome 4.62 MB, 11 requests; planner with globe, no pin: 5.99 MB, 23 requests, plus Moon Trek tiles | ≤ 10 MB | pass |
+| 2026-11-11 | 4 | "+ Compare" in a mission pin's globe tooltip; a real phone | not automated (needs hovering a pin at a screen position); no phone in this session | — | not checked |
+
+Not re-run in Phase 4 (no engine, ephemeris or terrain change): pipeline `05`-`08`. Their fixtures are
+checked by `npm test`, which passed.

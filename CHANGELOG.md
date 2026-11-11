@@ -91,6 +91,23 @@ The Local Lead confirmed that building before the event is allowed.
 - First load is still 6.0 MB with the globe open (budget 10 MB). 132 tests pass (49 new: coordinate parser,
   search, map layers, link round trip).
 
+### Phase 4: compare (2026-11-11)
+
+- **Compare up to 4 sites side by side.** "+ Compare" under the site name (or in a mission pin's tooltip on
+  the globe) adds a column to the compare drawer above the time bar. Rows: terrain, Sun elevation now, Power,
+  Talk to Earth, Landing (or "Not assessed" on coarse terrain), the sunlit / Earth / both shares over the
+  mission, power without Earth, longest dark, and when the Sun and Earth set. The best value in each row glows.
+- **Same site, different date**, for when a schedule slips: a column's calendar button adds a copy one lunar
+  day (29.5 d) or one month later, or at a typed UTC time. Every column follows the time slider and Play.
+- **Presets**: "Equator vs pole" (Apollo 11 vs Shackleton rim) and "Two Artemis III regions". The planned
+  "IM-2: planned target vs where it ended up" is not included: no source we fetched gives the planned
+  target's coordinates.
+- On the globe, compared sites get numbered markers in their column colours, joined by arcs that draw in.
+- Shared links now carry the compared sites and their dates.
+- On a phone the columns are a swipe carousel.
+- 4 new sites compute in under 0.8 s once the terrain is loaded (budget 1.5 s); Play stays at 52 fps with
+  4 columns. 143 tests pass.
+
 ### Earlier (before 2026-11-10)
 
 - South-pole landing site planner: Sun and Earth visibility from SPICE ephemeris and LOLA terrain
