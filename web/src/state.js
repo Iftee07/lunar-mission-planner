@@ -8,6 +8,7 @@ import { createHorizonWorker } from "@/engine/horizon.js"
 import { COMPARE_PRESETS, addCompareEntry, siteResults } from "@/engine/compare.js"
 import { SUN_REFERENCE_HEIGHT_M } from "@/engine/hours.js"
 import { project, unproject } from "@/engine/projection.js"
+import { timelineRows } from "@/engine/timeline.js"
 import { MISSION_STAY_H } from "@/engine/ratings.js"
 import {
   POLAR_HD_LAT_LIMIT_DEG,
@@ -18,6 +19,7 @@ import {
 } from "@/engine/terrain.js"
 import { sitePins } from "@/view/globeModel.js"
 import { POLAR_LAYERS } from "@/view/polarLayerModel.js"
+import { timeJump } from "@/view/timelineModel.js"
 
 // UI in days, engine in hours: every duration here is in hours; only lib/format.js converts.
 export const HOUR_MS = 3600000
@@ -27,7 +29,7 @@ export const ANTENNA_DEFAULT_M = 2
 export const MISSION_OPTIONS_H = [MISSION_STAY_H, 336] // 6.5 d (Artemis III stay) and 14 d (one lunar day)
 export const TIME_SLIDER_RANGE_H = 708.7
 export const SLIDER_STEP_H = 0.25
-export const PLAY_SPEEDS_H_PER_S = [6, 12, 24, 72] // shown as 0.25, 0.5, 1, 3 d/s
+export const PLAY_SPEEDS_H_PER_S = [1, 6, 24, 72] // shown as 1 h/s, 6 h/s, 1 d/s, 3 d/s
 const SUN_MODES = ["center", "any_part"]
 export const VIEWS = ["globe", "polar", "surface"] // V cycles through them in this order
 
@@ -68,6 +70,7 @@ export const useStore = create((set) => ({
   camera: { globe: null, polar: null }, // last camera of each map view (globe: lat, lon, heightM, headingDeg, pitchDeg;
   // polar: x, y, zoom), reported when a move ends; restores the view from a shared link
   layers: Object.fromEntries(POLAR_LAYERS.map((l) => [l.id, { on: false, opacity: l.opacity }])), // Polar HD map layers
+  ghostTimeMs: null, // time under the pointer on the timeline (faint Sun and Earth in the surface view); not shared
 
   // --- computed, not user-editable ---
   dataReady: false, // core tier (manifest + ephemeris) loaded
@@ -79,6 +82,9 @@ export const useStore = create((set) => ({
   // time (a "same site, different date" column). compareResults: id -> { status, error, tMs, results, slope }.
   compare: [],
   compareResults: {},
+  // Timeline rows (engine/timeline.js timelineRows + `site`, "lat,lon") over the slider span, per site:
+  // "main" (the pin) and each compare id (from the main start plus its shift). Filled in idle time.
+  timeline: {},
 
   // --- actions ---
   setBaseTime: (ms) => set({ baseTimeUtcMs: ms, sliderOffsetH: 0 }),
@@ -95,6 +101,7 @@ export const useStore = create((set) => ({
   setView: (view) => {
     if (VIEWS.includes(view)) set({ view })
   },
+  setGhostTime: (ms) => set({ ghostTimeMs: ms }),
   setScreen: (screen) => set({ screen }),
   setPin: (pin) => set({ pin }),
   setCamera: (kind, cam) => set((s) => ({ camera: { ...s.camera, [kind]: cam } })),
@@ -112,6 +119,13 @@ export function showSlopeOnMap() {
   const s = useStore.getState()
   s.setLayer("slope", { on: true })
   s.setView("polar")
+}
+
+// Jump to a time (a timeline bar's start, a Details window): the playhead moves there, or the start time
+// does when it lies beyond the slider span (view/timelineModel.js timeJump).
+export function jumpToTime(ms) {
+  const s = useStore.getState()
+  useStore.setState(timeJump(s.baseTimeUtcMs, ms, TIME_SLIDER_RANGE_H, s.ephemerisRange))
 }
 
 // --- derived selectors ---
@@ -474,6 +488,7 @@ function syncCompareHorizons() {
         if (!st.compare.some((e) => e.id === c.id) || st.antennaM !== antennaM) return // removed, or antenna changed
         compareHorizons.set(c.id, { sun: sun.horizon, earth: earth.horizon, antennaM, slope: slopeAt(c.pin) })
         recomputeCompareHours([c.id])
+        scheduleTimeline()
       })
       .catch((err) => {
         useStore.setState((st) => ({ compareResults: { ...st.compareResults, [c.id]: { status: "error", error: String(err.message || err) } } }))
@@ -508,6 +523,73 @@ function recomputeCompareHours(ids = null) {
   }
   useStore.setState({ compareResults: out })
 }
+
+// --- timeline rows ---
+// Sun / Earth / Both rows over the slider span for the main pin and each compared site. Computed in idle
+// time, one site per idle slice, and only when a site's inputs change (never on a scrub frame).
+const timelineInputs = new Map() // key -> the inputs its rows were computed from
+let timelineIdle = 0
+const onIdle = (cb) => (typeof requestIdleCallback === "function" ? requestIdleCallback(cb, { timeout: 400 }) : setTimeout(cb, 1))
+
+function timelineJobs(s) {
+  const jobs = []
+  const { horizonSun, horizonEarth } = s.results
+  if (s.pin && horizonSun && horizonEarth) jobs.push({ key: "main", pin: s.pin, sun: horizonSun, earth: horizonEarth, shiftH: 0 })
+  for (const c of s.compare) {
+    const h = compareHorizons.get(c.id)
+    if (h && h.antennaM === s.antennaM) jobs.push({ key: c.id, pin: c.pin, sun: h.sun, earth: h.earth, shiftH: c.shiftH })
+  }
+  return jobs.map((j) => ({ ...j, startMs: s.baseTimeUtcMs + j.shiftH * HOUR_MS, antennaM: s.antennaM, sunMode: s.sunMode }))
+}
+
+const sameInputs = (a, b) =>
+  a && a.pin === b.pin && a.sun === b.sun && a.earth === b.earth && a.startMs === b.startMs && a.antennaM === b.antennaM && a.sunMode === b.sunMode
+
+function scheduleTimeline() {
+  if (!timelineIdle) timelineIdle = onIdle(runTimeline)
+}
+
+function runTimeline() {
+  timelineIdle = 0
+  const s = useStore.getState()
+  if (!engineData) return
+  const jobs = timelineJobs(s)
+  const keys = new Set(jobs.map((j) => j.key))
+  let timeline = s.timeline
+  if (Object.keys(timeline).some((k) => !keys.has(k))) {
+    timeline = Object.fromEntries(Object.entries(timeline).filter(([k]) => keys.has(k)))
+    for (const k of timelineInputs.keys()) if (!keys.has(k)) timelineInputs.delete(k)
+  }
+  const job = jobs.find((j) => !sameInputs(timelineInputs.get(j.key), j))
+  if (job) {
+    const rows = timelineRows({
+      horizonSun: job.sun,
+      horizonEarth: job.earth,
+      antennaM: job.antennaM,
+      tableAccessor: siteAccessor(engineData.ephemeris, job.pin),
+      startMs: job.startMs,
+      spanH: TIME_SLIDER_RANGE_H,
+      sunMode: job.sunMode,
+    })
+    timelineInputs.set(job.key, job)
+    timeline = { ...timeline, [job.key]: { ...rows, site: `${job.pin.lat},${job.pin.lon}` } }
+    scheduleTimeline() // the next stale site in the next idle slice
+  }
+  if (timeline !== s.timeline) useStore.setState({ timeline })
+}
+
+useStore.subscribe((s, prev) => {
+  if (
+    s.results.horizonSun !== prev.results.horizonSun ||
+    s.results.horizonEarth !== prev.results.horizonEarth ||
+    s.compare !== prev.compare ||
+    s.baseTimeUtcMs !== prev.baseTimeUtcMs ||
+    s.sunMode !== prev.sunMode ||
+    s.antennaM !== prev.antennaM
+  ) {
+    scheduleTimeline()
+  }
+})
 
 useStore.subscribe((s, prev) => {
   if (s.dataReady && (s.compare !== prev.compare || s.antennaM !== prev.antennaM || s.dataReady !== prev.dataReady)) {
