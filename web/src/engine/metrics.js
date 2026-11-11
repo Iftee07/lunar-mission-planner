@@ -7,6 +7,7 @@ import { STEP_H, SUN_REFERENCE_HEIGHT_M, makeVisibility } from "./hours.js"
 import { longestGapHours, nextWindows, overlapHours, sampleVisibility, totalHours } from "./series.js"
 
 const HOUR_MS = 3600000
+const SERIES_STEP_H = 1 // elevation sparklines: one sample per hour (157 or 337 numbers, plain arrays)
 
 // Body elevation above the terrain horizon at the body's azimuth (deg); negative = hidden.
 export function clearanceDeg(azEl, horizon) {
@@ -20,6 +21,8 @@ export function clearanceDeg(azEl, horizon) {
 //   longestDarkH, longestNoEarthH
 //   sunElevationNowDeg, sunElevationMinDeg, sunElevationMaxDeg   (Sun centre, from the Sun observer
 //       height; min/max sampled every STEP_H)
+//   sunElevationSeriesDeg, earthElevationSeriesDeg, seriesStepH   (elevation every seriesStepH hours from T,
+//       for the cards' sparklines; Earth from the antenna height)
 //   sunClearanceNowDeg, earthClearanceNowDeg   (elevation minus terrain horizon)
 //   sun / earth: { intervals, next } with next = nextWindows(5) from T
 // Returns null when T is outside the ephemeris.
@@ -35,12 +38,20 @@ export function siteMetrics({ pin, horizonSun, horizonEarth, antennaM, tableAcce
   const earthSite = makeSite(pin.lat, pin.lon, pin.groundM, antennaM)
   let elMin = Infinity
   let elMax = -Infinity
-  for (let h = 0; h <= windowH + 1e-9; h += STEP_H) {
-    const v = tableAccessor.vectorAt("sun", tMs + h * HOUR_MS)
+  const sunSeries = []
+  const earthSeries = []
+  const every = Math.round(SERIES_STEP_H / STEP_H)
+  for (let i = 0, h = 0; h <= windowH + 1e-9; i++, h = i * STEP_H) {
+    const t = tMs + h * HOUR_MS
+    const v = tableAccessor.vectorAt("sun", t)
     if (!v) break
     const el = azElFromSite(sunSite, v).elDeg
     if (el < elMin) elMin = el
     if (el > elMax) elMax = el
+    if (i % every === 0) {
+      sunSeries.push(el)
+      earthSeries.push(azElFromSite(earthSite, tableAccessor.vectorAt("earth", t)).elDeg)
+    }
   }
   const sunNow = azElFromSite(sunSite, tableAccessor.vectorAt("sun", tMs))
   const earthNow = azElFromSite(earthSite, tableAccessor.vectorAt("earth", tMs))
@@ -62,6 +73,9 @@ export function siteMetrics({ pin, horizonSun, horizonEarth, antennaM, tableAcce
     sunElevationNowDeg: sunNow.elDeg,
     sunElevationMinDeg: elMin,
     sunElevationMaxDeg: elMax,
+    sunElevationSeriesDeg: sunSeries,
+    earthElevationSeriesDeg: earthSeries,
+    seriesStepH: SERIES_STEP_H,
     sunClearanceNowDeg: clearanceDeg(sunNow, horizonSun),
     earthClearanceNowDeg: clearanceDeg(earthNow, horizonEarth),
     sun: { intervals: sun.intervals, next: nextWindows(sunVisible, tMs) },

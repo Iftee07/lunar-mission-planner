@@ -28,8 +28,24 @@ export function formatDays(hours, digits = 1, atLeast = false) {
   return `${(hours / HOURS_PER_DAY).toFixed(digits)}${atLeast ? "+" : ""} d`
 }
 
-// Hours of simulated time per real second -> "0.25 d/s".
-export const formatDaysPerSecond = (hPerS) => `${+(hPerS / HOURS_PER_DAY).toFixed(2)} d/s`
+// Hours of simulated time per real second: under a day -> "6 h/s", else "3 d/s".
+export const formatPlaySpeed = (hPerS) => (hPerS < HOURS_PER_DAY ? `${hPerS} h/s` : `${+(hPerS / HOURS_PER_DAY).toFixed(2)} d/s`)
+
+// Countdown (hours until a set or rise): under 2 days in hours ("9.4 h", "42 h"), otherwise in days
+// ("3.2 d"); Infinity or null -> "62.5+ d" (no change within the lookahead).
+export const COUNTDOWN_HOURS_BELOW_H = 2 * HOURS_PER_DAY
+export function formatCountdown(hours) {
+  if (hours === null || hours === Infinity || hours >= COUNTDOWN_HOURS_BELOW_H) return formatDays(hours)
+  return `${hours < 10 ? hours.toFixed(1) : Math.round(hours)} h`
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+// UTC ms -> "12 Apr" (timeline axis).
+export function formatShortDate(ms) {
+  const d = new Date(ms)
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`
+}
 
 // Fraction 0..1 -> "42%"
 export const formatPercent = (fraction) => `${Math.round(fraction * 100)}%`
