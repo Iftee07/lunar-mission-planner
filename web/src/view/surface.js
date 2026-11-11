@@ -705,6 +705,6 @@ export function createSurface(container, { engineData }) {
     stop,
     destroy,
     debugCheck,
-    getView: () => ({ ...view, cameraY: camera.position.y, running: raf !== 0, fps }),
+    getView: () => ({ ...view, cameraY: camera.position.y, running: raf !== 0, fps, ghost: sun.ghost.visible && earth.ghost.visible }),
   }
 }

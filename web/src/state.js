@@ -404,13 +404,22 @@ function recomputeHours() {
   useStore.setState((st) => ({ results: { ...st.results, status: "ready", error: null, ...computed } }))
 }
 
-// Coalesce rapid time changes (slider drag, Play) into one recompute per animation frame.
+// Coalesce rapid time changes (playhead drag, Play) into one recompute per animation frame. Compared columns
+// take turns, one per frame, while the time keeps changing (4 columns cost about one extra site per frame);
+// all of them update together once it settles. Each column shows the time its values were computed at.
+const COMPARE_SETTLE_MS = 120
+let compareTurn = 0
+let compareSettle = 0
 function scheduleHours() {
   if (hoursFrame) return
   hoursFrame = requestAnimationFrame(() => {
     hoursFrame = 0
     recomputeHours()
-    recomputeCompareHours()
+    const { compare } = useStore.getState()
+    if (!compare.length) return
+    recomputeCompareHours([compare[compareTurn++ % compare.length].id])
+    clearTimeout(compareSettle)
+    compareSettle = setTimeout(() => recomputeCompareHours(), COMPARE_SETTLE_MS)
   })
 }
 
