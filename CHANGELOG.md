@@ -108,6 +108,25 @@ The Local Lead confirmed that building before the event is allowed.
 - 4 new sites compute in under 0.8 s once the terrain is loaded (budget 1.5 s); Play stays at 52 fps with
   4 columns. 143 tests pass.
 
+### Phase 5: timeline and countdowns (2026-11-11)
+
+- **Timeline strip** at the bottom: for the pin and each compared site, rows for Sun up, Earth in view and
+  both, over the 29.5 days after the start time, with the mission window bracketed. Drag the playhead or
+  click the track to move the time; hover a bar for its start, end and length; click a bar to jump to its
+  start. Arrow keys move 15 minutes, Shift + arrows 1 day. Bars sweep in for a new site and cross-fade when
+  a setting changes. The strip replaces the old time slider: one time control.
+- **Time-lapse:** Play at 1 h, 6 h, 1 d or 3 d per second, and a loop button that replays the mission
+  window. In the surface view the Sun and Earth leave short fading trails while the skyline stays put;
+  hovering the timeline shows a faint Sun and Earth at that time.
+- **Countdowns** on the Sun and Earth cards: "Sunset in 42 h", "Earthrise in 3.1 d", with rolling digits.
+  Before a set: green above 48 h, amber 12 to 48 h, red under 12 h. The phone summary strip shows them too.
+- **Elevation now** in large type on the Sun and Earth cards, with a small line of it over the mission.
+- **Details card:** mission length (6.5 d or 14 d), "Count partial Sun", and the next 5 windows of the Sun
+  and of Earth; click one to jump there. (The mission length and partial-Sun options had no control before,
+  only the link parameters.)
+- Faster: compared columns take turns while the time moves, then all update together, so scrubbing and Play
+  with 4 compared sites and the globe run at 58 to 60 fps (target 50). 155 tests pass.
+
 ### Earlier (before 2026-11-10)
 
 - South-pole landing site planner: Sun and Earth visibility from SPICE ephemeris and LOLA terrain

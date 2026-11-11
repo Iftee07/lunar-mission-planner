@@ -52,14 +52,14 @@ files in `src/components/ui/` are imported, all 15 dependencies and 7 dev depend
 | P2 | [x] `globe` data tier (`engine/data.js`) returns URLs nobody reads yet | Done: `globe.js` uses `fallbackTextureUrl`, `southPoleHdUrl`, `featuresUrl` and the new `sitesUrl` |
 | P3 | [x] `polar` tier `layerUrls` (`illum_avg.png`, `psr.png`) not shown yet | Done: Polar HD map layers (P3.4) read them through `PolarHdPanel` -> `createPolarMap` `layerData` |
 | P3 | [x] `pipeline/data/sites_source.csv` (25 verified official sites, written early) has no builder yet | Done early in P2 (the mission pins need it): `11_build_sites.py` writes `sites.json`. P3 adds search on top |
-| P5 | [ ] `results.metrics` (mission metrics, next windows) not shown yet | Cards, countdowns, timeline and Details list |
+| P5 | [x] `results.metrics` (mission metrics, next windows) not shown yet | Done: the Details card lists `metrics.sun/earth.next`; the cards' sparklines use the new `metrics.*ElevationSeriesDeg`; the compare drawer shows the shares (P4) |
 | P2 | [x] `ViewToggle` `Map \| Surface` | Done: same component, `Globe \| Polar HD \| Surface`; `V` cycles (Planner) |
 | P3 | [x] Dev-only URL parsing: `devParams` in `state.js` (`?screen&pin&t&view`) and `devStartSlide` (`?slide=`) in `WelcomeFlow.jsx` | Done: both deleted (`chore: remove the dev-only URL parsers`); `urlSync.js` + `lib/urlState.js` handle `pin`, `t`, `view` and the rest in every build |
 | P3 | [x] `globe.js` fetched `sites.json` itself (search needs the same list) | Done: `loadSites()` in `state.js` loads and validates once; the globe receives the pins; `onSites` callback deleted |
 | P3 | [x] `Check` checkbox row local to `GlobePanel.jsx` (the Polar HD Layers popover needs the same) | Done: shared `components/CheckRow.jsx` |
-| P5 | [ ] `TimeBar.jsx` slider and Play | `TimelineStrip` playhead: **one** time control. `PLAY_SPEEDS_H_PER_S` changes from `[6, 12, 24, 72]` to `[1, 6, 24, 72]` |
-| P5 | [ ] `MobileSummary.jsx` (phone ratings strip) | Merged into the new card summaries, or removed |
-| P5 | [ ] Sun/Earth card logic | Countdowns and metrics go into the shared `BodyCard`, not into `SunCard`/`EarthCard` separately |
+| P5 | [x] `TimeBar.jsx` slider and Play | Done: slider removed (`chore: remove the time-bar slider`); the `TimelineStrip` playhead is the one time control. `TimeBar.jsx` stays as the footer (start date, Play, speed, loop, readout). `PLAY_SPEEDS_H_PER_S` = `[1, 6, 24, 72]`; `formatDaysPerSecond` replaced by `formatPlaySpeed`. `ui/slider.jsx` stays (map layer opacity) |
+| P5 | [x] `MobileSummary.jsx` (phone ratings strip) | Done (merged): the strip shows the same countdowns as the cards from the shared `engine/countdown.js`, no rules of its own |
+| P5 | [x] Sun/Earth card logic | Done: `BodyCard` holds the elevation readout, sparkline and `CountdownChip` for both bodies; the "Position" row it replaces is gone; `SunCard`/`EarthCard` keep only their badge and duration rows |
 | P6c | [ ] `engine/earthDays.js` calendar (green days in `DatePicker`) vs the season heatmap | One computation shared by both. If P6c is cut, the calendar stays |
 | P6e | [ ] `RatingBadge` explanation text and its `ui/tooltip.jsx` use (also `TooltipProvider` in `Planner.jsx`) | The shared `<Why>` popover and `explanations.js`. Delete `tooltip.jsx` if nothing else uses it |
 | P6e | [ ] About popover "Ratings" section (repeats the badge rules) | Text comes from `explanations.js` |

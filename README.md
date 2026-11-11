@@ -109,7 +109,7 @@ The site is deployed on Vercel straight from git, as a static Vite build:
    Mission pins are coloured by group (Apollo, CLPS, Artemis III regions, other countries, south-pole
    reference points); the Layers menu toggles groups, IAU crater and feature names, a lat/lon grid and the
    South Pole HD overlay's opacity. Double-click a feature name to fly to it. On a phone, a strip at the
-   bottom shows the three ratings, and tapping it scrolls to the full cards.
+   bottom shows the three ratings and the Sun and Earth countdowns, and tapping it scrolls to the full cards.
    **Search** (the app-bar button, or `Ctrl`+`K` / `⌘K`) lists every mission site by group with its
    status (landed, planned, reference point, point in an Artemis III candidate region). It also takes
    coordinates for any point on the Moon: `0.674N 23.473E`, `89.45S 137.3W` or `-89.45, 222.7` (signed
@@ -126,13 +126,25 @@ The site is deployed on Vercel straight from git, as a static Vite build:
    readout shows their values under the pointer. "See slopes on the map" on the Landing card opens the
    map with the slope layer on.
 5. **Read the cards.** Sun, Earth and Landing each have a rating badge; the `?` next to a badge explains
-   the rule with the live numbers. Antenna height (2, 5, 10 or 15 m) changes the Earth results only.
-6. **Move through time.** The slider covers 29.5 days (one synodic month) after the start time; Play runs
-   it at 0.25 to 3 days per second. The day/night line on the globe moves with it.
+   the rule with the live numbers. The Sun and Earth cards show the elevation now in large type, a small
+   line of it over the mission, and a countdown: "Sunset in 42 h", "Earthrise in 3.1 d". A set countdown is
+   green above 48 h, amber from 12 to 48 h and red under 12 h. Antenna height (2, 5, 10 or 15 m) changes
+   the Earth results only. The **Details** card holds the mission length (6.5 d Artemis III stay or 14 d),
+   "Count partial Sun" (the Sun counts as up while any part of its disc clears the skyline) and the next
+   five windows of the Sun and of Earth; click one to jump there.
+6. **Move through time.** The timeline at the bottom covers 29.5 days (one synodic month) after the start
+   time, with three rows per site (the pin, then each compared site): Sun up, Earth in view, and both. The
+   bracket marks the mission window. Drag the playhead or click the track to move the time; hover a bar for
+   its start, end and length; click a bar to jump to its start. Keyboard: focus the timeline, arrows move
+   15 minutes, `Shift` + arrows 1 day, `Home`/`End` the ends. Everything follows the playhead: the globe's
+   day/night line and Earth marker, the surface view, the cards and the countdowns. Play runs at 1 h, 6 h,
+   1 d or 3 d per second; the loop button replays the mission window.
 7. **Surface view.** "View from here" on the globe, the Surface tab, or `V` (which cycles Globe, Polar HD
    and Surface) shows the sky from the pin: the terrain
-   skyline, the Sun and Earth and their paths over the next 6.5 days. Drag or use the arrow keys to look
-   around, wheel or `+`/`-` to zoom (pinch on a touch screen).
+   skyline, the Sun and Earth, their paths over the next 6.5 days and short fading trails behind them, so
+   Play shows them moving while the skyline stays put. Hovering the timeline adds a faint Sun and Earth at
+   the time under the pointer. Drag or use the arrow keys to look around, wheel or `+`/`-` to zoom (pinch
+   on a touch screen).
 8. **Compare.** "+ Compare" (under the site name, or in a mission pin's tooltip on the globe) adds the site
    to the compare drawer above the time bar: up to 4 columns with terrain, Sun elevation now, Power, Talk to
    Earth, Landing, the sunlit / Earth / both shares over the mission, power without Earth, the longest dark
@@ -149,8 +161,8 @@ The site is deployed on Vercel straight from git, as a static Vite build:
 The layout adapts from phones (360 px wide, portrait or landscape) to large desktops; on touch screens
 the `?` rating explanations open with a tap.
 
-Durations are shown in Earth days (`d`), for example `6.5 d`. The engine works in hours; only
-`web/src/lib/format.js` converts.
+Durations are shown in Earth days (`d`), for example `6.5 d`; countdowns under 2 days are shown in hours
+(`h`). The engine works in hours; only `web/src/lib/format.js` converts.
 
 ## Method
 
@@ -228,6 +240,11 @@ the share of time with the Sun up, with Earth in view and with both, the hours w
 direct-to-Earth link, the longest dark and no-Earth stretches, the next five windows of each body, and
 the Sun's elevation now and its minimum and maximum over the window. Window edges are refined to
 0.01 h. The ratings below use the same mission window.
+
+The timeline (`engine/timeline.js`) uses the same visibility test and the same 0.01 h edge refinement
+over the whole 708.7 h strip, so its bar edges match the Details windows (tested within 0.01 h). "Both"
+is the overlap of the Sun and Earth rows. The rows are computed in idle time when the site, antenna, Sun
+mode or start time changes, never while the playhead moves.
 
 ### Antenna model
 
@@ -327,8 +344,10 @@ All numbers below were measured on this repository's generated data.
 | Shareable link: store -> URL -> store, and reload in the browser | same state; same URL after a reload |
 | Compare column vs the single-site cards (same time; +1 lunar day vs the cards at that time) | identical, well within 0.01 h |
 | Compare: 4 new sites, terrain already loaded (Polar HD / Global / mixed) | 0.74 / 0.19 / 0.48 s (budget 1.5 s) |
+| Timeline bar edges vs the cards' next windows (3 polar sites, two playhead positions) | within 0.01 h (in the browser: identical) |
+| Scrubbing the timeline / Play with 4 compared sites and the globe (desktop) | 59.5 / 58.0 fps (target ≥ 50) |
 
-Run them yourself: `npm test` in `web/` (143 tests) and the `05` to `08` pipeline scripts. The full
+Run them yourself: `npm test` in `web/` (155 tests) and the `05` to `08` pipeline scripts. The full
 history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 ## Known limits

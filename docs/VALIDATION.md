@@ -199,3 +199,40 @@ slower than production).
 
 Not re-run in Phase 4 (no engine, ephemeris or terrain change): pipeline `05`-`08`. Their fixtures are
 checked by `npm test`, which passed.
+
+## Phase 5 — 2026-11-11
+
+Browser checks as in Phase 4 (headless Chrome 1440 × 900 over the DevTools Protocol, real GPU through ANGLE /
+Direct3D 11), against `npm run preview` unless marked "dev" (`npm run dev`, for the `lspb` console hooks).
+Test link: `?site=shackleton_rim&t=2027-01-10T00:00Z`, with `&cmp=apollo11,shackleton_rim,shackleton_rim@708.73,change4`
+for the 4-column runs.
+
+| Date | Phase | Check | Value | Tolerance / budget | Result |
+|---|---|---|---|---|---|
+| 2026-11-11 | 5 | Timeline bar edges vs `nextWindows` (`timeline.test.js`, real data, the 3 `horizon_reference` pins, antenna 10 m, 2027-04-10 12:00; playhead at 0 h and at 37.1 h, a different 0.25 h sampling grid) | every closed edge within 0.01 h | 0.01 h | pass |
+| 2026-11-11 | 5 | Same, in the browser (dev, Shackleton rim) | 7 edges compared (3 Sun, 2 Earth, 2 Both bars on the strip): difference 0 | 0.01 h | pass |
+| 2026-11-11 | 5 | Both row = overlap of the Sun and Earth rows | identical to `intersectIntervals`; every Both bar lies inside a Sun bar and an Earth bar | as defined | pass |
+| 2026-11-11 | 5 | Playhead keys (unit test and browser) | → 0.25 h, Shift+→ 24.25 h, Home 0; clamped to [0, 708.7 h]; `aria-valuetext` "+0 d, 2027-01-10 00:00 UTC" | as specified | pass |
+| 2026-11-11 | 5 | Click a bar sets the offset (unit test and browser) | hit test finds the bar (thin bars within 2 px); browser: click on the Sun bar from 2027-01-23 14:26 sets the offset to 326.44 h = its start | bar start | pass |
+| 2026-11-11 | 5 | Hover a bar | tooltip "Shackleton rim · Sun up: 2027-01-23 14:26 → 2027-02-01 07:44 UTC · 8.7 d"; ghost time set; surface view shows the ghost Sun and Earth while hovering, hides them after leaving | shows | pass |
+| 2026-11-11 | 5 | Drag the playhead | press at 100 h, drag to 300 h: offset 300.00 h | follows | pass |
+| 2026-11-11 | 5 | Details window jump | "Jump to sun up from 23 Jan 14:26 UTC" sets the offset to 326.44 h (start time unchanged); beyond the strip the start time moves instead, clamped to the ephemeris (unit test) | window start | pass |
+| 2026-11-11 | 5 | Countdown tones | > 48 h green, 12 to 48 h amber, < 12 h red before a set; a rise is neutral (unit test). Browser: "Sunset in 11.1 d" (green; 266.96 h), "Earthrise in 40 h" (neutral) | as specified | pass |
+| 2026-11-11 | 5 | Countdown text contrast on `--lspb-bg` | green 9.98, amber 10.42, red 6.29, muted 6.75 | ≥ 4.5:1 | pass |
+| 2026-11-11 | 5 | Elevation sparkline series | 157 hourly values over 156 h; first = Sun elevation now; inside the metrics' min / max (unit test). Browser: "+1.0°", sparkline "from +0.6° to +1.0°" | consistent | pass |
+| 2026-11-11 | 5 | Timeline rows for 4 compared sites (dev, idle time, one site per idle slice) | all 5 row groups 612 ms after `setCompareList` (includes the 4 horizons) | info | — |
+| 2026-11-11 | 5 | Loop | Play from 100 h with loop on (mission 156 h): offset set to 255.5 h wraps back to 101.5 h on the next frames; the bracket stays on [100, 256 h] | replays the window | pass |
+| 2026-11-11 | 5 | Compared columns after Play stops (round-robin while the time moves) | every column's time = main time + its shift, difference 0 h (read 400 ms after Pause; settle delay 120 ms) | exact once settled | pass |
+| 2026-11-11 | 5 | **Scrubbing the playhead with 4 compare columns and the globe** (preview, 4 s of pointer moves sweeping 0 ↔ 700 h) | first attempt 35.5 fps (p95 frame 33.5 ms). Fixed: compared columns take turns (one per frame) while the time moves and all update once it settles; rapidly changing values skip motion's layout work. After: **59.5 fps**, p95 16.9 ms, worst 33.4 ms | ≥ 50 fps desktop | pass |
+| 2026-11-11 | 5 | Play at 6 h/s, same setup (preview) | first attempt 42.8 fps; after the fix **58.0 fps**, p95 16.9 ms, worst 33.6 ms | ≥ 50 fps desktop | pass |
+| 2026-11-11 | 5 | Surface view render loop during the checks (dev) | 56 fps | smooth | pass |
+| 2026-11-11 | 5 | 360 × 740 phone (dev, 1 compare column) | page scrollWidth 360; strip 336 × 96 px; summary strip "Sun Perfect set 11.1 d · Earth Good rise 40 h · Landing Possible" | no horizontal scroll | pass |
+| 2026-11-11 | 5 | Console errors during the browser checks | none | 0 | pass |
+| 2026-11-11 | 5 | `npm run lint` | 0 warnings, 0 errors | clean | pass |
+| 2026-11-11 | 5 | `npm test` | 14 files, 155 passed / 0 skipped / 0 failed (+12: `timeline` 12) | 0 failed | pass |
+| 2026-11-11 | 5 | `npm run build` (raw / gzip) | entry `index` 408.38 / 133.44 kB (Phase 4: 404.19); `Planner` 441.47 / 135.76 kB (426.83); `SurfacePanel` 568.11 / 143.65 kB; `GlobePanel` 3,947.57 / 1,049.58 kB | builds | pass |
+| 2026-11-11 | 5 | **First-load transfer** (welcome, cache off) | 4.63 MB, 11 requests | ≤ 10 MB | pass |
+| 2026-11-11 | 5 | Bars sweep in / cross-fade, rolling digits, reduced motion; a real phone | animations not measured headless (static screenshots only); no phone in this session | — | not checked |
+
+Not re-run in Phase 5 (no ephemeris, terrain or horizon change; the engine only gained the timeline rows, the
+countdown rule and the elevation series): pipeline `05`-`08`. Their fixtures are checked by `npm test`, which passed.
