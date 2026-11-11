@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { Eye, Layers, Map as MapIcon, Minus, Plus, TriangleAlert, WifiOff } from "lucide-react"
+import { Check, Eye, Layers, Map as MapIcon, Minus, Plus, TriangleAlert, WifiOff } from "lucide-react"
 import CheckRow from "@/components/CheckRow"
 import DataStatus from "@/components/DataStatus"
 import { Button } from "@/components/ui/button"
@@ -7,7 +7,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Slider } from "@/components/ui/slider"
 import { createGlobe } from "@/view/globe.js"
 import { SITE_GROUPS } from "@/view/globeModel.js"
-import { getEngineData, globeUrls, goToLatLon, loadSites, selectEffectiveTimeMs, setPinLatLon, useStore } from "@/state.js"
+import { COMPARE_MAX } from "@/engine/compare.js"
+import { addPlaceToCompare, getEngineData, globeUrls, goToLatLon, loadSites, selectEffectiveTimeMs, setPinLatLon, useStore } from "@/state.js"
 
 const SIDE_TEXT = { near: "Near side (faces Earth)", far: "Far side (never faces Earth)", limb: "Limb (edge-on from Earth)" }
 
@@ -96,6 +97,23 @@ function LayersMenu({ apiRef, sites }) {
   )
 }
 
+// "+ Compare" in a mission pin's tooltip.
+function TooltipCompare({ site }) {
+  const inList = useStore((s) => s.compare.some((c) => c.pin.lat === site.lat && c.pin.lon === site.lon && c.shiftH === 0))
+  const full = useStore((s) => s.compare.length >= COMPARE_MAX)
+  return (
+    <Button
+      variant="outline"
+      size="xs"
+      className="mt-1.5"
+      disabled={inList || full}
+      onClick={() => addPlaceToCompare(site.lat, site.lon, site).catch(() => {})}
+    >
+      {inList ? <Check /> : <Plus />} {inList ? "In compare" : full ? `Compare is full (${COMPARE_MAX})` : "Compare"}
+    </Button>
+  )
+}
+
 // The 3D globe view (lazy chunk with CesiumJS). Owns the Cesium container: createGlobe once the core data is
 // ready, destroy in cleanup (StrictMode-safe). Stays mounted when hidden so the camera persists; it renders
 // only while active.
@@ -107,6 +125,15 @@ export default function GlobePanel({ active }) {
   const setView = useStore((s) => s.setView)
   const [error, setError] = useState(null)
   const [hover, setHover] = useState(null)
+  // A site's tooltip stays a moment after the pointer leaves the pin, and while the pointer is on it, so its
+  // "+ Compare" button can be reached.
+  const overTipRef = useRef(false)
+  const hideRef = useRef(0)
+  const onHover = (info) => {
+    clearTimeout(hideRef.current)
+    if (info) setHover(info)
+    else hideRef.current = setTimeout(() => !overTipRef.current && setHover(null), 350)
+  }
   const [view, setViewInfo] = useState({ side: "near", nearPole: false })
   const [imagery, setImagery] = useState("online")
   const [sites, setSites] = useState([])
@@ -132,7 +159,7 @@ export default function GlobePanel({ active }) {
           reducedMotion: prefersReducedMotion(),
           onPick: (lat, lon) => setPinLatLon(lat, lon).catch(() => {}), // a tier error shows in <DataStatus>
           onSelectSite: (site) => goToLatLon(site.lat, site.lon, site).catch(() => {}),
-          onHover: setHover,
+          onHover,
           onView: ({ lat, side }) =>
             setViewInfo((v) => {
               const nearPole = lat <= POLAR_CHIP_LAT
@@ -145,12 +172,15 @@ export default function GlobePanel({ active }) {
         const s0 = useStore.getState()
         api.setTime(selectEffectiveTimeMs(s0))
         api.setPin(s0.pin)
+        const compareItems = (list) => list.map((c, i) => ({ lat: c.pin.lat, lon: c.pin.lon, color: c.color, n: i + 1 }))
+        api.setCompare(compareItems(s0.compare))
         // a shared link's camera, else a site picked before the globe had loaded
         if (s0.camera.globe) api.setCamera(s0.camera.globe)
         else if (s0.focus) api.flyTo(s0.focus.lat, s0.focus.lon)
         api.setActive(useStore.getState().view === "globe")
         unsubscribe = useStore.subscribe((s, prev) => {
           if (s.pin !== prev.pin) api.setPin(s.pin)
+          if (s.compare !== prev.compare) api.setCompare(compareItems(s.compare))
           if (s.focus !== prev.focus && s.focus) api.flyTo(s.focus.lat, s.focus.lon)
           if (s.baseTimeUtcMs !== prev.baseTimeUtcMs || s.sliderOffsetH !== prev.sliderOffsetH) api.setTime(selectEffectiveTimeMs(s))
         })
@@ -240,12 +270,18 @@ export default function GlobePanel({ active }) {
       {active && hover && (
         <div
           role="tooltip"
-          className="pointer-events-none absolute z-(--lspb-z-map-ui) max-w-64 rounded-md border bg-background/95 px-2.5 py-1.5 text-sm shadow-md"
+          className={`absolute z-(--lspb-z-map-ui) max-w-64 rounded-md border bg-background/95 px-2.5 py-1.5 text-sm shadow-md ${hover.site ? "" : "pointer-events-none"}`}
           style={{ left: hover.x + 14, top: hover.y + 14 }}
+          onPointerEnter={() => (overTipRef.current = true)}
+          onPointerLeave={() => {
+            overTipRef.current = false
+            setHover(null)
+          }}
         >
           <p className="font-semibold">{hover.title}</p>
           {hover.detail && <p className="text-xs text-muted-foreground">{hover.detail}</p>}
           {hover.note && <p className="text-xs text-lspb-warn">{hover.note}</p>}
+          {hover.site && <TooltipCompare site={hover.site} />}
         </div>
       )}
 

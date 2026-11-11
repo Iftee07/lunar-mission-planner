@@ -31,6 +31,9 @@ export function formatDays(hours, digits = 1, atLeast = false) {
 // Hours of simulated time per real second -> "0.25 d/s".
 export const formatDaysPerSecond = (hPerS) => `${+(hPerS / HOURS_PER_DAY).toFixed(2)} d/s`
 
+// Fraction 0..1 -> "42%"
+export const formatPercent = (fraction) => `${Math.round(fraction * 100)}%`
+
 export const formatDeg = (d, digits = 1) => `${d >= 0 ? "+" : ""}${d.toFixed(digits)}°`
 
 export const formatAz = (az) => `${az.toFixed(1).padStart(5, "0")}°`

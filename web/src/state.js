@@ -545,5 +545,6 @@ function installDevHooks() {
       useStore.getState().setBaseTime(Date.parse(iso))
     },
     state: () => useStore.getState(),
+    setCompareList, // e.g. await lspb.setCompareList([{ lat: 0.674, lon: 23.473 }, { lat: -89.45, lon: -137.3, shiftH: 708.7 }])
   }
 }

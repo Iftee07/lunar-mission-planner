@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect } from "react"
 import { LoaderCircle } from "lucide-react"
 import AppBar from "@/components/AppBar"
+import CompareDrawer from "@/components/compare/CompareDrawer"
 import DataStatus from "@/components/DataStatus"
 import ErrorBoundary from "@/components/ErrorBoundary"
 import PolarHdPanel from "@/components/PolarHdPanel"
@@ -32,7 +33,7 @@ function GlobeLoading() {
 // (Leaflet) and mounted only after the welcome flow, so no view is ever sized while hidden.
 // Layout: >= 1024 px (lg) the sidebar sits right of the main view and the page does not scroll;
 // below that the sidebar stacks under the main view, the page scrolls and the time bar sticks to
-// the bottom. DOM (and Tab) order is always: main view, sidebar, time bar.
+// the bottom. DOM (and Tab) order is always: main view, sidebar, compare drawer, time bar.
 export default function Planner() {
   const view = useStore((s) => s.view)
 
@@ -82,6 +83,7 @@ export default function Planner() {
             <Sidebar />
           </aside>
         </div>
+        <CompareDrawer />
         <TimeBar />
       </div>
     </TooltipProvider>

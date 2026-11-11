@@ -141,6 +141,50 @@ function ringCanvas(color, size = 64) {
   return c
 }
 
+// A compared site: a disc in the column's colour with its column number(s), e.g. "2" or "1·3".
+function numberCanvas(color, text, ink, font, size = 26) {
+  const c = document.createElement("canvas")
+  c.height = size
+  c.width = Math.max(size, Math.ceil(size * 0.45 * text.length + 12))
+  const g = c.getContext("2d")
+  const r = size / 2 - 1.5
+  g.fillStyle = color
+  g.strokeStyle = ink
+  g.lineWidth = 2
+  g.beginPath()
+  g.roundRect(1.5, 1.5, c.width - 3, size - 3, r)
+  g.fill()
+  g.stroke()
+  g.fillStyle = ink
+  g.font = `700 13px ${font}`
+  g.textAlign = "center"
+  g.textBaseline = "middle"
+  g.fillText(text, c.width / 2, size / 2 + 0.5)
+  return c
+}
+
+// Points along the great circle from a to b (lat/lon degrees), `n` + 1 of them, `heightM` above the surface.
+function greatCircle(a, b, n, heightM) {
+  const unit = (p) => {
+    const la = (p.lat * Math.PI) / 180
+    const lo = (p.lon * Math.PI) / 180
+    return [Math.cos(la) * Math.cos(lo), Math.cos(la) * Math.sin(lo), Math.sin(la)]
+  }
+  const u = unit(a)
+  const v = unit(b)
+  const omega = Math.acos(Math.max(-1, Math.min(1, u[0] * v[0] + u[1] * v[1] + u[2] * v[2])))
+  const out = []
+  for (let i = 0; i <= n; i++) {
+    const t = i / n
+    const s = Math.sin(omega) || 1
+    const ka = omega ? Math.sin((1 - t) * omega) / s : 1 - t
+    const kb = omega ? Math.sin(t * omega) / s : t
+    const r = R + heightM
+    out.push(new Cartesian3((ka * u[0] + kb * v[0]) * r, (ka * u[1] + kb * v[1]) * r, (ka * u[2] + kb * v[2]) * r))
+  }
+  return out
+}
+
 function discCanvas(color, highlight, shadow, size = 22) {
   const c = document.createElement("canvas")
   c.width = c.height = size
@@ -456,6 +500,55 @@ export function createGlobe(container, opts) {
     scene.requestRender()
   }
 
+  // --- compared sites: numbered markers in their column colours, joined in column order by thin
+  // great-circle arcs that draw in (instantly under reduced motion). Same-place columns share a marker. ---
+  const cmpBB = new BillboardCollection({ scene })
+  const cmpArcs = scene.primitives.add(new PolylineCollection())
+  scene.primitives.add(cmpBB)
+  const ARC_HEIGHT_M = 1500
+  const ARC_STEPS = 64
+  const ARC_DRAW_MS = 700
+  let arcAnim = 0
+
+  // items: [{ lat, lon, color (0..3, --lspb-cmp-N), n (column number) }] in column order
+  function setCompare(items) {
+    cancelAnimationFrame(arcAnim)
+    cmpBB.removeAll()
+    cmpArcs.removeAll()
+    const places = []
+    for (const it of items) {
+      const p = places.find((q) => q.lat === it.lat && q.lon === it.lon)
+      if (p) p.ns.push(it.n)
+      else places.push({ lat: it.lat, lon: it.lon, color: it.color, ns: [it.n] })
+    }
+    for (const p of places) {
+      cmpBB.add({
+        image: numberCanvas(token(`cmp-${p.color + 1}`), p.ns.join("·"), space, theme.fontMono),
+        position: cartesianFromLatLon(p.lat, p.lon),
+        pixelOffset: new Cartesian2(0, -40), // above the mission pin / user pin
+        id: { kind: "compare", n: p.ns },
+      })
+    }
+    // One material per line: a polyline destroys its material when it is removed.
+    const arcs = places.slice(1).map((p, i) => ({
+      pts: greatCircle(places[i], p, ARC_STEPS, ARC_HEIGHT_M),
+      line: cmpArcs.add({ width: 2, material: Material.fromType("Color", { color: css("line").withAlpha(0.8) }) }),
+    }))
+    const draw = (t) => {
+      const k = Math.max(2, Math.round(t * ARC_STEPS) + 1)
+      for (const a of arcs) a.line.positions = a.pts.slice(0, k)
+      scene.requestRender()
+    }
+    if (reducedMotion || !arcs.length) return draw(1)
+    const t0 = performance.now()
+    const step = (now) => {
+      const t = clamp01((now - t0) / ARC_DRAW_MS)
+      draw(1 - (1 - t) ** 3) // ease-out
+      if (t < 1) arcAnim = requestAnimationFrame(step)
+    }
+    arcAnim = requestAnimationFrame(step)
+  }
+
   // --- lat/lon grid ---
   const grid = new PolylineCollection()
   const gridLabels = new LabelCollection({ scene })
@@ -463,8 +556,9 @@ export function createGlobe(container, opts) {
   scene.primitives.add(grid)
   scene.primitives.add(gridLabels)
   {
-    const material = Material.fromType("Color", { color: css("line").withAlpha(0.35) })
-    const line = (pts) => grid.add({ positions: pts, width: 1, material })
+    // One material per line: a polyline destroys its material with it (a shared one fails on the second).
+    const gridColor = css("line").withAlpha(0.35)
+    const line = (pts) => grid.add({ positions: pts, width: 1, material: Material.fromType("Color", { color: gridColor }) })
     const span = (n, f) => Array.from({ length: n + 1 }, (_, i) => f(i))
     for (let lon = -180; lon < 180; lon += 30) line(span(90, (i) => cartesianFromLatLon(-90 + 2 * i, lon)))
     for (let lat = -60; lat <= 60; lat += 30) line(span(180, (i) => cartesianFromLatLon(lat, -180 + 2 * i)))
@@ -537,6 +631,7 @@ export function createGlobe(container, opts) {
         kind: "site",
         title: s.name,
         detail: [id.group.label, statusText(s), s.mission_date].filter(Boolean).join(" · "),
+        site: s,
         note: s.verified ? null : "unverified",
       }
     }
@@ -546,6 +641,7 @@ export function createGlobe(container, opts) {
     }
     if (id.kind === "earth") return { kind: "earth", title: "Earth direction", detail: "Earth as seen from the Moon's centre" }
     if (id.kind === "subEarth") return { kind: "subEarth", title: "Sub-Earth point", detail: "Earth is straight overhead here" }
+    if (id.kind === "compare") return { kind: "compare", title: `Compared site ${id.n.join(", ")}`, detail: "Its column in the compare drawer" }
     if (id.kind === "subSolar") return { kind: "subSolar", title: "Sub-solar point", detail: "The Sun is straight overhead here" }
     return null
   }
@@ -582,6 +678,7 @@ export function createGlobe(container, opts) {
     }
     tappedSiteId = null
     onHover(null)
+    if (id?.kind === "compare") return // a label above its site, not a place to pin
     const ll = pickLatLon(camera, c.position)
     if (ll) onPick(ll.lat, ll.lon)
   }, ScreenSpaceEventType.LEFT_CLICK)
@@ -672,6 +769,7 @@ export function createGlobe(container, opts) {
     setPin,
     flyTo,
     setCamera,
+    setCompare,
     zoomIn: () => zoomStep(1),
     zoomOut: () => zoomStep(-1),
     setLabelsVisible(on) {
@@ -718,6 +816,7 @@ export function createGlobe(container, opts) {
     },
     destroy() {
       cancelAnimationFrame(pinAnim)
+      cancelAnimationFrame(arcAnim)
       cancelAnimationFrame(viewFrame)
       cancelAnimationFrame(hoverFrame)
       container.removeEventListener("keydown", onKey)
