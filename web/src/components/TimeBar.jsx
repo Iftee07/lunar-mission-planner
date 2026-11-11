@@ -4,7 +4,6 @@ import DatePicker from "@/components/DatePicker"
 import TimelineStrip from "@/components/TimelineStrip"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
 import { Toggle } from "@/components/ui/toggle"
 import { formatClock, formatDays, formatPlaySpeed } from "@/lib/format.js"
 import {
@@ -29,7 +28,6 @@ function TimeReadout() {
 // Bottom bar: start date-time (UTC, calendar popover), Play, speed, loop, the effective time, and the timeline
 // strip (one row group per site; its playhead is the time control).
 export default function TimeBar() {
-  const sliderOffsetH = useStore((s) => s.sliderOffsetH)
   const { setSliderOffset } = useStore.getState()
 
   const [playing, setPlaying] = useState(false)
@@ -124,14 +122,6 @@ export default function TimeBar() {
         </div>
       </div>
 
-      <Slider
-        aria-label="Days after start"
-        min={0}
-        max={TIME_SLIDER_RANGE_H}
-        step={SLIDER_STEP_H}
-        value={[sliderOffsetH]}
-        onValueChange={([h]) => setSliderOffset(h)}
-      />
       <TimelineStrip loopStartH={loopStartH} />
     </footer>
   )
