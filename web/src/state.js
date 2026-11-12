@@ -226,7 +226,10 @@ function makePin(latDeg, lonDeg, source, xy = null, site = null) {
   const groundM = terrain.heightAt(latDeg, lonDeg)
   if (!Number.isFinite(groundM)) return null
   let lon = lonDeg // east longitude in (-180, 180]; wrapped only when outside it (keeps typed values exact)
-  if (lon > 180 || lon <= -180) lon = ((((lon + 180) % 360) + 360) % 360) - 180 || 180
+  if (lon > 180 || lon <= -180) {
+    lon = ((((lon + 180) % 360) + 360) % 360) - 180
+    if (lon === -180) lon = 180
+  }
   const pin = { lat: latDeg, lon, groundM, terrainSource: source, resolutionM: terrain.resolutionM }
   if (source === "polar-hd") Object.assign(pin, xy || project(latDeg, lonDeg, engineData.manifest.moon_radius_m))
   if (site) pin.site = site
