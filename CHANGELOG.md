@@ -148,6 +148,9 @@ The Local Lead confirmed that building before the event is allowed.
 - **Compare drawer resizes:** drag its top edge up or down (or Up / Down on the focused handle;
   double-click resets). The height is remembered in this browser, and the map or globe keeps at least
   240 px. The Polar HD map now re-measures whenever its area changes size.
+- **Globe, South Pole HD overlay blends in:** it used to sit on the globe as a lighter disc with a hard edge
+  at 84°S. Its outer 1.5° now fades in from transparent, and it is drawn darker and with more contrast to
+  match the photo mosaic. The fade is made once, in a worker, when the overlay first loads.
 - **Pin coordinates on the map:** the point you click shows its latitude and longitude just below the pin,
   on the globe and on the Polar HD map (hidden while the pin is dragged).
 - **Compared sites on the Polar HD map:** numbered badges in the column colours, joined in column order by

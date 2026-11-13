@@ -310,7 +310,9 @@ comes from the LOLA engine). Its fixed frame is the ephemeris frame `MOON_ME`: x
   finest level (the tile grid is copied from the service's capabilities document and tested). Under any
   tile that fails, the bundled CGI Moon Kit texture shows; after six failed tiles in a row (or with
   `?offline=1`) the globe uses only the bundled texture and says "Offline imagery". South of 84°S our
-  120 m LOLA hillshade ("South Pole HD") fades in below 4,000 km altitude.
+  120 m LOLA hillshade ("South Pole HD") fades in below 4,000 km altitude. Its outer 1.5° (84°S to 85.5°S)
+  fades from transparent to solid (done once, in a worker) and it is drawn darker and with more contrast, so
+  it blends into the photo mosaic instead of sitting on it as a disc.
 - **Light:** a directional light along the ephemeris Sun vector at the selected time, so the terminator is
   the real one and sweeps across the Moon during Play. A small dot marks the sub-solar point.
 - **Earth:** a marker just beyond the limb in the true Earth direction (direction only, not to scale) and
@@ -417,7 +419,8 @@ history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.m
   the ring's 8 points sample it and can miss a narrow ridge or pit between them.
 - **The globe is for looking, not measuring.** It is a smooth sphere (no relief); its imagery is a photo
   mosaic with its own baked-in shadows, under our real-time lighting. The South Pole HD overlay is a
-  hillshade with a fixed light direction (not the selected time), and its edge at 84°S is visible.
+  hillshade with a fixed light direction (not the selected time); its edge is faded but its shading still
+  differs a little from the mosaic around it.
 - **Globe imagery needs the network.** Moon Trek tiles stream from trek.nasa.gov; offline, the bundled
   4096 × 2048 texture (about 2.7 km per pixel) is much less sharp.
 
