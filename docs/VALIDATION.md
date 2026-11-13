@@ -312,3 +312,16 @@ production build (`npm run preview`) unless marked "dev" (`npm run dev`, for the
 | 2026-11-13 | 7 | `npm run build` (raw / gzip) | entry `index` 435.67 / 142.25 kB (before the phase 435.60); `Planner` 355.63 / 107.72 kB | builds | pass |
 | 2026-11-13 | 7 | **Live site** https://lunar-mission-planner.vercel.app/ (Vercel, from the new repository; fresh headless profile, cache off) | data files served at full size (e.g. `dem_near.bin` 18,458,888 B); first load 4.44 MB; welcome → planner → typed `89.4389 S, 222.904 E` (Polar HD pin) → "Equator vs pole" compare → Play (+0.75 d in 3 s) → Polar HD map with ring → surface view → link in the URL; 196 Moon Trek tiles; no HTTP or console errors | demo path works | pass |
 | 2026-11-13 | 7 | Real phone, screen reader | not checked in this session | — | not checked |
+
+## After Phase 7: datasets download up front — 2026-11-13
+
+Production build (`npm run preview`), same headless-Chrome driver, cache off, network throttled to 50 Mbit/s
+down and 40 ms latency; Skip clicked at 0.9 s.
+
+| Date | Phase | Check | Value | Tolerance / budget | Result |
+|---|---|---|---|---|---|
+| 2026-11-13 | 7+ | Terrain starts at page open | ephemeris done 1.3 s; Polar HD (49.7 MB) and global (19.1 MB) download in parallel from the start; all done at 13.7 s | starts on open | pass |
+| 2026-11-13 | 7+ | Dataset screen while downloading | "Downloading lunar datasets" shown with per-dataset progress (e.g. 23.4 of 49.7 MB, 5.9 of 19.1 MB at 6.4 s) | shown | pass |
+| 2026-11-13 | 7+ | Globe waits for both datasets | `GlobePanel` chunk requested only after both finished (done 14.4 s); globe canvas at 15.0 s; `hillshade.png` (8.27 MB) follows once Polar HD is ready | after both | pass |
+| 2026-11-13 | 7+ | First-load budget (BUILD_PLAN rule 11) | about 73 MB of data before the globe in production (ephemeris 4.2 + Polar HD 49.7 + global 19.1 MB); dev build unchanged | ≤ 10 MB | **waived** (team decision: no terrain waits after the welcome flow) |
+| 2026-11-13 | 7+ | `npm run lint` / `npm test` / `npm run build` | clean; 18 files, 190 passed; builds | — | pass |

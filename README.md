@@ -10,10 +10,13 @@ are one tap away.
 Every calculation runs on your machine from data generated once by a Python pipeline and served from
 `web/public/data/`. The only runtime network use is the globe's imagery: NASA Moon Trek map tiles,
 display only. Without them (offline, or `?offline=1`) the globe falls back to a bundled Moon texture and
-everything else keeps working. Data loads in tiers: the Sun/Earth ephemeris at start (4.6 MB on the
-welcome screen), the 3D globe (CesiumJS, about 1 MB) when the planner opens, the 120 m polar terrain when
-the Polar HD map opens or a pin is placed south of 84°S, and the global terrain the first time a point
-elsewhere is used. With the globe open and no pin, the first load is 6.0 MB (imagery tiles excluded).
+everything else keeps working. In the production build (the live site) all data downloads as soon as the
+site opens: the Sun/Earth ephemeris (4.2 MB), the 120 m polar terrain (49.7 MB) and the global terrain
+(19.1 MB). If the planner is opened before they finish, it shows a "Downloading lunar datasets" screen, and
+the 3D globe (CesiumJS, about 1 MB) loads once both terrain sets are in, so no pin waits for terrain. In
+`npm run dev` data loads in tiers instead: the ephemeris at start, the polar terrain when the Polar HD map
+opens or a pin is placed south of 84°S, and the global terrain the first time a point elsewhere is used
+(first load with the globe open and no pin: 6.0 MB, imagery tiles excluded).
 
 - Built for the NASA Space Apps 2026 challenge **Lunar Landing Site Navigator**. Changes are listed
   in [CHANGELOG.md](CHANGELOG.md).
@@ -429,7 +432,7 @@ All numbers below were measured on this repository's generated data.
 | Play with the ring, 4 compared sites and the globe (desktop) | 59.9 fps, no long tasks (target ≥ 50) |
 | **Published benchmark, Earth:** share of 2027 with Earth above the flat horizon vs JPL Horizons, hourly (PGDA Site01 and Site04) | 45.18% and 46.04%, identical; max elevation difference 0.00003° |
 | **Published benchmark, Sun:** share of time any part of the Sun is above the terrain horizon, observer on the ground, vs NASA PGDA average illumination (Mazarico et al. 2011) | connecting ridge 78.9% vs 78.3%; Shackleton rim 79.2% vs 80.5% (see below) |
-| First load (welcome screen, cache off) | 4.64 MB, network idle in 0.5 s locally and 3.0 s with 4× CPU slowdown and 20 Mbit/s (budget 10 MB, 6 s) |
+| First load (welcome screen, cache off) | dev build (lazy tiers): 4.64 MB, network idle in 0.5 s locally and 3.0 s with 4× CPU slowdown and 20 Mbit/s (budget 10 MB, 6 s). Production now downloads all terrain up front (about 73 MB; globe ready at 15 s at 50 Mbit/s), a deliberate trade for no terrain waits |
 | Pin to results ready (horizons and metrics) | Polar HD 0.22-0.26 s (budget 0.3 s); Global 0.09-0.13 s (budget 0.5 s) |
 | Globe frame rate while rotating, imagery streaming | 60 fps (target ≥ 50) |
 | Accessibility: axe-core WCAG 2.1 A/AA, welcome and planner, 1440 px and 360 px, with and without reduced motion | no violations; every Tab stop shows a focus ring; no horizontal scroll at 360 px |

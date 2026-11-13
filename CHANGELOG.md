@@ -127,6 +127,17 @@ The Local Lead confirmed that building before the event is allowed.
 - Faster: compared columns take turns while the time moves, then all update together, so scrubbing and Play
   with 4 compared sites and the globe run at 58 to 60 fps (target 50). 155 tests pass.
 
+### After Phase 7: datasets download up front (2026-11-13)
+
+- **Production build only:** both LOLA terrain sets (Polar HD grids and slopes, 49.7 MB; global DEM, 19.1 MB)
+  start downloading as soon as the site opens, while the user reads the welcome slides. If the user enters
+  the planner before they finish, the main view shows a "Downloading lunar datasets" screen with progress
+  per dataset. The globe (and the Polar HD map and surface view) mounts only when both are ready, so no pin
+  waits for terrain afterwards. After a download error the screen offers Retry or "Continue without it"
+  (the old on-demand loading). New: `components/DatasetGate.jsx`, `preloadTerrain()` in `state.js`.
+- **Trade-off, chosen by the team:** this gives up BUILD_PLAN rule 11's 10 MB first-load budget in
+  production (about 73 MB of data before the globe). `npm run dev` and the tests keep lazy tiers.
+
 ### Phase 7: hardening and docs (2026-11-13)
 
 - **Published benchmark:** at two named south-pole points (PGDA's connecting ridge and Shackleton rim), Earth
