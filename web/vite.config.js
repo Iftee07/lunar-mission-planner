@@ -8,7 +8,7 @@ import { defineConfig } from "vite"
 const here = path.dirname(fileURLToPath(import.meta.url))
 
 // CesiumJS loads its web workers, WASM and small assets (e.g. the credit logo) at run time from
-// CESIUM_BASE_URL (/cesium/, set in src/view/globe.js). This plugin serves them from the installed package
+// CESIUM_BASE_URL (<base>/cesium/, set in src/view/globe.js). This plugin serves them from the installed package
 // in dev and copies them into dist/cesium/ on build. Only fetched when the globe needs them.
 const CESIUM_DIR = path.resolve(here, "node_modules/cesium/Build/Cesium")
 const CESIUM_STATIC = ["Workers", "ThirdParty", "Assets"]
@@ -38,6 +38,8 @@ function cesiumStatic() {
 }
 
 export default defineConfig({
+  // Site path: "/" (Vercel, dev). The GitHub Pages workflow builds with BASE_PATH=/lunar-mission-planner/.
+  base: process.env.BASE_PATH || "/",
   plugins: [react(), tailwindcss(), cesiumStatic()],
   resolve: {
     alias: { "@": path.resolve(here, "./src") },

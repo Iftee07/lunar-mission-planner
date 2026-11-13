@@ -59,8 +59,8 @@ import {
   watchTileErrors,
 } from "./globeModel.js"
 
-// Cesium's workers and assets are served from /cesium/ (vite.config.js copies them there).
-buildModuleUrl.setBaseUrl("/cesium/")
+// Cesium's workers and assets are served from <base>/cesium/ (vite.config.js copies them there).
+buildModuleUrl.setBaseUrl(`${import.meta.env.BASE_URL}cesium/`)
 Ellipsoid.default = MOON
 
 const FALLBACK_CREDIT = "Offline imagery: NASA SVS CGI Moon Kit (LROC: NASA/GSFC/Arizona State University)"

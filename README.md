@@ -102,10 +102,19 @@ https://svs.gsfc.nasa.gov/4720 (Download menu of the 2025 colour map), saved as
 
 ## Deploy
 
-Live site: https://lunar-mission-planner.vercel.app/ (deployed from `main`). Source:
-https://github.com/Iftee07/lunar-mission-planner.
+Live site: https://iftee07.github.io/lunar-mission-planner/ (GitHub Pages, deployed from `main`). Source:
+https://github.com/Iftee07/lunar-mission-planner. The Vercel site (https://lunar-mission-planner.vercel.app/)
+uses the same build.
 
-The site is deployed on Vercel straight from git, as a static Vite build:
+**GitHub Pages.** `.github/workflows/pages.yml` runs on every push to `main` (or by hand from the Actions
+tab): `npm ci`, lint, tests, then `npm run build` with `BASE_PATH=/lunar-mission-planner/`, and publishes
+`web/dist/`. The base path matters because Pages serves the site under the repository name: Vite prefixes
+it to every asset, and the data loader (`state.js`) and Cesium's asset folder (`view/globe.js`) read it from
+`import.meta.env.BASE_URL`. Without `BASE_PATH` the base is `/` (dev, Vercel).
+
+**Vercel.**
+
+The Vercel deploy is straight from git, as a static Vite build:
 
 - `vercel.json` (repo root) declares one service, `web`, with root `web/` and framework `vite`, and
   rewrites every path (`/(.*)`) to that service.

@@ -155,6 +155,7 @@ export const selectOutOfRange = (s) => {
 let engineData = null
 let worker = null
 const loader = createDataLoader({
+  base: `${import.meta.env.BASE_URL}data/`, // "/" on Vercel and in dev; "/lunar-mission-planner/" on GitHub Pages
   onProgress: (tier, done, total) => setTier(tier, { status: "loading", done, total }),
 })
 
