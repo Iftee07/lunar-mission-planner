@@ -1,20 +1,30 @@
-import { Suspense, lazy, useEffect } from "react"
+import { Suspense, lazy, useEffect, useRef } from "react"
 import { LoaderCircle } from "lucide-react"
 import AppBar from "@/components/AppBar"
 import CompareDrawer from "@/components/compare/CompareDrawer"
 import DataStatus from "@/components/DataStatus"
 import ErrorBoundary from "@/components/ErrorBoundary"
+import ResizeHandle from "@/components/ResizeHandle"
 import PolarHdPanel from "@/components/PolarHdPanel"
 import MobileSummary from "@/components/MobileSummary"
 import Sidebar from "@/components/sidebar/Sidebar"
 import TimeBar from "@/components/TimeBar"
 import ViewToggle from "@/components/ViewToggle"
 import { VIEWS, useStore } from "@/state.js"
+import { useStoredSize } from "@/lib/useStoredSize.js"
 
 // CesiumJS (globe) and three.js (surface view) live in their own chunks, fetched in parallel when the
 // planner mounts.
 const GlobePanel = lazy(() => import("@/components/GlobePanel"))
 const SurfacePanel = lazy(() => import("@/components/SurfacePanel"))
+
+// Sidebar width on desktop: dragged by the handle on its left edge (components/ResizeHandle.jsx), remembered per
+// browser; null = the default (--lspb-sidebar-w). The main view keeps at least MAIN_MIN_W_PX.
+const SIDEBAR_KEY = "lspb.sidebarPx"
+const SIDEBAR_MIN_PX = 280
+const SIDEBAR_MAX_PX = 640
+const MAIN_MIN_W_PX = 480
+const clampSidebar = (w, sidebarPx, mainPx) => Math.max(SIDEBAR_MIN_PX, Math.min(SIDEBAR_MAX_PX, sidebarPx + mainPx - MAIN_MIN_W_PX, w))
 
 const VIEW_LABELS = { globe: "3D globe", polar: "Polar HD map", surface: "Surface view" }
 
@@ -35,6 +45,10 @@ function GlobeLoading() {
 // the bottom. DOM (and Tab) order is always: main view, sidebar, compare drawer, time bar.
 export default function Planner() {
   const view = useStore((s) => s.view)
+  const [sidebarPx, setSidebarPx, saveSidebarPx] = useStoredSize(SIDEBAR_KEY)
+  const mainRef = useRef(null)
+  const asideRef = useRef(null)
+  const width = (ref) => ref.current?.getBoundingClientRect().width ?? 0
 
   // Keyboard shortcut V cycles Globe -> Polar HD -> Surface (ignored while typing in a field).
   useEffect(() => {
@@ -55,6 +69,7 @@ export default function Planner() {
       <AppBar />
       <div className="flex flex-col lg:min-h-0 lg:flex-1 lg:flex-row">
         <main
+          ref={mainRef}
           aria-label={VIEW_LABELS[view]}
           className="relative isolate h-(--lspb-main-h-stacked) min-h-(--lspb-main-min-h) overflow-hidden lg:h-auto lg:min-h-0 lg:min-w-0 lg:flex-1"
         >
@@ -77,7 +92,22 @@ export default function Planner() {
           <MobileSummary />
           <DataStatus />
         </main>
-        <aside id="site-ratings" aria-label="Site ratings" className="w-full scroll-mt-2 border-t lg:w-(--lspb-sidebar-w) lg:shrink-0 lg:overflow-y-auto lg:border-t-0 lg:border-l">
+        <ResizeHandle
+          orientation="vertical"
+          label="Resize the sidebar (drag, or Left and Right arrows; double-click resets)"
+          measure={() => width(asideRef)}
+          clamp={(w) => clampSidebar(w, width(asideRef), width(mainRef))}
+          value={sidebarPx}
+          onLive={setSidebarPx}
+          onSave={saveSidebarPx}
+          className="relative -mx-1.5 hidden w-3 shrink-0 lg:flex"
+        />
+        <aside
+          ref={asideRef}
+          style={sidebarPx ? { "--lspb-sidebar-w": `${sidebarPx}px` } : undefined}
+          id="site-ratings"
+          aria-label="Site ratings"
+          className="w-full scroll-mt-2 border-t lg:w-(--lspb-sidebar-w) lg:shrink-0 lg:overflow-y-auto lg:border-t-0 lg:border-l">
           <Sidebar />
         </aside>
       </div>
