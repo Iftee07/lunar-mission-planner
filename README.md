@@ -99,8 +99,8 @@ The site is deployed on Vercel straight from git, as a static Vite build:
 1. **Welcome.** Three short slides, each with a small interactive explainer: drag the latitude to the pole
    and watch the Sun's daily path flatten onto the horizon; watch Earth trace its monthly wobble
    (libration) near the horizon, from the app's own ephemeris; raise an antenna from 2 m to 15 m until the
-   line to Earth clears a ridge. The last button, "Start at Apollo 11 vs Shackleton", opens the planner
-   with that comparison and Shackleton's rim pinned. "Skip" goes straight to the planner.
+   line to Earth clears a ridge. "Open the planner" on the last slide, or "Skip" on any slide, opens the
+   planner.
 2. **Pick a date and time.** The start button in the bottom bar opens a calendar. Green days have Earth
    above the horizon for at least 1 hour at the selected site. Below the calendar, type the time as a
    24-hour UTC clock (`HH:MM`). All times in the app are UTC.
@@ -170,7 +170,9 @@ The site is deployed on Vercel straight from git, as a static Vite build:
    spell and when the Sun and Earth set. The best value in each row glows. The calendar button on a column
    adds the same site one lunar day (29.5 d) or one month later, or at a typed UTC time: the "schedule slipped"
    case. One-tap presets: "Equator vs pole" (Apollo 11 vs Shackleton rim) and "Two Artemis III regions". On
-   the globe, compared sites get numbered markers joined by arcs. On a phone the columns swipe sideways.
+   the globe, compared sites get numbered markers joined by arcs. Drag the handle on the drawer's top edge
+   up or down to resize it (or focus it and use the Up and Down arrows; double-click resets); the size is
+   remembered in this browser. On a phone the columns swipe sideways.
 10. **Share it.** The address bar always holds the current view: site or pin, time, antenna height,
    mission length, view, map layers, compared sites and camera (for example
    `?site=shackleton_rim&t=2026-03-26T00:00Z&view=polar&layers=slope`). "Copy link" copies it. Opening

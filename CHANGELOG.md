@@ -143,8 +143,11 @@ The Local Lead confirmed that building before the event is allowed.
 - **Three explainers:** why the Sun skims the horizon at the pole (drag the latitude), why Earth comes and
   goes (its monthly loop from the ephemeris), why antenna height matters (raise a mast over a ridge). They
   open from the Sun, Earth and Antenna cards.
-- **Welcome:** the three slides now use the explainers; the last button, "Start at Apollo 11 vs
-  Shackleton", opens that comparison with Shackleton's rim pinned.
+- **Welcome:** the three slides now use the explainers; the last button, "Open the planner", opens an
+  empty planner (team decision, 2026-11-13: not the "Apollo 11 vs Shackleton" preset the plan suggested).
+- **Compare drawer resizes:** drag its top edge up or down (or Up / Down on the focused handle;
+  double-click resets). The height is remembered in this browser, and the map or globe keeps at least
+  240 px. The Polar HD map now re-measures whenever its area changes size.
 - Fixed: a typed longitude of 360° pinned at 180°E instead of 0°.
 - Not built (cut under the freeze rule): the season heatmap, the site report export and live moving
   shadows. 186 tests pass.
