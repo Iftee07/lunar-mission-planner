@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { CalendarDays, Earth, SatelliteDish, Sun, SunDim } from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
 import { buttonVariants } from "@/components/ui/button"
+import { Term } from "@/components/why/Why"
+import AntennaExplainer from "@/components/explain/AntennaExplainer"
+import LibrationExplainer from "@/components/explain/LibrationExplainer"
+import SunPathExplainer from "@/components/explain/SunPathExplainer"
 import { cn } from "@/lib/utils"
-import { useStore } from "@/state.js"
+import { goToLatLon, loadComparePreset, useStore } from "@/state.js"
 import Starfield from "./Starfield"
-import { LanderArt, MoonArt, RocketArt } from "./WelcomeArt"
 
 const EASE = [0.4, 0, 0.2, 1]
+const START_PRESET = "equator-pole" // engine/compare.js: Apollo 11 vs Shackleton rim
 
 // Slide in from the travel direction, leave the other way. Under reduced motion MotionConfig
 // (App.jsx) drops the x movement and keeps the fade.
@@ -22,8 +25,8 @@ const textItem = {
   center: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE } },
 }
 const artIn = {
-  enter: { opacity: 0, scale: 0.94 },
-  center: { opacity: 1, scale: 1, transition: { duration: 0.7, ease: EASE, delay: 0.1 } },
+  enter: { opacity: 0, scale: 0.96 },
+  center: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: EASE, delay: 0.1 } },
 }
 
 function NextButton({ children, onClick, buttonRef }) {
@@ -42,83 +45,72 @@ function NextButton({ children, onClick, buttonRef }) {
   )
 }
 
-function Item({ icon: Icon, children }) {
-  return (
-    <motion.li variants={textItem} className="flex items-center gap-3">
-      <span className="grid size-9 shrink-0 place-items-center rounded-full border bg-background/60">
-        <Icon className="size-4.5" aria-hidden="true" />
-      </span>
-      <span>{children}</span>
-    </motion.li>
-  )
-}
+const H1 = "text-3xl leading-tight font-bold tracking-tight md:text-4xl"
+const P = "text-lg text-muted-foreground"
 
-// Each slide: { art, artSide, content(next, buttonRef) }
+// Each slide: { explainer, content(next, buttonRef) }. The explainers are the ones the cards open (P6b).
 const SLIDES = [
   {
-    art: <MoonArt className="max-h-(--lspb-welcome-art-max-h) w-full max-w-md md:max-h-none" />,
-    artSide: "left",
+    explainer: <SunPathExplainer initialLat={30} compact />,
     content: (next, buttonRef) => (
       <>
-        <motion.h1 variants={textItem} className="text-5xl font-bold tracking-tight md:text-7xl">
-          Hi there
-        </motion.h1>
-        <motion.p variants={textItem} className="text-xl text-muted-foreground md:text-2xl">
-          Welcome to <span className="text-foreground">Lunar Mission Planner</span>
-        </motion.p>
         <motion.p variants={textItem} className="text-sm text-muted-foreground">
           NASA Space Apps 2026 · Lunar Landing Site Navigator challenge
         </motion.p>
-        <motion.div variants={textItem} className="pt-4">
-          <NextButton onClick={next} buttonRef={buttonRef}>
-            Let&apos;s go
-          </NextButton>
-        </motion.div>
-      </>
-    ),
-  },
-  {
-    art: <RocketArt className="max-h-(--lspb-welcome-art-max-h) w-full max-w-xl md:max-h-none" />,
-    artSide: "right",
-    content: (next, buttonRef) => (
-      <>
-        <motion.h1 variants={textItem} className="text-3xl leading-tight font-bold tracking-tight md:text-4xl">
-          To land on the south pole of the Moon, we need to select a proper landing site.
+        <motion.h1 variants={textItem} className="text-4xl font-bold tracking-tight md:text-6xl">
+          Hi there
         </motion.h1>
-        <motion.p variants={textItem} className="text-lg text-muted-foreground">
-          It is difficult to land there for two reasons:
+        <motion.p variants={textItem} className="text-xl md:text-2xl">
+          Welcome to <span className="font-semibold">Lunar Mission Planner</span>
         </motion.p>
-        <motion.ul variants={textList} className="space-y-3 text-lg">
-          <Item icon={SunDim}>Low sunlight</Item>
-          <Item icon={SatelliteDish}>Short Earth visibility</Item>
-        </motion.ul>
-        <motion.div variants={textItem} className="pt-4">
-          <NextButton onClick={next} buttonRef={buttonRef}>
-            Let&apos;s go
-          </NextButton>
-        </motion.div>
-      </>
-    ),
-  },
-  {
-    art: <LanderArt className="max-h-(--lspb-welcome-art-max-h) w-full max-w-md md:max-h-none" />,
-    artSide: "right",
-    content: (next, buttonRef) => (
-      <>
-        <motion.h1 variants={textItem} className="text-3xl leading-tight font-bold tracking-tight md:text-4xl">
-          To select a proper landing site, we need to be aware of three primary parameters.
-        </motion.h1>
-        <motion.ol variants={textList} className="space-y-3 text-lg">
-          <Item icon={CalendarDays}>The date we land on the Moon</Item>
-          <Item icon={Sun}>Available sunlight hours for solar power</Item>
-          <Item icon={Earth}>Earth visibility for communication</Item>
-        </motion.ol>
-        <motion.p variants={textItem} className="font-heading text-xl font-semibold">
-          So let&apos;s get started!
+        <motion.p variants={textItem} className={P}>
+          At the Moon&apos;s south pole the Sun never climbs high: it skims the horizon, so the ground decides which spots get
+          power. Drag the latitude towards 90°S.
         </motion.p>
         <motion.div variants={textItem} className="pt-2">
           <NextButton onClick={next} buttonRef={buttonRef}>
-            Let&apos;s get started
+            Next
+          </NextButton>
+        </motion.div>
+      </>
+    ),
+  },
+  {
+    explainer: <LibrationExplainer />,
+    content: (next, buttonRef) => (
+      <>
+        <motion.h1 variants={textItem} className={H1}>
+          Earth comes and goes
+        </motion.h1>
+        <motion.p variants={textItem} className={P}>
+          Radio contact needs Earth above the local <Term id="horizon">horizon</Term>. From the pole Earth hangs low and wobbles (
+          <Term id="libration">libration</Term>), so it can dip out of view for days.
+        </motion.p>
+        <motion.div variants={textItem} className="pt-2">
+          <NextButton onClick={next} buttonRef={buttonRef}>
+            Next
+          </NextButton>
+        </motion.div>
+      </>
+    ),
+  },
+  {
+    explainer: <AntennaExplainer />,
+    content: (next, buttonRef) => (
+      <>
+        <motion.h1 variants={textItem} className={H1}>
+          A few metres can decide it
+        </motion.h1>
+        <motion.p variants={textItem} className={P}>
+          A taller antenna sees over a ridge. This planner checks any spot on the Moon for sunlight, Earth in view and landing
+          slope, on the date you choose, and explains every rating.
+        </motion.p>
+        <motion.p variants={textItem} className="text-base">
+          Start with a comparison: the Apollo 11 site at the equator against Shackleton&apos;s rim at the pole.
+        </motion.p>
+        <motion.div variants={textItem} className="pt-2">
+          <NextButton onClick={next} buttonRef={buttonRef}>
+            Start at Apollo 11 vs Shackleton
           </NextButton>
         </motion.div>
       </>
@@ -126,8 +118,16 @@ const SLIDES = [
   },
 ]
 
-// Three full-screen slides before the planner. Enter or Right goes forward, Left goes back,
-// "Skip" (every slide) and the last button open the planner (screen = "app").
+// The last slide's button: open the planner with the "Equator vs pole" comparison and Shackleton's rim pinned.
+async function openStartPreset() {
+  const list = await loadComparePreset(START_PRESET)
+  const pin = list.at(-1)?.pin
+  if (pin) await goToLatLon(pin.lat, pin.lon, pin.site ?? null)
+}
+
+// Three full-screen slides before the planner, each with an interactive explainer. Enter or Right goes forward,
+// Left goes back (not while a slider has focus). "Skip" opens the planner; the last button opens it on the
+// Apollo 11 vs Shackleton comparison.
 export default function WelcomeFlow() {
   const setScreen = useStore((s) => s.setScreen)
   const [[index, dir], setPage] = useState([0, 1])
@@ -140,7 +140,10 @@ export default function WelcomeFlow() {
   const finish = useCallback(() => setScreen("app"), [setScreen])
   const go = useCallback(
     (to) => {
-      if (to >= SLIDES.length) return finish()
+      if (to >= SLIDES.length) {
+        openStartPreset().catch(() => {}) // a data error shows in the planner
+        return finish()
+      }
       if (to < 0) return
       setPage(([cur]) => [to, to > cur ? 1 : -1])
     },
@@ -149,7 +152,9 @@ export default function WelcomeFlow() {
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.altKey || e.ctrlKey || e.metaKey) return
+      if (e.altKey || e.ctrlKey || e.metaKey || e.defaultPrevented) return
+      // sliders and popovers use the arrow keys themselves
+      if (e.target instanceof HTMLElement && e.target.closest("[role=slider], input, [role=dialog]")) return
       // Enter on a focused button/link already activates it; do not advance twice.
       const onControl = e.target instanceof HTMLElement && /^(BUTTON|A)$/.test(e.target.tagName)
       if (e.key === "ArrowRight" || (e.key === "Enter" && !onControl)) go(index + 1)
@@ -162,11 +167,6 @@ export default function WelcomeFlow() {
   }, [index, go])
 
   const slide = SLIDES[index]
-  const art = (
-    <motion.div variants={artIn} className="flex justify-center">
-      {slide.art}
-    </motion.div>
-  )
 
   return (
     <div className="lspb-welcome-bg relative h-full overflow-hidden">
@@ -199,11 +199,12 @@ export default function WelcomeFlow() {
             aria-label={`${index + 1} of ${SLIDES.length}`}
             className="relative z-0 mx-auto grid min-h-full max-w-6xl content-center items-center gap-8 px-6 pt-20 pb-24 md:grid-cols-2 md:gap-16 md:px-10 md:py-24"
           >
-            {slide.artSide === "left" && art}
             <motion.div variants={textList} className="space-y-5 font-heading">
               {slide.content(() => go(index + 1), buttonRef)}
             </motion.div>
-            {slide.artSide === "right" && art}
+            <motion.div variants={artIn} className="w-full max-w-md justify-self-center rounded-xl border bg-background/70 p-4 backdrop-blur">
+              {slide.explainer}
+            </motion.div>
           </motion.section>
         </AnimatePresence>
       </div>
