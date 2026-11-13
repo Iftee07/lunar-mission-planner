@@ -96,8 +96,11 @@ The site is deployed on Vercel straight from git, as a static Vite build:
 
 ## Using the app
 
-1. **Welcome.** Three short slides explain the problem: low sunlight and short Earth visibility at the
-   south pole. "Skip" goes straight to the planner.
+1. **Welcome.** Three short slides, each with a small interactive explainer: drag the latitude to the pole
+   and watch the Sun's daily path flatten onto the horizon; watch Earth trace its monthly wobble
+   (libration) near the horizon, from the app's own ephemeris; raise an antenna from 2 m to 15 m until the
+   line to Earth clears a ridge. The last button, "Start at Apollo 11 vs Shackleton", opens the planner
+   with that comparison and Shackleton's rim pinned. "Skip" goes straight to the planner.
 2. **Pick a date and time.** The start button in the bottom bar opens a calendar. Green days have Earth
    above the horizon for at least 1 hour at the selected site. Below the calendar, type the time as a
    24-hour UTC clock (`HH:MM`). All times in the app are UTC.
@@ -120,46 +123,62 @@ The site is deployed on Vercel straight from git, as a static Vite build:
    it. Named craters are outlined; hover to see a name, or hide them with the Craters button. Mission sites
    south of 84°S are marked in their globe colours (hover for the name, click or Tab + Enter to pick one;
    two missions aimed at the same point share a marker). The Layers button hides them and adds three data
-   layers, each with an opacity slider, a legend and a `?` naming its source:
+   layers, each with an opacity slider, a legend and a `?` explaining it (with its source):
    **slope** (green under 8°, amber 8 to 10°, red over 10°: the Landing rating's limits), **average
    sunlight** (percent of time sunlit, a long-term average) and **permanent shadow** (PSR). The cursor
    readout shows their values under the pointer. "See slopes on the map" on the Landing card opens the
    map with the slope layer on.
-5. **Read the cards.** Sun, Earth and Landing each have a rating badge; the `?` next to a badge explains
-   the rule with the live numbers. The Sun and Earth cards show the elevation now in large type, a small
+5. **Read the cards.** Sun, Earth and Landing each have a rating badge and a one-line verdict in plain
+   words ("Good for power: the Sun stays up 8.8 d", "Earth only part of the time (31%): plan contact
+   windows"). The `?` next to a badge opens a checklist of the rule against the live numbers (✓ Sun up for
+   the whole 6.5 d stay (8.8 d from landing) · ✗ plus about 1.5 d of margin), and "Show the science" inside
+   it gives the method, the data and terrain resolution, the threshold with its citation, the known error
+   and a link to the matching README section. The same `?` sits on the terrain badge ("Polar HD · 120 m"),
+   the Antenna card, "Not assessed (coarse terrain)" and each map layer. It opens on hover, on keyboard
+   focus or on a tap; Enter or a tap keeps it open and moves focus inside; Esc closes it. Dotted-underlined
+   words (horizon, terminator, libration, DTE, PSR) pop up a short definition. Small links on the Sun,
+   Earth and Antenna cards open the three explainers from the welcome slides.
+   The Sun and Earth cards show the elevation now in large type, a small
    line of it over the mission, and a countdown: "Sunset in 42 h", "Earthrise in 3.1 d". A set countdown is
    green above 48 h, amber from 12 to 48 h and red under 12 h. Antenna height (2, 5, 10 or 15 m) changes
    the Earth results only. The **Details** card holds the mission length (6.5 d Artemis III stay or 14 d),
    "Count partial Sun" (the Sun counts as up while any part of its disc clears the skyline) and the next
    five windows of the Sun and of Earth; click one to jump there.
-6. **Move through time.** The timeline at the bottom covers 29.5 days (one synodic month) after the start
+6. **Move a little.** The "Move a little" card answers "what if we land a bit off target?": 8 points
+   around the pin at 250 m, 500 m or 1 km (on Global terrain 5, 10 or 20 km: ~1.9 km pixels cannot resolve
+   less) each get their own skyline, and the card shows the spread of the sunlit and Earth-in-view shares of
+   the stay ("Within 500 m: sunlight 0%–100%, Earth 0%–48%" on Shackleton's rim), a ring of the points
+   coloured by sunlight or Earth, and the same spot landing 24 h earlier and later. The points also appear
+   around the pin on the globe and the Polar HD map. Points past the 84°S edge of the polar terrain are
+   skipped, never mixed with coarse terrain.
+7. **Move through time.** The timeline at the bottom covers 29.5 days (one synodic month) after the start
    time, with three rows per site (the pin, then each compared site): Sun up, Earth in view, and both. The
    bracket marks the mission window. Drag the playhead or click the track to move the time; hover a bar for
    its start, end and length; click a bar to jump to its start. Keyboard: focus the timeline, arrows move
    15 minutes, `Shift` + arrows 1 day, `Home`/`End` the ends. Everything follows the playhead: the globe's
    day/night line and Earth marker, the surface view, the cards and the countdowns. Play runs at 1 h, 6 h,
    1 d or 3 d per second; the loop button replays the mission window.
-7. **Surface view.** "View from here" on the globe, the Surface tab, or `V` (which cycles Globe, Polar HD
+8. **Surface view.** "View from here" on the globe, the Surface tab, or `V` (which cycles Globe, Polar HD
    and Surface) shows the sky from the pin: the terrain
    skyline, the Sun and Earth, their paths over the next 6.5 days and short fading trails behind them, so
    Play shows them moving while the skyline stays put. Hovering the timeline adds a faint Sun and Earth at
    the time under the pointer. Drag or use the arrow keys to look around, wheel or `+`/`-` to zoom (pinch
    on a touch screen).
-8. **Compare.** "+ Compare" (under the site name, or in a mission pin's tooltip on the globe) adds the site
+9. **Compare.** "+ Compare" (under the site name, or in a mission pin's tooltip on the globe) adds the site
    to the compare drawer above the time bar: up to 4 columns with terrain, Sun elevation now, Power, Talk to
    Earth, Landing, the sunlit / Earth / both shares over the mission, power without Earth, the longest dark
    spell and when the Sun and Earth set. The best value in each row glows. The calendar button on a column
    adds the same site one lunar day (29.5 d) or one month later, or at a typed UTC time: the "schedule slipped"
    case. One-tap presets: "Equator vs pole" (Apollo 11 vs Shackleton rim) and "Two Artemis III regions". On
    the globe, compared sites get numbered markers joined by arcs. On a phone the columns swipe sideways.
-9. **Share it.** The address bar always holds the current view: site or pin, time, antenna height,
+10. **Share it.** The address bar always holds the current view: site or pin, time, antenna height,
    mission length, view, map layers, compared sites and camera (for example
    `?site=shackleton_rim&t=2026-03-26T00:00Z&view=polar&layers=slope`). "Copy link" copies it. Opening
    such a link skips the welcome slides and restores the view: when a schedule slips, send the
    alternative site or date as a link.
 
 The layout adapts from phones (360 px wide, portrait or landscape) to large desktops; on touch screens
-the `?` rating explanations open with a tap.
+the `?` explanations open with a tap.
 
 Durations are shown in Earth days (`d`), for example `6.5 d`; countdowns under 2 days are shown in hours
 (`h`). The engine works in hours; only `web/src/lib/format.js` converts.
@@ -246,6 +265,25 @@ over the whole 708.7 h strip, so its bar edges match the Details windows (tested
 is the overlap of the Sun and Earth rows. The rows are computed in idle time when the site, antenna, Sun
 mode or start time changes, never while the playhead moves.
 
+### Move a little (sensitivity)
+
+`engine/sensitivity.js` places 8 points due N, NE, E, ... at the chosen distance along great circles from
+the pin (tested within 1% of the radius). Each point gets its own Sun and Earth horizons in the worker,
+through the same queue and cache as the pin; a newer pin, radius or antenna cancels the queued points of the
+old ring. For each point, and for the pin at the selected time and 24 h before and after, the share of the
+mission window with the Sun up and with Earth in view is counted exactly as in the mission metrics (the
+same function; tested equal). The shares are recomputed in idle time, at most every 250 ms while the time
+changes. A point whose latitude falls outside the pin's terrain source is skipped and marked.
+
+### Explainers
+
+`engine/explain.js`: the Sun's daily path at a latitude on a smooth Moon (standard spherical astronomy;
+the highest Sun is 90° − |latitude − declination|), Earth's direction from 89.5°S, 0°E every 6 h over 27
+days from the selected date (the app's ephemeris, no terrain), and the clearance of a straight line from an
+antenna over a ridge. The Sun's declination seen from the Moon stays within ±1.59° (the ephemeris maximum
+over 2026-2035 is 1.588°, checked by a test). The antenna explainer uses round illustrative numbers (a 10 m
+ridge 500 m away, Earth 0.3° up), labelled as such.
+
 ### Antenna model
 
 Earth visibility is computed for an antenna on the lander at the selected height (2, 5, 10 or 15 m); a
@@ -310,7 +348,7 @@ Where the numbers come from:
   ≤ 10°).
 - **Project judgement, not NASA figures:** the 8.0-day "Perfect" Sun level (the stay plus about 1.5 days of
   operations margin) and the 8° slope cut (NASA's 10° minus the typical 1.9° LOLA slope error, Barker et
-  al.). The UI tooltips say so.
+  al.). The `?` explanations say so.
 
 What the ratings do not cover: boulders and small craters (slope only) and communication relays. "Good" Earth means contact is
 intermittent: plan scheduled contact windows or a relay.
@@ -364,9 +402,11 @@ history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.m
 - **Slope only.** The landing rating ignores boulders, small craters and surface roughness below the 20 m
   data.
 - **Mission length.** Ratings and metrics follow the mission length (6.5 d by default; the 14 d option
-  gets its control in Phase 5). The 1.5-day Sun margin is the same for every length.
+  is set in the Details card). The 1.5-day Sun margin is the same for every length.
 - **Global terrain is coarse.** Outside 84°S horizons come from ~1.9 km terrain: hills smaller than a few
   kilometres are not in the skyline, and the landing rating is not given.
+- **Move a little is a spread, not a rating.** It shows how much the shares change within the radius;
+  the ring's 8 points sample it and can miss a narrow ridge or pit between them.
 - **The globe is for looking, not measuring.** It is a smooth sphere (no relief); its imagery is a photo
   mosaic with its own baked-in shadows, under our real-time lighting. The South Pole HD overlay is a
   hillshade with a fixed light direction (not the selected time), and its edge at 84°S is visible.
@@ -431,7 +471,7 @@ MIT AND Zlib (pako) and MPL-2.0 OR Apache-2.0 (DOMPurify, used under Apache-2.0)
 | three | 0.186.1 | MIT |
 | cesium (with @cesium/engine, @cesium/widgets) | 1.147.0 | Apache-2.0 |
 | zustand | 5.0.15 | MIT |
-| radix-ui (tooltip, popover, select, slider, toggle) | 1.7.0 | MIT |
+| radix-ui (popover, dialog, select, slider, toggle) | 1.7.0 | MIT |
 | react-day-picker (with date-fns, @date-fns/tz) | 10.0.2 | MIT |
 | motion (with framer-motion, motion-dom, motion-utils) | 13.4.0 | MIT |
 | lucide-react | 1.54.0 | ISC |

@@ -127,6 +127,28 @@ The Local Lead confirmed that building before the event is allowed.
 - Faster: compared columns take turns while the time moves, then all update together, so scrubbing and Play
   with 4 compared sites and the globe run at 58 to 60 fps (target 50). 155 tests pass.
 
+### Phase 6: explain it (2026-11-13)
+
+- **Move a little:** a new card shows how much the Sun and Earth shares of the stay change within 250 m,
+  500 m or 1 km of the pin (5, 10 or 20 km on coarse Global terrain), from 8 points that each get their own
+  skyline: "Within 500 m: sunlight 0%–100%, Earth 0%–48%" on Shackleton's rim. A ring of dots, coloured by
+  sunlight or Earth, pops in on the card and appears around the pin on the globe and the Polar HD map. The
+  card also gives the same spot landing 24 h earlier and later.
+- **Why, in layers:** every rating card has a one-line verdict ("Good for power: the Sun stays up 8.8 d").
+  Its `?` opens a checklist of the rule against the live numbers, and "Show the science" adds the method,
+  data and terrain resolution, the threshold with its citation, the known error and a README link. The same
+  `?` is on the terrain badge, the Antenna card, "Not assessed" and each Polar HD layer. It opens on hover,
+  keyboard focus or a tap, and Esc closes it. Glossary terms (horizon, terminator, libration, DTE, PSR) are
+  dotted-underlined.
+- **Three explainers:** why the Sun skims the horizon at the pole (drag the latitude), why Earth comes and
+  goes (its monthly loop from the ephemeris), why antenna height matters (raise a mast over a ridge). They
+  open from the Sun, Earth and Antenna cards.
+- **Welcome:** the three slides now use the explainers; the last button, "Start at Apollo 11 vs
+  Shackleton", opens that comparison with Shackleton's rim pinned.
+- Fixed: a typed longitude of 360° pinned at 180°E instead of 0°.
+- Not built (cut under the freeze rule): the season heatmap, the site report export and live moving
+  shadows. 186 tests pass.
+
 ### Earlier (before 2026-11-10)
 
 - South-pole landing site planner: Sun and Earth visibility from SPICE ephemeris and LOLA terrain

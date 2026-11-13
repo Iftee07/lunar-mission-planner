@@ -236,3 +236,36 @@ for the 4-column runs.
 
 Not re-run in Phase 5 (no ephemeris, terrain or horizon change; the engine only gained the timeline rows, the
 countdown rule and the elevation series): pipeline `05`-`08`. Their fixtures are checked by `npm test`, which passed.
+
+## Phase 6 — 2026-11-13
+
+Browser checks with the same driver as Phase 5 (headless Chrome 1440 × 900 and 360 × 740 over the DevTools
+Protocol), against `npm run preview` unless marked "dev" (`npm run dev`, for the `lspb` console hooks). Optional
+items cut under the freeze rule (BUILD_PLAN section 7, cut order): 6c season heatmap, 6f export, 6g live shadows.
+
+| Date | Phase | Check | Value | Tolerance / budget | Result |
+|---|---|---|---|---|---|
+| 2026-11-13 | 6 | Ring points at the requested radius (`sensitivity.test.js`: 5 centres incl. 89.99°S and the 180°E wrap × 250 m, 500 m, 1, 5, 10, 20 km; haversine) | every point within 1% | 1% | pass |
+| 2026-11-13 | 6 | Ring shares vs the mission metrics (real data, horizon reference pin 1, antenna 10 m, 2 times) | sunlit and Earth shares identical (12 decimals); null outside the ephemeris | identical | pass |
+| 2026-11-13 | 6 | Ring, Shackleton rim 89.45°S 137.3°W (dev, Polar HD, 500 m) | 8 points ready 1.90 s after `goTo` (16 horizons); "Within 500 m: sunlight 0%–100%, Earth 0%–48%"; the pin 100% / 38%, 24 h earlier 100% / 22%, later 100% / 53% | info | — |
+| 2026-11-13 | 6 | Ring, Apollo 11 (dev, Global, smallest ring 5 km) | 8 points ready 0.54 s; sunlight 71% everywhere, Earth 100%; 24 h earlier 56%, later 86% sunlit | info | — |
+| 2026-11-13 | 6 | Ring on the maps | Polar HD map: 8 coloured dots around the pin (lit side yellow, dark side blue); globe: 8 points (too close to the pin to separate at globe scale) | drawn | pass |
+| 2026-11-13 | 6 | **Play at 6 h/s with the ring, 4 compare columns and the globe** (preview, `?site=shackleton_rim&t=2027-01-10T00:00Z&cmp=apollo11,shackleton_rim,shackleton_rim@708.73,change4`, 4 s) | **59.9 fps**, p95 16.9 ms, worst 33.3 ms; no long tasks (> 50 ms) | ≥ 50 fps desktop | pass |
+| 2026-11-13 | 6 | Checklists vs the rating functions (`explanations.test.jsx`: Sun and Earth × 3 synthetic cases × 156 h and 336 h; Landing × 3) | for every gate, "all lines at that level pass" = the rating reaches it | exact | pass |
+| 2026-11-13 | 6 | Every rating, layer and badge has a Why (unit test) | Sun, Earth, Landing, Landing not assessed, terrain badge, antenna and the 3 Polar HD layers render a trigger and a panel with method, data, threshold, known error and README link; every source key resolves to a README citation; 5 glossary terms render | all | pass |
+| 2026-11-13 | 6 | Why opens on keyboard focus (unit test + browser) | reducer: focus opens, blur closes a peek, click pins, Esc and outside close. Browser (desktop and 360 px): focus-visible on the Sun `?` opens the checklist; Enter pins it and moves focus inside; Tab reaches "Show the science"; Esc closes and focus returns to the trigger without reopening | as specified | pass |
+| 2026-11-13 | 6 | Sun declination band used by the Sun-path explainer (`explain.test.jsx`, ephemeris 2026-2035, daily) | max \|declination\| 1.588°; the explainer's constant is 1.59° (set from this measurement) | ≤ constant | pass |
+| 2026-11-13 | 6 | Sun-path geometry (unit test) | equator: highest Sun 90°; pole: elevation = −declination all day; highest = 90° − \|lat − dec\| (4 cases, 721 samples, 4 decimals); midday due north for a southern observer | analytic | pass |
+| 2026-11-13 | 6 | Earth's libration loop from 89.5°S, 0°E (real ephemeris, 30 d from 2027-01-01, every 6 h) | 121 samples; \|elevation\| < 10°, swing > 5°; \|azimuth\| < 20° | as stated | pass |
+| 2026-11-13 | 6 | Explainers under reduced motion (unit test: SSR inside `MotionConfig reducedMotion="always"`; browser: `prefers-reduced-motion: reduce` emulated) | all three render an SVG and a slider; browser: Sun dot and libration Earth stay put with reduce (Sun 160 → 160, day 0 → 0) and move without it (Sun 187.9 → 148.1, day 17 → 23). Found and fixed: motion's keyframe loop never started, so the Sun dot now runs on its own rAF loop | static when reduced | pass |
+| 2026-11-13 | 6 | Welcome flow (preview) | slide 1 latitude slider to 90°S: "Highest Sun: 0.0°", arrow keys on the slider do not change slide; slide 2 "above the horizon 43% of the month"; slide 3 at 10 m "Earth in view, needs 7.4 m"; "Start at Apollo 11 vs Shackleton" opens the planner with compare = Apollo 11, Shackleton rim and Shackleton rim pinned | as specified | pass |
+| 2026-11-13 | 6 | 360 × 740 phone (dev) | page scrollWidth 360; Why popover inside 32-352 px; Move a little card fits | no horizontal scroll | pass |
+| 2026-11-13 | 6 | Console errors during the browser checks | none | 0 | pass |
+| 2026-11-13 | 6 | `npm run lint` | 0 warnings, 0 errors | clean | pass |
+| 2026-11-13 | 6 | `npm test` | 17 files, 186 passed / 0 skipped / 0 failed (+31: `sensitivity` 8, `explanations` 13, `explain` 10) | 0 failed | pass |
+| 2026-11-13 | 6 | `npm run build` (raw / gzip) | entry `index` 435.93 / 142.33 kB (Phase 5: 408.38; the welcome slides now carry the explainers, slider and popover); `Planner` 351.31 / 106.21 kB (441.47) | builds | pass |
+| 2026-11-13 | 6 | **First-load transfer** (welcome, cache off) | 4.63 MB, 12 requests | ≤ 10 MB | pass |
+| 2026-11-13 | 6 | Pop-in and science expand animations; a real phone; screen reader | not measured headless; no phone or screen reader in this session | — | not checked |
+
+Not re-run in Phase 6 (no ephemeris, terrain or horizon change; the engine gained the ring, the window shares and
+the explainer geometry): pipeline `05`-`08`. Their fixtures are checked by `npm test`, which passed.
