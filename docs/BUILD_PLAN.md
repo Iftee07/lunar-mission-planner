@@ -359,7 +359,7 @@ New `src/view/globe.js` (CesiumJS) and `components/GlobePanel.jsx`, lazy-loaded 
   - *Why Earth wobbles (libration):* Earth traces a small loop near the horizon over a month.
   - *Why antenna height matters:* drag a mast from 2 m to 15 m and watch the line to Earth clear a ridge.
 - **(6c) Season heatmap (optional):** years × months, sunlit % and Earth %, computed in the worker. Click a cell to jump to that date.
-- **(6d) Welcome flow:** three slides that use the explainers, with a final button **"Start at Apollo 11 vs Shackleton"** that opens the preset.
+- **(6d) Welcome flow:** three slides that use the explainers, with a final button **"Start at Apollo 11 vs Shackleton"** that opens the preset. *(Changed 2026-11-13, team decision: the last button says "Open the planner" and opens an empty planner.)*
 - **(6e) Layered "why" explanations (must have; replaces any Expert mode):** one public-first UI where depth is always one tap away.
   - **Layer 1, verdict (always visible):** plain words, colour and icon. For example *"Good for power: Sun stays up 211 h"* or *"Earth only part of the time"*.
   - **Layer 2, why (`?` icon, badge, layer chip or any icon):** a small popover with a **checklist using live numbers vs thresholds**, e.g. "✓ Sun up for the whole 156 h stay (211 h) · ✓ Sun elevation stays above 0.5° · ✗ Earth in view only 31% (needs 100% for Perfect)". Short and scannable.

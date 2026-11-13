@@ -6,11 +6,10 @@ import AntennaExplainer from "@/components/explain/AntennaExplainer"
 import LibrationExplainer from "@/components/explain/LibrationExplainer"
 import SunPathExplainer from "@/components/explain/SunPathExplainer"
 import { cn } from "@/lib/utils"
-import { goToLatLon, loadComparePreset, useStore } from "@/state.js"
+import { useStore } from "@/state.js"
 import Starfield from "./Starfield"
 
 const EASE = [0.4, 0, 0.2, 1]
-const START_PRESET = "equator-pole" // engine/compare.js: Apollo 11 vs Shackleton rim
 
 // Slide in from the travel direction, leave the other way. Under reduced motion MotionConfig
 // (App.jsx) drops the x movement and keeps the fade.
@@ -105,12 +104,9 @@ const SLIDES = [
           A taller antenna sees over a ridge. This planner checks any spot on the Moon for sunlight, Earth in view and landing
           slope, on the date you choose, and explains every rating.
         </motion.p>
-        <motion.p variants={textItem} className="text-base">
-          Start with a comparison: the Apollo 11 site at the equator against Shackleton&apos;s rim at the pole.
-        </motion.p>
         <motion.div variants={textItem} className="pt-2">
           <NextButton onClick={next} buttonRef={buttonRef}>
-            Start at Apollo 11 vs Shackleton
+            Open the planner
           </NextButton>
         </motion.div>
       </>
@@ -118,16 +114,8 @@ const SLIDES = [
   },
 ]
 
-// The last slide's button: open the planner with the "Equator vs pole" comparison and Shackleton's rim pinned.
-async function openStartPreset() {
-  const list = await loadComparePreset(START_PRESET)
-  const pin = list.at(-1)?.pin
-  if (pin) await goToLatLon(pin.lat, pin.lon, pin.site ?? null)
-}
-
 // Three full-screen slides before the planner, each with an interactive explainer. Enter or Right goes forward,
-// Left goes back (not while a slider has focus). "Skip" opens the planner; the last button opens it on the
-// Apollo 11 vs Shackleton comparison.
+// Left goes back (not while a slider has focus). "Skip" and the last button open the planner (screen = "app").
 export default function WelcomeFlow() {
   const setScreen = useStore((s) => s.setScreen)
   const [[index, dir], setPage] = useState([0, 1])
@@ -140,10 +128,7 @@ export default function WelcomeFlow() {
   const finish = useCallback(() => setScreen("app"), [setScreen])
   const go = useCallback(
     (to) => {
-      if (to >= SLIDES.length) {
-        openStartPreset().catch(() => {}) // a data error shows in the planner
-        return finish()
-      }
+      if (to >= SLIDES.length) return finish()
       if (to < 0) return
       setPage(([cur]) => [to, to > cur ? 1 : -1])
     },
