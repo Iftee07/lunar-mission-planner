@@ -95,8 +95,8 @@ export default function SensitivityCard() {
         <>
           <p className="text-sm" data-testid="sensitivity-summary">
             Within {distLabel(radiusM)}: <span className="text-lspb-sun">sunlight</span>{" "}
-            <span className="font-mono tabular-nums">{rangeText(entries, "sunlitFraction")}</span>,{" "}
-            <span className="text-lspb-earth">Earth</span> <span className="font-mono tabular-nums">{rangeText(entries, "earthFraction")}</span>
+            <span className="font-mono whitespace-nowrap tabular-nums">{rangeText(entries, "sunlitFraction")}</span>,{" "}
+            <span className="text-lspb-earth">Earth</span> <span className="font-mono whitespace-nowrap tabular-nums">{rangeText(entries, "earthFraction")}</span>
           </p>
           <p className="text-xs text-muted-foreground">
             {busy ? `Checking nearby points: ${sens.done} of ${sens.total}` : "Share of the stay at each point around the pin."}

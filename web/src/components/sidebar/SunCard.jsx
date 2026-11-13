@@ -3,6 +3,7 @@ import { sunWhy } from "@/lib/explanations.js"
 import { formatDays } from "@/lib/format.js"
 import { useStore } from "@/state.js"
 import { Verdict } from "@/components/why/Why"
+import ExplainerButton from "@/components/explain/ExplainerButton"
 import BodyCard from "./BodyCard"
 import { MetricRow } from "./MetricCard"
 import RatingBadge from "./RatingBadge"
@@ -31,6 +32,7 @@ function SunRows({ r }) {
     <>
       <MetricRow label="Light Duration">{formatDays(onHours)}</MetricRow>
       <MetricRow label="Dark Duration">{formatDays(offHours, 1, offOpen)}</MetricRow>
+      <ExplainerButton which="sunPath" />
     </>
   )
 }

@@ -1,6 +1,7 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Term, Why, WhyPanel } from "@/components/why/Why"
 import { antennaWhy } from "@/lib/explanations.js"
+import ExplainerButton from "@/components/explain/ExplainerButton"
 import { ANTENNA_PRESETS_M, useStore } from "@/state.js"
 import { MetricCard } from "./MetricCard"
 
@@ -31,6 +32,7 @@ export default function AntennaCard() {
       <p className="pt-1 text-xs text-muted-foreground">
         Affects Earth visibility (<Term id="dte">direct-to-Earth</Term> contact) only.
       </p>
+      <ExplainerButton which="antenna" />
     </MetricCard>
   )
 }

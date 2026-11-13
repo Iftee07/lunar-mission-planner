@@ -3,6 +3,7 @@ import { earthWhy } from "@/lib/explanations.js"
 import { formatDays } from "@/lib/format.js"
 import { useStore } from "@/state.js"
 import { Verdict } from "@/components/why/Why"
+import ExplainerButton from "@/components/explain/ExplainerButton"
 import BodyCard from "./BodyCard"
 import { MetricRow } from "./MetricCard"
 import RatingBadge from "./RatingBadge"
@@ -32,6 +33,7 @@ function EarthRows({ r }) {
     <>
       <MetricRow label="Visible Duration">{formatDays(onHours)}</MetricRow>
       <MetricRow label="Invisible Duration">{formatDays(offHours, 1, offOpen)}</MetricRow>
+      <ExplainerButton which="libration" />
     </>
   )
 }
