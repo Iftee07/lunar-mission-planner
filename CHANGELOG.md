@@ -151,8 +151,10 @@ The Local Lead confirmed that building before the event is allowed.
 - **New repository:** https://github.com/Iftee07/lunar-mission-planner (public). The generated data is
   now stored as ordinary git files instead of Git LFS (the account's LFS budget was used up); the history
   was converted, so commit IDs differ from the old `lunar-sp-browser` repository.
-- Not done yet: deploy from the new repository, the private-window walk on the live site and the `v1.0` tag
-  wait for the team's go.
+- **Live on Vercel from the new repository** (https://lunar-mission-planner.vercel.app/, deploys on every
+  push to `main`); the demo path passes there in a fresh browser profile. GitHub Pages is set up but waits
+  for GitHub Actions (account billing lock).
+- Not done yet: the `v1.0` tag waits for the team's go.
 
 ### Phase 6: explain it (2026-11-13)
 

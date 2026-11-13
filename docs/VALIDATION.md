@@ -310,4 +310,5 @@ production build (`npm run preview`) unless marked "dev" (`npm run dev`, for the
 | 2026-11-13 | 7 | `npm run lint` | 0 warnings, 0 errors | clean | pass |
 | 2026-11-13 | 7 | `npm test` | 18 files, 190 passed / 0 skipped / 0 failed (+4: `benchmark`) | 0 failed | pass |
 | 2026-11-13 | 7 | `npm run build` (raw / gzip) | entry `index` 435.67 / 142.25 kB (before the phase 435.60); `Planner` 355.63 / 107.72 kB | builds | pass |
-| 2026-11-13 | 7 | Live site in a private window, real phone, screen reader | not done: merge and deploy wait for the team's go | — | not checked |
+| 2026-11-13 | 7 | **Live site** https://lunar-mission-planner.vercel.app/ (Vercel, from the new repository; fresh headless profile, cache off) | data files served at full size (e.g. `dem_near.bin` 18,458,888 B); first load 4.44 MB; welcome → planner → typed `89.4389 S, 222.904 E` (Polar HD pin) → "Equator vs pole" compare → Play (+0.75 d in 3 s) → Polar HD map with ring → surface view → link in the URL; 196 Moon Trek tiles; no HTTP or console errors | demo path works | pass |
+| 2026-11-13 | 7 | Real phone, screen reader | not checked in this session | — | not checked |

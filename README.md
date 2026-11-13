@@ -102,9 +102,10 @@ https://svs.gsfc.nasa.gov/4720 (Download menu of the 2025 colour map), saved as
 
 ## Deploy
 
-Live site: https://iftee07.github.io/lunar-mission-planner/ (GitHub Pages, deployed from `main`). Source:
-https://github.com/Iftee07/lunar-mission-planner. The Vercel site (https://lunar-mission-planner.vercel.app/)
-uses the same build.
+Live site: https://lunar-mission-planner.vercel.app/ (Vercel, deployed from `main` on every push). Source:
+https://github.com/Iftee07/lunar-mission-planner. A GitHub Pages copy is set up at
+https://iftee07.github.io/lunar-mission-planner/ but is not published yet: its workflow needs GitHub Actions,
+which the account cannot run at the moment (billing lock, 2026-11-13).
 
 **GitHub Pages.** `.github/workflows/pages.yml` runs on every push to `main` (or by hand from the Actions
 tab): `npm ci`, lint, tests, then `npm run build` with `BASE_PATH=/lunar-mission-planner/`, and publishes
