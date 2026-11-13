@@ -549,6 +549,24 @@ export function createGlobe(container, opts) {
     arcAnim = requestAnimationFrame(step)
   }
 
+  // --- "Move a little" ring: 8 points around the pin, coloured by the chosen share (view/ringModel.js) ---
+  const ringPts = new PointPrimitiveCollection()
+  scene.primitives.add(ringPts)
+  // items: [{ lat, lon, color "rgb(...)" | null }]; a point without a value is a small hollow dot
+  function setRing(items) {
+    ringPts.removeAll()
+    for (const it of items) {
+      ringPts.add({
+        position: cartesianFromLatLon(it.lat, it.lon),
+        pixelSize: it.color ? 9 : 6,
+        color: it.color ? Color.fromCssColorString(it.color) : Color.TRANSPARENT,
+        outlineColor: it.color ? outline : css("line-dim"),
+        outlineWidth: 1.5,
+      })
+    }
+    scene.requestRender()
+  }
+
   // --- lat/lon grid ---
   const grid = new PolylineCollection()
   const gridLabels = new LabelCollection({ scene })
@@ -770,6 +788,7 @@ export function createGlobe(container, opts) {
     flyTo,
     setCamera,
     setCompare,
+    setRing,
     zoomIn: () => zoomStep(1),
     zoomOut: () => zoomStep(-1),
     setLabelsVisible(on) {

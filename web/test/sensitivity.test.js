@@ -91,3 +91,19 @@ describe("shares", () => {
     expect(windowShares({ pin, horizonSun, horizonEarth, antennaM: 10, tableAccessor: siteAccessor(data.ephemeris, pin), tMs: Date.UTC(2040, 0, 1), sunMode: "center", missionH: 156 })).toBeNull()
   })
 })
+
+describe("ring markers (view/ringModel.js)", () => {
+  test("colour on the theme ramp, null without a value", async () => {
+    const { ringMarkers } = await import("../src/view/ringModel.js")
+    const theme = { layerSunLow: "#000000", sun: "#ff0000", earth: "#0000ff" }
+    const pts = [
+      { lat: -89, lon: 0, shares: { sunlitFraction: 1, earthFraction: 0.5 } },
+      { lat: -89, lon: 1, shares: null, note: "other terrain" },
+    ]
+    expect(ringMarkers(pts, "sun", theme)).toEqual([
+      { lat: -89, lon: 0, value: 1, color: "rgb(255, 0, 0)" },
+      { lat: -89, lon: 1, value: null, color: null },
+    ])
+    expect(ringMarkers(pts, "earth", theme)[0].color).toBe("rgb(0, 0, 128)")
+  })
+})

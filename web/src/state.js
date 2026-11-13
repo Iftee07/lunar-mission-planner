@@ -10,6 +10,7 @@ import { SUN_REFERENCE_HEIGHT_M } from "@/engine/hours.js"
 import { project, unproject } from "@/engine/projection.js"
 import { timelineRows } from "@/engine/timeline.js"
 import { MISSION_STAY_H } from "@/engine/ratings.js"
+import { DATE_SHIFT_H, RING_POINTS, ringPoints, ringRadiusFor, windowShares } from "@/engine/sensitivity.js"
 import {
   POLAR_HD_LAT_LIMIT_DEG,
   globalTerrain,
@@ -53,6 +54,12 @@ const emptyResults = {
   slope: null, // { planeDeg, maxDeg, radiusM } in Polar HD; null on Global terrain (not assessed)
 }
 
+// "Move a little" (engine/sensitivity.js): the pin's ring at radiusM, filled point by point as its horizons
+// arrive. points: [{ azDeg, lat, lon, shares: { sunlitFraction, earthFraction } | null, note }] where note says
+// why a point has no value ("other terrain": the ring crosses the 84 S edge of Polar HD; never mixed silently).
+// centre / earlier / later: the pin itself now and DATE_SHIFT_H before and after. tMs: the time of the shares.
+const emptySensitivity = { status: "idle", radiusM: null, done: 0, total: 0, points: [], centre: null, earlier: null, later: null, tMs: null }
+
 const idleTier = { status: "idle", done: 0, total: 0, error: null } // status: idle | loading | ready | error
 
 export const useStore = create((set) => ({
@@ -71,6 +78,8 @@ export const useStore = create((set) => ({
   // polar: x, y, zoom), reported when a move ends; restores the view from a shared link
   layers: Object.fromEntries(POLAR_LAYERS.map((l) => [l.id, { on: false, opacity: l.opacity }])), // Polar HD map layers
   ghostTimeMs: null, // time under the pointer on the timeline (faint Sun and Earth in the surface view); not shared
+  ringRadiusM: null, // "Move a little" radius; null = the terrain's default (engine/sensitivity.js)
+  ringMetric: "sun", // what colours the ring: "sun" (sunlit share) | "earth" (Earth-in-view share)
 
   // --- computed, not user-editable ---
   dataReady: false, // core tier (manifest + ephemeris) loaded
@@ -85,6 +94,7 @@ export const useStore = create((set) => ({
   // Timeline rows (engine/timeline.js timelineRows + `site`, "lat,lon") over the slider span, per site:
   // "main" (the pin) and each compare id (from the main start plus its shift). Filled in idle time.
   timeline: {},
+  sensitivity: emptySensitivity,
 
   // --- actions ---
   setBaseTime: (ms) => set({ baseTimeUtcMs: ms, sliderOffsetH: 0 }),
@@ -102,6 +112,10 @@ export const useStore = create((set) => ({
     if (VIEWS.includes(view)) set({ view })
   },
   setGhostTime: (ms) => set({ ghostTimeMs: ms }),
+  setRingRadius: (m) => set({ ringRadiusM: m }),
+  setRingMetric: (metric) => {
+    if (metric === "sun" || metric === "earth") set({ ringMetric: metric })
+  },
   setScreen: (screen) => set({ screen }),
   setPin: (pin) => set({ pin }),
   setCamera: (kind, cam) => set((s) => ({ camera: { ...s.camera, [kind]: cam } })),
@@ -320,14 +334,16 @@ let hoursFrame = 0
 
 // Horizons: one worker job at a time (main pin and compared sites share the queue), cached by place and
 // observer height, so a site picked again, compared, or duplicated at another date costs nothing.
-const HORIZON_CACHE_MAX = 24
+// isStale() (the "Move a little" ring) skips a job whose pin has moved on before its turn comes.
+const HORIZON_CACHE_MAX = 64 // main pin 2, compare 8, ring 16, plus recent ones (2.9 kB each)
 const horizonCache = new Map() // key -> Promise<{ horizon, ms }>
 let horizonQueue = Promise.resolve()
-function horizonFor(pin, heightM) {
+const STALE = "stale"
+function horizonFor(pin, heightM, isStale = null) {
   const key = [pin.terrainSource, pin.lat, pin.lon, heightM].join("|")
   const hit = horizonCache.get(key)
   if (hit) return hit
-  const job = horizonQueue.then(() => worker.compute(pin.terrainSource, pin, heightM))
+  const job = horizonQueue.then(() => (isStale?.() ? Promise.reject(new Error(STALE)) : worker.compute(pin.terrainSource, pin, heightM)))
   horizonQueue = job.catch(() => {})
   horizonCache.set(key, job)
   job.catch(() => horizonCache.delete(key))
@@ -536,6 +552,78 @@ function recomputeCompareHours(ids = null) {
   useStore.setState({ compareResults: out })
 }
 
+// --- "Move a little" ring ---
+// Ring horizons stay out of React state (index -> { sun, earth }). One ring at a time: a new pin, radius or
+// antenna starts a new ring and the old one's queued jobs are skipped. The shares (cheap, main thread) are
+// recomputed in idle time, at most every RING_SHARES_MS while the time keeps changing.
+const RING_SHARES_MS = 250
+let ring = null // { seq, pins: [pin | null], horizons: [{ sun, earth } | undefined] }
+let ringSeq = 0
+let ringTimer = 0
+
+function recomputeRing() {
+  const seq = ++ringSeq
+  const s = useStore.getState()
+  const { pin, antennaM } = s
+  if (!pin || !engineData) {
+    ring = null
+    useStore.setState({ sensitivity: emptySensitivity })
+    return
+  }
+  const radiusM = ringRadiusFor(pin.terrainSource, s.ringRadiusM)
+  const hasGrids = Boolean(engineData.manifest.grids)
+  const pts = ringPoints(pin.lat, pin.lon, radiusM, RING_POINTS, engineData.manifest.moon_radius_m)
+  const pins = pts.map((p) => (terrainSourceFor(p.lat, hasGrids) === pin.terrainSource ? makePin(p.lat, p.lon, pin.terrainSource) : null))
+  const points = pts.map((p, i) => {
+    let note = null
+    if (!pins[i]) note = terrainSourceFor(p.lat, hasGrids) === pin.terrainSource ? "no terrain data" : "other terrain"
+    return { ...p, shares: null, note }
+  })
+  ring = { seq, pins, horizons: [] }
+  const total = pins.filter(Boolean).length
+  useStore.setState({ sensitivity: { ...emptySensitivity, status: total ? "computing" : "ready", radiusM, total, points } })
+  scheduleRingShares()
+  const stale = () => seq !== ringSeq
+  pins.forEach((p, i) => {
+    if (!p) return
+    Promise.all([horizonFor(p, SUN_REFERENCE_HEIGHT_M, stale), horizonFor(p, antennaM, stale)])
+      .then(([sun, earth]) => {
+        if (stale()) return
+        ring.horizons[i] = { sun: sun.horizon, earth: earth.horizon }
+        useStore.setState((st) => {
+          const done = st.sensitivity.done + 1
+          return { sensitivity: { ...st.sensitivity, done, status: done >= st.sensitivity.total ? "ready" : "computing" } }
+        })
+        scheduleRingShares()
+      })
+      .catch((err) => {
+        if (stale() || err.message === STALE) return
+        useStore.setState((st) => ({ sensitivity: { ...st.sensitivity, status: "error" } }))
+      })
+  })
+}
+
+function scheduleRingShares() {
+  if (ringTimer) return
+  ringTimer = setTimeout(() => onIdle(runRingShares), RING_SHARES_MS)
+}
+
+function runRingShares() {
+  ringTimer = 0
+  const s = useStore.getState()
+  const { pin, results } = s
+  if (!ring || !pin || !engineData || s.sensitivity.status === "idle") return
+  const tMs = selectEffectiveTimeMs(s)
+  const base = { antennaM: s.antennaM, sunMode: s.sunMode, missionH: s.missionH }
+  const at = (p, h, t) => (h ? windowShares({ ...base, horizonSun: h.sun, horizonEarth: h.earth, tableAccessor: siteAccessor(engineData.ephemeris, p), tMs: t }) : null)
+  const main = results.horizonSun && results.horizonEarth ? { sun: results.horizonSun, earth: results.horizonEarth } : null
+  const shiftMs = DATE_SHIFT_H * HOUR_MS
+  const points = s.sensitivity.points.map((pt, i) => ({ ...pt, shares: ring.pins[i] ? at(ring.pins[i], ring.horizons[i], tMs) : null }))
+  useStore.setState((st) => ({
+    sensitivity: { ...st.sensitivity, points, tMs, centre: at(pin, main, tMs), earlier: at(pin, main, tMs - shiftMs), later: at(pin, main, tMs + shiftMs) },
+  }))
+}
+
 // --- timeline rows ---
 // Sun / Earth / Both rows over the slider span for the main pin and each compared site. Computed in idle
 // time, one site per idle slice, and only when a site's inputs change (never on a scrub frame).
@@ -625,6 +713,24 @@ useStore.subscribe((s, prev) => {
     s.missionH !== prev.missionH
   ) {
     scheduleHours()
+  }
+})
+
+useStore.subscribe((s, prev) => {
+  if (!s.dataReady) return
+  if (s.pin !== prev.pin || s.ringRadiusM !== prev.ringRadiusM || s.antennaM !== prev.antennaM || s.dataReady !== prev.dataReady) {
+    recomputeRing()
+    return
+  }
+  if (
+    s.results.horizonSun !== prev.results.horizonSun ||
+    s.results.horizonEarth !== prev.results.horizonEarth ||
+    s.baseTimeUtcMs !== prev.baseTimeUtcMs ||
+    s.sliderOffsetH !== prev.sliderOffsetH ||
+    s.sunMode !== prev.sunMode ||
+    s.missionH !== prev.missionH
+  ) {
+    scheduleRingShares()
   }
 })
 

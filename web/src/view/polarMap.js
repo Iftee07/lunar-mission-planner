@@ -127,6 +127,24 @@ export function createPolarMap(container, opts) {
   }
   container.addEventListener("keydown", onKey)
 
+  // "Move a little" ring: 8 dots around the pin, coloured by the chosen share (view/ringModel.js); a point with no
+  // value is hollow. Drawn under the pin, not interactive.
+  const ringGroup = L.layerGroup().addTo(map)
+  function setRing(items) {
+    ringGroup.clearLayers()
+    for (const it of items) {
+      const { x, y } = project(it.lat, it.lon, R)
+      L.circleMarker(toLatLng(x, y), {
+        interactive: false,
+        radius: it.color ? 6 : 4,
+        weight: 1.5,
+        color: it.color ? theme.bg : theme.lineDim,
+        fillColor: it.color ?? theme.bg,
+        fillOpacity: it.color ? 1 : 0,
+      }).addTo(ringGroup)
+    }
+  }
+
   // The single pin: a draggable crosshair marker; the store is the source of truth.
   let marker = null
   let pinLatLng = null
@@ -376,6 +394,7 @@ export function createPolarMap(container, opts) {
     setMapView: ({ x, y, zoom }) => map.setView(toLatLng(x, y), zoom, { animate: false }),
     setCraterLayer,
     setCratersVisible,
+    setRing,
     getCratersVisible: () => cratersVisible,
     setBounds,
     invalidateSize: () => map.invalidateSize({ animate: false }),

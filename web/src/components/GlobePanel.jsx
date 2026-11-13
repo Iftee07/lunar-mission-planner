@@ -7,6 +7,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Slider } from "@/components/ui/slider"
 import { createGlobe } from "@/view/globe.js"
 import { SITE_GROUPS } from "@/view/globeModel.js"
+import { ringMarkers } from "@/view/ringModel.js"
+import { readTheme } from "@/lib/theme.js"
 import { COMPARE_MAX } from "@/engine/compare.js"
 import { addPlaceToCompare, getEngineData, globeUrls, goToLatLon, loadSites, selectEffectiveTimeMs, setPinLatLon, useStore } from "@/state.js"
 
@@ -174,6 +176,9 @@ export default function GlobePanel({ active }) {
         api.setPin(s0.pin)
         const compareItems = (list) => list.map((c, i) => ({ lat: c.pin.lat, lon: c.pin.lon, color: c.color, n: i + 1 }))
         api.setCompare(compareItems(s0.compare))
+        const theme = readTheme()
+        const ringItems = (s) => ringMarkers(s.sensitivity.points, s.ringMetric, theme)
+        api.setRing(ringItems(s0))
         // a shared link's camera, else a site picked before the globe had loaded
         if (s0.camera.globe) api.setCamera(s0.camera.globe)
         else if (s0.focus) api.flyTo(s0.focus.lat, s0.focus.lon)
@@ -181,6 +186,7 @@ export default function GlobePanel({ active }) {
         unsubscribe = useStore.subscribe((s, prev) => {
           if (s.pin !== prev.pin) api.setPin(s.pin)
           if (s.compare !== prev.compare) api.setCompare(compareItems(s.compare))
+          if (s.sensitivity.points !== prev.sensitivity.points || s.ringMetric !== prev.ringMetric) api.setRing(ringItems(s))
           if (s.focus !== prev.focus && s.focus) api.flyTo(s.focus.lat, s.focus.lon)
           if (s.baseTimeUtcMs !== prev.baseTimeUtcMs || s.sliderOffsetH !== prev.sliderOffsetH) api.setTime(selectEffectiveTimeMs(s))
         })
