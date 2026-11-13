@@ -47,7 +47,7 @@
      Fonts: --lspb-font-heading (Space Grotesk) headings, --lspb-font-sans (Inter) body,
      --lspb-font-mono (JetBrains Mono) numbers and labels. */
   --lspb-appbar-h: 3.5rem;
-  --lspb-sidebar-w: 24rem;
+  --lspb-sidebar-w: 21rem;
   /* map / surface height when the sidebar stacks below (< 1024 px): about the map disc's size on
      phones (width + room for the toggles and the ratings strip), never more than 62% of the screen */
   --lspb-main-h-stacked: min(62svh, calc(100vw + 7rem));
