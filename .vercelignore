@@ -1,0 +1,13 @@
+# Keep `vercel deploy` uploads to what the build needs (web/ and the configs). Vercel installs and builds itself.
+data/raw/
+venv/
+.venv/
+__pycache__/
+node_modules/
+.vite/
+web/dist/
+pipeline/out/
+graphify-out/
+.claude/
+.vscode/
+.idea/

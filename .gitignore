@@ -12,8 +12,8 @@ node_modules/
 .vite/
 web/dist/
 
-# Generated web data (web/public/data/*.bin, *.png) is committed through Git LFS (.gitattributes)
-# so Vercel can build from git; regenerate it with the pipeline, then commit.
+# Generated web data (web/public/data/*.bin, *.png, *.jpg) is committed as ordinary files so Vercel can
+# build from git; regenerate it with the pipeline, then commit.
 # Vercel CLI project link
 .vercel/
 pipeline/out/
