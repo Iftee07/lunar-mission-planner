@@ -279,3 +279,35 @@ items cut under the freeze rule (BUILD_PLAN section 7, cut order): 6c season hea
 
 Not re-run in Phase 6 (no ephemeris, terrain or horizon change; the engine gained the ring, the window shares and
 the explainer geometry): pipeline `05`-`08`. Their fixtures are checked by `npm test`, which passed.
+
+## Phase 7 — 2026-11-13
+
+Browser checks with the same headless-Chrome driver (DevTools Protocol, 1440 × 900 and 360 × 740), against the
+production build (`npm run preview`) unless marked "dev" (`npm run dev`, for the `lspb` console hooks).
+
+| Date | Phase | Check | Value | Tolerance / budget | Result |
+|---|---|---|---|---|---|
+| 2026-11-13 | 7 | `05_validate_ephemeris.py` (60 records vs JPL Horizons) | max \|d az\|, \|d el\|: Sun 0.000005°, Earth 0.000044° | 0.1° | pass |
+| 2026-11-13 | 7 | `06_validate_terrain.py` | all 13 checks pass (e.g. closed form vs pyproj 2.4 × 10⁻¹³ px, height vs LOLA 6×6 mean 0.230 m, slope vs lstsq 0.102°) | as in the script | pass |
+| 2026-11-13 | 7 | `07_horizon_reference.py`, `08_hours_reference.py` | fixtures kept (validation evidence); their comparisons run in `npm test` | — | pass |
+| 2026-11-13 | 7 | `10_build_global.py`, `11_build_sites.py` re-run | outputs byte-identical to the committed data (only the manifest build date changed, restored); 25 sites, none unverified | identical | pass |
+| 2026-11-13 | 7 | **Published benchmark, Earth** (`14_published_benchmark.py` + `benchmark.test.js`): Earth above the flat horizon, hourly through 2027 (8760 h), vs JPL Horizons (altitude 0, AIRLESS), PGDA Site01 connecting ridge and Site04 Shackleton rim | shares 45.18% / 46.04%, identical to Horizons; max \|d el\| 2.7 × 10⁻⁵° | 0.1° and 0.1 percentage points | pass |
+| 2026-11-13 | 7 | **Published benchmark, Sun**: share of 2026-2035 (hourly) with any part of the Sun above the terrain horizon vs NASA PGDA `AVGVISIB_75S_120M_201608` (Mazarico et al. 2011; 18.6-year average, 120 m pixel) | observer on the ground: connecting ridge 78.9% vs 78.3% (3×3 pixels 50.2-78.3%); Shackleton rim 79.2% vs 80.5% (3×3 0.0-84.1%). App height 2 m: 87.2% / 82.8%. Per year at 2 m: 85-88% / 81-84% | benchmark; criterion set before the first run: inside the 3×3 range | Shackleton rim pass; connecting ridge **miss by 0.6 points** |
+| 2026-11-13 | 7 | Benchmark first run (2 m observer vs the surface map) | connecting ridge 87.2% vs 78.3%: failed; cause found: observer height (0 m 78.9%, 0.5 m 81.4%, 2 m 87.2%, 10 m 94.8%); horizon range 100 vs 200 km changes it by 1.2 points | — | explained |
+| 2026-11-13 | 7 | **First load** (welcome, cache off) | 4.64 MB, 12 requests; FCP 0.26 s, network idle 0.47 s | ≤ 10 MB, < 6 s | pass |
+| 2026-11-13 | 7 | First load, mid-laptop proxy (CPU 4× slower, 20 Mbit/s down, 40 ms latency) | FCP 0.88 s, network idle 2.98 s | < 6 s | pass |
+| 2026-11-13 | 7 | **Pin → results ready** (dev, horizons + metrics, 5 new places each, terrain loaded) | Polar HD 221-259 ms (two runs); Global 92-126 ms | < 0.3 s / < 0.5 s | pass |
+| 2026-11-13 | 7 | **4-site compare** (dev, new places, until every column is ready) | Polar HD 646 ms, Global 200 ms, 2 + 2 410 ms | < 1.5 s | pass |
+| 2026-11-13 | 7 | **Globe frame rate** (dev, `lspb.globe.benchmark(4)`) | whole Moon 59.8 fps; after the fly-to Apollo 11 with tiles streaming 60.2 fps | ≥ 50 fps | pass |
+| 2026-11-13 | 7 | **Scrubbing** the playhead 4 s with the ring, 4 compare columns and the globe; then Play at 6 h/s | scrub 60.0 fps, p95 17.1 ms, worst 17.3 ms; Play 59.8 fps, p95 16.9 ms, worst 33.4 ms; no long tasks | ≥ 50 fps | pass |
+| 2026-11-13 | 7 | **axe-core 4.10 (WCAG 2.0/2.1 A and AA)**: welcome and planner (pin + 2 compared sites), 1440 px and 360 px | first run: welcome slider thumb without a name (serious); sidebar and drawer handles without `aria-valuenow` (critical). Fixed; re-run: no violations on all 4 pages and with reduced motion | 0 violations | pass |
+| 2026-11-13 | 7 | Keyboard only (60 Tab presses per page) | planner: 49 distinct stops in DOM order (search, link, about, globe, layers, zoom, views, sidebar handle, cards and their `?`, ring, details, antenna, drawer handle, presets, columns, time bar); every stop `:focus-visible` with a ring; welcome: Skip, Next, slider, slide dots | all reachable, ring visible | pass |
+| 2026-11-13 | 7 | Resize handles report their size (`aria-valuenow`) | default read on focus: sidebar 336 = actual; drawer 306 (its body; section 351 incl. header); after Left / Up: 368 / 338 | = size | pass |
+| 2026-11-13 | 7 | 360 × 740 | page scrollWidth 360 on welcome and planner | no horizontal scroll | pass |
+| 2026-11-13 | 7 | Reduced motion emulated | welcome: no running animations; planner: only the 150 ms focus-ring colour transitions (no transform or opacity motion) | motion off | pass |
+| 2026-11-13 | 7 | Dead-code sweep (import graph over `src` and `test`; knip download blocked again) | removed `COMPARE_COLORS` and `--color-lspb-psr`; unexported `EARTH_GOOD_MIN_FRACTION`, `RING_DEFAULT_RADIUS_M`; no unreachable files, unused dependencies, data files or store fields | none left | pass |
+| 2026-11-13 | 7 | Console errors during the browser checks | none | 0 | pass |
+| 2026-11-13 | 7 | `npm run lint` | 0 warnings, 0 errors | clean | pass |
+| 2026-11-13 | 7 | `npm test` | 18 files, 190 passed / 0 skipped / 0 failed (+4: `benchmark`) | 0 failed | pass |
+| 2026-11-13 | 7 | `npm run build` (raw / gzip) | entry `index` 435.67 / 142.25 kB (before the phase 435.60); `Planner` 355.63 / 107.72 kB | builds | pass |
+| 2026-11-13 | 7 | Live site in a private window, real phone, screen reader | not done: merge and deploy wait for the team's go | — | not checked |
