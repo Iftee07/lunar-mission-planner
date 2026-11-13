@@ -208,11 +208,26 @@
   pointer-events: none;
   text-shadow: 0 0 3px var(--lspb-bg), 0 0 3px var(--lspb-bg);
 }
+/* The pin's latitude and longitude, below the pin on the Polar HD map (view/polarMap.js setPin) */
+.lspb-pin-label {
+  position: absolute;
+  left: 0;
+  top: 14px;
+  transform: translateX(-50%);
+  color: var(--lspb-sun);
+  font: 600 12px var(--lspb-font-mono);
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 0 3px var(--lspb-bg), 0 0 3px var(--lspb-bg), 0 0 3px var(--lspb-bg);
+}
 /* Mission-site markers on the Polar HD map (view/polarMap.js); fill colour set inline from the group token */
 /* Compared sites on the Polar HD map (view/polarMap.js setCompare): a numbered badge above the place, and the
    joining line drawing in (pathLength = 1). Same look as the globe's compare markers. */
-.lspb-cmp-anchor {
+.lspb-map-anchor {
   position: relative;
+}
+.lspb-map-anchor[hidden] {
+  display: none;
 }
 .lspb-cmp-badge {
   position: absolute;

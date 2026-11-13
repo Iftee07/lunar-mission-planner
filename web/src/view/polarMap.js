@@ -155,7 +155,7 @@ export function createPolarMap(container, opts) {
         keyboard: false,
         zIndexOffset: 1000, // above the mission-site dots and the pin
         icon: L.divIcon({
-          className: "lspb-cmp-anchor",
+          className: "lspb-map-anchor",
           html: `<span class="lspb-cmp-badge" style="--cmp: var(--lspb-cmp-${p.color + 1})">${p.ns.join("·")}</span>`,
           iconSize: [0, 0],
         }),
@@ -181,27 +181,44 @@ export function createPolarMap(container, opts) {
     }
   }
 
-  // The single pin: a draggable crosshair marker; the store is the source of truth.
+  // The single pin: a draggable crosshair marker; the store is the source of truth. Its latitude and longitude
+  // show just below it (hidden while it is dragged; the cursor readout gives the live values then).
   let marker = null
   let pinLatLng = null
+  const pinLabel = L.marker([0, 0], { interactive: false, keyboard: false, icon: L.divIcon({ className: "lspb-map-anchor", html: '<span class="lspb-pin-label"></span>', iconSize: [0, 0] }) })
   function setPin(pin) {
     if (!pin || pin.x === undefined) {
       // no pin, or a pin outside Polar HD (Global terrain): nothing to mark on this map
       if (marker) marker.remove()
       marker = null
+      pinLabel.remove()
       return
     }
     const ll = toLatLng(pin.x, pin.y)
     pinLatLng = ll
+    pinLabel.setLatLng(ll).addTo(map)
+    const labelEl = pinLabel.getElement()
+    if (labelEl) {
+      labelEl.firstChild.textContent = formatLatLon(pin.lat, pin.lon)
+      labelEl.hidden = false
+    }
     if (!marker) {
       marker = L.marker(ll, {
         draggable: true,
         keyboard: false,
         icon: L.divIcon({ className: "lspb-pin", iconSize: [22, 22], iconAnchor: [11, 11] }),
       }).addTo(map)
+      marker.on("dragstart", () => {
+        const el = pinLabel.getElement()
+        if (el) el.hidden = true
+      })
       marker.on("dragend", () => {
         const { x, y } = fromLatLng(marker.getLatLng())
-        if (!onPick(x, y)) marker.setLatLng(pinLatLng) // dropped outside the map disc: snap back
+        if (!onPick(x, y)) {
+          marker.setLatLng(pinLatLng) // dropped outside the map disc: snap back
+          const el = pinLabel.getElement()
+          if (el) el.hidden = false
+        }
       })
     } else {
       marker.setLatLng(ll)

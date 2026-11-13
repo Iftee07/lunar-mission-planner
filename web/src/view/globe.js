@@ -43,6 +43,7 @@ import {
   Ellipsoid,
 } from "cesium"
 import "cesium/Build/Cesium/Widgets/CesiumWidget/CesiumWidget.css"
+import { formatLatLon } from "@/lib/format.js"
 import { statusText } from "@/lib/siteSearch.js"
 import { readTheme, token } from "@/lib/theme.js"
 import { MOON, cartesianFromLatLon, latLonFromCartesian, moonTrekOptions, pickLatLon } from "./globeCoords.js"
@@ -465,6 +466,18 @@ export function createGlobe(container, opts) {
   const ring = pinBB.add({ image: ringCanvas(theme.sun), show: false })
   const ringColor = css("line")
   const pin = pinBB.add({ image: pinCanvas(theme.sun, space), show: false, id: { kind: "pin" } })
+  // The pin's latitude and longitude, just below the point
+  const pinLabel = markerLabels.add({
+    font: labelFont,
+    fillColor: css("sun"),
+    outlineColor: outline,
+    outlineWidth: 3,
+    style: LabelStyle.FILL_AND_OUTLINE,
+    pixelOffset: new Cartesian2(0, 20), // clear of the pin's 30 px ring
+    horizontalOrigin: HorizontalOrigin.CENTER,
+    verticalOrigin: VerticalOrigin.TOP,
+    show: false,
+  })
   let pinAnim = 0
 
   function animatePin() {
@@ -489,13 +502,14 @@ export function createGlobe(container, opts) {
 
   function setPin(p) {
     if (!p) {
-      pin.show = ring.show = false
+      pin.show = ring.show = pinLabel.show = false
       scene.requestRender()
       return
     }
     const pos = cartesianFromLatLon(p.lat, p.lon)
-    pin.position = ring.position = pos
-    pin.show = true
+    pin.position = ring.position = pinLabel.position = pos
+    pinLabel.text = formatLatLon(p.lat, p.lon)
+    pin.show = pinLabel.show = true
     animatePin()
     scene.requestRender()
   }
