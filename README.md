@@ -107,7 +107,7 @@ The site is deployed on Vercel straight from git, as a static Vite build:
 3. **Pick a site on the globe.** The planner opens on a 3D Moon lit by the Sun at the selected time. Drag
    to rotate, scroll, pinch (touch screen or touchpad) or use the +/− buttons to zoom, right-drag (or two
    fingers, or Ctrl-drag) to tilt. Click anywhere
-   to place the pin, or click a mission pin (hover, or tap once on a phone, to see its name) to fly there
+   to place the pin (its latitude and longitude show just below it, on the globe and the Polar HD map), or click a mission pin (hover, or tap once on a phone, to see its name) to fly there
    and pick it. Keyboard: focus the globe, arrows rotate, `+`/`-` zoom, Enter places the pin at the centre.
    Mission pins are coloured by group (Apollo, CLPS, Artemis III regions, other countries, south-pole
    reference points); the Layers menu toggles groups, IAU crater and feature names, a lat/lon grid and the

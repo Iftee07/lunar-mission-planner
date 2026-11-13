@@ -148,6 +148,8 @@ The Local Lead confirmed that building before the event is allowed.
 - **Compare drawer resizes:** drag its top edge up or down (or Up / Down on the focused handle;
   double-click resets). The height is remembered in this browser, and the map or globe keeps at least
   240 px. The Polar HD map now re-measures whenever its area changes size.
+- **Pin coordinates on the map:** the point you click shows its latitude and longitude just below the pin,
+  on the globe and on the Polar HD map (hidden while the pin is dragged).
 - **Compared sites on the Polar HD map:** numbered badges in the column colours, joined in column order by
   a line that draws in, as on the globe. Sites north of 84°S are left off the map.
 - Fixed: a typed longitude of 360° pinned at 180°E instead of 0°.
