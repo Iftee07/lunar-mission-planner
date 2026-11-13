@@ -14,6 +14,7 @@ import { project } from "@/engine/projection.js"
 import { createPolarMap } from "@/view/polarMap.js"
 import { LAYER_IDS, POLAR_LAYERS } from "@/view/polarLayerModel.js"
 import { ringMarkers } from "@/view/ringModel.js"
+import { compareMarkers } from "@/view/globeModel.js"
 import { readTheme } from "@/lib/theme.js"
 import { describeXY, ensureTier, getEngineData, loadSites, pickXY, selectPlace, useStore } from "@/state.js"
 
@@ -182,10 +183,12 @@ export default function PolarHdPanel({ active }) {
     const theme = readTheme()
     const ringItems = (s) => (s.pin?.terrainSource === "polar-hd" ? ringMarkers(s.sensitivity.points, s.ringMetric, theme) : [])
     api.setRing(ringItems(s0))
+    api.setCompare(compareMarkers(s0.compare))
     for (const id of LAYER_IDS) api.setLayer(id, s0.layers[id])
     const unsubscribe = useStore.subscribe((s, prev) => {
       if (s.pin !== prev.pin) api.setPin(s.pin)
       if (s.sensitivity.points !== prev.sensitivity.points || s.ringMetric !== prev.ringMetric) api.setRing(ringItems(s))
+      if (s.compare !== prev.compare) api.setCompare(compareMarkers(s.compare))
       if (s.layers !== prev.layers) for (const id of LAYER_IDS) if (s.layers[id] !== prev.layers[id]) api.setLayer(id, s.layers[id])
       // A search result or typed coordinates inside the map while it is open: pan there.
       if (s.focus !== prev.focus && s.focus && s.view === "polar" && s.focus.lat <= POLAR_HD_LAT_LIMIT_DEG) {

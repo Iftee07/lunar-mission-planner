@@ -209,6 +209,39 @@
   text-shadow: 0 0 3px var(--lspb-bg), 0 0 3px var(--lspb-bg);
 }
 /* Mission-site markers on the Polar HD map (view/polarMap.js); fill colour set inline from the group token */
+/* Compared sites on the Polar HD map (view/polarMap.js setCompare): a numbered badge above the place, and the
+   joining line drawing in (pathLength = 1). Same look as the globe's compare markers. */
+.lspb-cmp-anchor {
+  position: relative;
+}
+.lspb-cmp-badge {
+  position: absolute;
+  left: 0;
+  bottom: 14px;
+  transform: translateX(-50%);
+  min-width: 1.375rem;
+  height: 1.375rem;
+  padding: 0 0.3rem;
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  border: 2px solid var(--lspb-bg);
+  background: var(--cmp);
+  color: var(--lspb-space);
+  font: 700 12px var(--lspb-font-mono);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.lspb-cmp-line {
+  stroke-dasharray: 1;
+  animation: lspb-cmp-draw 0.7s cubic-bezier(0.33, 1, 0.68, 1);
+}
+@keyframes lspb-cmp-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
 .lspb-site-marker {
   display: grid;
   place-items: center;
@@ -379,5 +412,8 @@
 @media (prefers-reduced-motion: reduce) {
   .lspb-layer {
     transition: none;
+  }
+  .lspb-cmp-line {
+    animation: none;
   }
 }

@@ -79,6 +79,10 @@ export function selectLabels(items, { cameraPos, heightM, budget = LABEL_BUDGET,
 // --- Mission pins ---
 // Groups of the curated sites (pipeline/11_build_sites.py writes the same names). `token` is the CSS colour
 // token (--lspb-<token>, src/index.css).
+// Compared sites as map markers, in column order: [{ lat, lon, color (0..3, --lspb-cmp-N), n (column number) }].
+// The globe and the Polar HD map both draw these (numbered badges joined by lines).
+export const compareMarkers = (list) => list.map((c, i) => ({ lat: c.pin.lat, lon: c.pin.lon, color: c.color, n: i + 1 }))
+
 export const SITE_GROUPS = [
   { id: "Apollo", label: "Apollo", token: "group-apollo" },
   { id: "CLPS", label: "CLPS", token: "group-clps" },

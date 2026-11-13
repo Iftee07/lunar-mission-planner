@@ -127,6 +127,42 @@ export function createPolarMap(container, opts) {
   }
   container.addEventListener("keydown", onKey)
 
+  // --- Compared sites, as on the globe: numbered badges in their column colours (same-place columns share one,
+  // "1·3"), joined in column order by a thin line that draws in (instantly under reduced motion, index.css).
+  // Only places on this map (84°S to the pole); the others are skipped. Not interactive. ---
+  const cmpGroup = L.layerGroup().addTo(map)
+  // items: view/globeModel.js compareMarkers()
+  function setCompare(items) {
+    cmpGroup.clearLayers()
+    const places = []
+    for (const it of items) {
+      if (it.lat > MAP_EDGE_LAT) continue
+      const p = places.find((q) => q.lat === it.lat && q.lon === it.lon)
+      if (p) p.ns.push(it.n)
+      else places.push({ lat: it.lat, lon: it.lon, color: it.color, ns: [it.n] })
+    }
+    const lls = places.map((p) => {
+      const { x, y } = project(p.lat, p.lon, R)
+      return toLatLng(x, y)
+    })
+    if (lls.length > 1) {
+      const line = L.polyline(lls, { interactive: false, color: theme.line, opacity: 0.8, weight: 2, className: "lspb-cmp-line" }).addTo(cmpGroup)
+      line.getElement()?.setAttribute("pathLength", "1") // the draw-in animates the dash offset from 1 to 0
+    }
+    places.forEach((p, i) => {
+      L.marker(lls[i], {
+        interactive: false,
+        keyboard: false,
+        zIndexOffset: 1000, // above the mission-site dots and the pin
+        icon: L.divIcon({
+          className: "lspb-cmp-anchor",
+          html: `<span class="lspb-cmp-badge" style="--cmp: var(--lspb-cmp-${p.color + 1})">${p.ns.join("·")}</span>`,
+          iconSize: [0, 0],
+        }),
+      }).addTo(cmpGroup)
+    })
+  }
+
   // "Move a little" ring: 8 dots around the pin, coloured by the chosen share (view/ringModel.js); a point with no
   // value is hollow. Drawn under the pin, not interactive.
   const ringGroup = L.layerGroup().addTo(map)
@@ -402,6 +438,7 @@ export function createPolarMap(container, opts) {
     setCraterLayer,
     setCratersVisible,
     setRing,
+    setCompare,
     getCratersVisible: () => cratersVisible,
     setBounds,
     invalidateSize: () => map.invalidateSize({ animate: false }),
