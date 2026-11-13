@@ -4,7 +4,6 @@ import CheckRow from "@/components/CheckRow"
 import DataStatus from "@/components/DataStatus"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Slider } from "@/components/ui/slider"
 import { createGlobe } from "@/view/globe.js"
 import { SITE_GROUPS, compareMarkers } from "@/view/globeModel.js"
 import { ringMarkers } from "@/view/ringModel.js"
@@ -21,12 +20,11 @@ const POLAR_CHIP_LAT = -80
 const startOffline = () => new URLSearchParams(location.search).get("offline") === "1" || navigator.onLine === false
 const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
-// Layers and legend (one popover): mission groups, crater names, lat/lon grid, South Pole HD opacity.
+// Layers and legend (one popover): mission groups, crater names, lat/lon grid.
 function LayersMenu({ apiRef, sites }) {
   const [groups, setGroups] = useState(() => Object.fromEntries(SITE_GROUPS.map((g) => [g.id, true])))
   const [labels, setLabels] = useState(true)
   const [grid, setGrid] = useState(false)
-  const [polarHd, setPolarHd] = useState(85)
   const count = (id) => sites.filter((p) => p.group.id === id).length
   return (
     <Popover>
@@ -75,24 +73,6 @@ function LayersMenu({ apiRef, sites }) {
           >
             Latitude / longitude grid
           </CheckRow>
-        </section>
-        <section className="space-y-2 border-t pt-3">
-          <div className="flex items-baseline justify-between">
-            <span id="polar-hd-label">South Pole HD overlay</span>
-            <span className="font-mono text-xs text-muted-foreground tabular-nums">{polarHd}%</span>
-          </div>
-          <Slider
-            aria-labelledby="polar-hd-label"
-            min={0}
-            max={100}
-            step={5}
-            value={[polarHd]}
-            onValueChange={([v]) => {
-              setPolarHd(v)
-              apiRef.current?.setPolarHdOpacity(v / 100)
-            }}
-          />
-          <p className="text-xs text-muted-foreground">120 m LOLA terrain shading, 84°S to the pole. Fades in as you zoom in.</p>
         </section>
       </PopoverContent>
     </Popover>

@@ -13,10 +13,6 @@
    reachable from the build machine, so the TIFF is downloaded by hand from that page into
    data/raw/svs/. Credit: NASA's Scientific Visualization Studio, with LROC data from
    NASA/GSFC/Arizona State University.
-3. South Pole HD overlay: the 120 m LOLA hillshade (hillshade.png, south polar stereographic)
-   resampled to a geographic (lat/lon) image for 84 S - 90 S, the extent of the 120 m grid,
-   so the globe can drape it over the pole. Width is capped at 4096 px (WebGL texture limit on
-   phones), which is 278 m/px in longitude at 84 S and finer towards the pole.
 
 Downloads are cached in data/raw/ (re-runs reuse them).
 """
@@ -25,9 +21,8 @@ import sys
 
 import numpy as np
 from PIL import Image
-from scipy.ndimage import map_coordinates
 
-from common import MANIFEST, OUT, RAW, download, stereo_fwd, update_manifest
+from common import OUT, RAW, download, update_manifest
 
 PDS_GDR = "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/"
 LDEM = {"img": "ldem_16.img", "lbl": "ldem_16.lbl", "width": 5760, "height": 2880, "ppd": 16,
@@ -39,10 +34,6 @@ SVS_PAGE = "https://svs.gsfc.nasa.gov/4720"
 SVS_TIFF = RAW / "svs" / "lroc_color_16bit_srgb_4k.tif"
 SVS_SIZE = (4096, 2048)
 FALLBACK_FILE = "moon_fallback_4k.jpg"
-
-POLE_FILE = "south_pole_hd.jpg"
-POLE_LAT = (-90.0, -84.0)
-POLE_SIZE = (4096, 1536)           # (lon px, lat px): 6 deg / 1536 = 121 m per row
 
 
 def predict_encode(a):
@@ -124,36 +115,11 @@ def build_fallback_texture():
     }
 
 
-def build_pole_overlay():
-    import json
-    man = json.loads(MANIFEST.read_text())
-    g = man["grids"]["near"]
-    hs = np.asarray(Image.open(OUT / man["hillshade"]).convert("L"), dtype=np.float32)
-    w, h = POLE_SIZE
-    lon = -180 + (np.arange(w) + 0.5) * 360 / w
-    lat = POLE_LAT[1] - (np.arange(h) + 0.5) * (POLE_LAT[1] - POLE_LAT[0]) / h   # row 0 = 84 S
-    lon2, lat2 = np.meshgrid(lon, lat)
-    x, y = stereo_fwd(lat2, lon2)
-    cols = (x - g["x_min"]) / g["pixel_m"] - 0.5
-    rows = (g["y_max"] - y) / g["pixel_m"] - 0.5
-    out = map_coordinates(hs, [rows, cols], order=1, mode="nearest")
-    Image.fromarray(np.clip(out, 0, 255).astype(np.uint8), "L").save(OUT / POLE_FILE, quality=85, optimize=True)
-    size = (OUT / POLE_FILE).stat().st_size
-    print(f"south pole overlay {w} x {h} ({POLE_LAT[1]} .. {POLE_LAT[0]} deg): {size:,} B")
-    return {
-        "file": POLE_FILE, "width": w, "height": h,
-        "rectangle_deg": [-180, POLE_LAT[0], 180, POLE_LAT[1]],
-        "source": "LOLA 20 m south pole DEM (LDEM_80S_20MPP_ADJ) -> 120 m hillshade.png, resampled to lat/lon",
-        "bytes": size,
-    }
-
-
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     dem = build_global_dem()
     fallback = build_fallback_texture()
-    pole = build_pole_overlay()
-    update_manifest({"global_dem": dem, "globe": {"fallback_texture": fallback, "south_pole_hd": pole}})
+    update_manifest({"global_dem": dem, "globe": {"fallback_texture": fallback}})
     print("OK")
 
 

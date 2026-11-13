@@ -2,7 +2,7 @@
 // talks to it through the returned API. Display only: every number in the app comes from the engine.
 //
 // - Imagery: NASA Moon Trek LRO WAC global mosaic (WMTS, streamed; the app's only runtime network use),
-//   the bundled offline texture as a fallback, and our 120 m LOLA "South Pole HD" hillshade over 84-90 S.
+//   with the bundled offline texture as a fallback. The 120 m polar terrain is on the Polar HD map, not here.
 // - No 3D terrain (team decision): a smooth Ellipsoid.MOON sphere with sharp imagery.
 // - Lighting: a directional light along the ephemeris Sun vector, so the day/night line is the real one.
 // - Earth: a marker in the true Earth direction just beyond the limb, plus the sub-Earth point.
@@ -64,42 +64,12 @@ buildModuleUrl.setBaseUrl("/cesium/")
 Ellipsoid.default = MOON
 
 const FALLBACK_CREDIT = "Offline imagery: NASA SVS CGI Moon Kit (LROC: NASA/GSFC/Arizona State University)"
-const POLAR_HD_CREDIT = "South Pole HD: LOLA 120 m hillshade (NASA GSFC)"
 
 const R = MOON.maximumRadius
 const MIN_ZOOM_M = 2000
 const MAX_ZOOM_M = 2.0e7
 const SITE_FLY_HEIGHT_M = 4.0e5
 const FLY_SECONDS = 1.2
-// The South Pole HD layer fades in as the camera comes down: invisible above 4,000 km, full below 1,500 km.
-const POLAR_HD_FADE_M = [1.5e6, 4.0e6]
-const POLAR_HD_LOAD_LAT = -55 // load the overlay once the view centre is this far south (and low enough)
-// The overlay is a hillshade (fixed light, flat mid-grey) over a photo mosaic (deep shadows). So that it does not
-// look pasted on: its outer POLAR_HD_FEATHER_DEG fade in from transparent at its 84°S edge, and it is drawn
-// darker and with more contrast, closer to the mosaic around it.
-const POLAR_HD_FEATHER_DEG = 1.5
-const POLAR_HD_LOOK = { brightness: 0.8, contrast: 1.5 }
-
-// The overlay image with its outer band faded to transparent, made in a worker (view/overlayFeather.worker.js),
-// as a blob URL. Resolves null if that fails; the caller then uses the plain image, hard edge and all.
-function featheredOverlayUrl(url, spec) {
-  return new Promise((resolve) => {
-    let worker
-    try {
-      worker = new Worker(new URL("./overlayFeather.worker.js", import.meta.url), { type: "module" })
-    } catch {
-      return resolve(null)
-    }
-    const done = (blobUrl) => {
-      worker.terminate()
-      resolve(blobUrl)
-    }
-    worker.onmessage = (e) => done(e.data.blob ? URL.createObjectURL(e.data.blob) : null)
-    worker.onerror = () => done(null)
-    const [, south, , north] = spec.rectangle_deg
-    worker.postMessage({ url: new URL(url, location.href).href, featherFraction: POLAR_HD_FEATHER_DEG / (north - south) })
-  })
-}
 
 const toCartesian = (p) => new Cartesian3(p[0], p[1], p[2])
 const toArray = (c) => [c.x, c.y, c.z]
@@ -249,7 +219,7 @@ const easeOutBack = (t) => 1 + 2.2 * (t - 1) ** 3 + 1.2 * (t - 1) ** 2
 /**
  * options:
  *   manifest, ephemeris          engine data (core tier)
- *   urls                         { fallbackTextureUrl, southPoleHdUrl, featuresUrl } (globe tier)
+ *   urls                         { fallbackTextureUrl, featuresUrl } (globe tier)
  *   sites                        mission pins, [{ site, group }] (state.js loadSites())
  *   offline                      start with the bundled texture only (?offline=1 or the browser is offline)
  *   reducedMotion                no fly animation, pulse or bounce
@@ -334,10 +304,6 @@ export function createGlobe(container, opts) {
   const layers = scene.imageryLayers
   let trekLayer = null
   let fallbackLayer = null
-  let polarLayer = null
-  let polarLoading = false
-  let polarBlobUrl = null
-  let polarOpacity = 0.85
 
   function addFallbackLayer() {
     if (fallbackLayer || !urls.fallbackTextureUrl) return
@@ -365,23 +331,6 @@ export function createGlobe(container, opts) {
     trekLayer = layers.addImageryProvider(provider)
   }
 
-  async function ensurePolarLayer() {
-    if (polarLayer || polarLoading || !urls.southPoleHdUrl) return
-    polarLoading = true
-    const spec = manifest.globe.south_pole_hd
-    polarBlobUrl = await featheredOverlayUrl(urls.southPoleHdUrl, spec)
-    if (widget.isDestroyed()) return polarBlobUrl && URL.revokeObjectURL(polarBlobUrl)
-    polarLayer = ImageryLayer.fromProviderAsync(
-      SingleTileImageryProvider.fromUrl(polarBlobUrl ?? urls.southPoleHdUrl, {
-        rectangle: Rectangle.fromDegrees(...spec.rectangle_deg),
-        credit: new Credit(POLAR_HD_CREDIT, inlineCredits),
-      }),
-      POLAR_HD_LOOK,
-    )
-    polarLayer.alpha = 0
-    layers.add(polarLayer)
-    scheduleViewUpdate() // set its alpha for the current height
-  }
 
   // --- Sun, Earth, sub-points ---
   const markers = new BillboardCollection({ scene })
@@ -633,7 +582,7 @@ export function createGlobe(container, opts) {
     for (let lat = -60; lat <= 60; lat += 30) if (lat) gridLabel(`${Math.abs(lat)}°${lat < 0 ? "S" : "N"}`, lat, 0)
   }
 
-  // --- camera-dependent updates (labels, Polar HD blend, view report), once per frame at most ---
+  // --- camera-dependent updates (labels, view report), once per frame at most ---
   let viewFrame = 0
   function viewUpdate() {
     viewFrame = 0
@@ -642,8 +591,6 @@ export function createGlobe(container, opts) {
     const canvas = scene.canvas
     const centre = pickLatLon(camera, new Cartesian2(canvas.clientWidth / 2, canvas.clientHeight / 2)) || latLonFromCartesian(camera.positionWC)
     const heightM = camera.positionCartographic.height
-    if (centre && centre.lat <= POLAR_HD_LOAD_LAT && heightM < POLAR_HD_FADE_M[1]) ensurePolarLayer()
-    if (polarLayer) polarLayer.alpha = polarOpacity * clamp01((POLAR_HD_FADE_M[1] - heightM) / (POLAR_HD_FADE_M[1] - POLAR_HD_FADE_M[0]))
     if (centre) onView({ lat: centre.lat, lon: centre.lon, heightM, side: moonSide(centre.lat, centre.lon) })
     scene.requestRender()
   }
@@ -852,10 +799,6 @@ export function createGlobe(container, opts) {
       for (const p of pins) if (p.group.id === groupId) p.billboard.show = on
       scene.requestRender()
     },
-    setPolarHdOpacity(x) {
-      polarOpacity = clamp01(x)
-      scheduleViewUpdate()
-    },
     // Render loop only while the globe is the visible view.
     setActive(on) {
       widget.useDefaultRenderLoop = on
@@ -891,7 +834,6 @@ export function createGlobe(container, opts) {
       window.removeEventListener("pointerup", onPointerUp, true)
       handler.destroy()
       widget.destroy()
-      if (polarBlobUrl) URL.revokeObjectURL(polarBlobUrl)
     },
   }
 }

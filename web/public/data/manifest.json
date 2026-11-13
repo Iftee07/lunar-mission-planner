@@ -96,19 +96,6 @@
       "source_url": "https://svs.gsfc.nasa.gov/4720",
       "credit": "NASA's Scientific Visualization Studio, with LROC data from NASA/GSFC/Arizona State University",
       "bytes": 1411546
-    },
-    "south_pole_hd": {
-      "file": "south_pole_hd.jpg",
-      "width": 4096,
-      "height": 1536,
-      "rectangle_deg": [
-        -180,
-        -90.0,
-        180,
-        -84.0
-      ],
-      "source": "LOLA 20 m south pole DEM (LDEM_80S_20MPP_ADJ) -> 120 m hillshade.png, resampled to lat/lon",
-      "bytes": 1083449
     }
   },
   "craters_global": {

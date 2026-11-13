@@ -203,7 +203,6 @@ export function createDataLoader({ base = "/data/", fetchImpl = (u) => fetch(u),
       const url = (spec) => (spec ? base + spec.file : null)
       return {
         fallbackTextureUrl: url(g.fallback_texture),
-        southPoleHdUrl: url(g.south_pole_hd),
         featuresUrl: url(manifest.craters_global),
         sitesUrl: url(manifest.sites),
       }
