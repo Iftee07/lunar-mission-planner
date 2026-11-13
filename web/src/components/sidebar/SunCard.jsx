@@ -1,35 +1,28 @@
-import { MISSION_STAY_H, bodyDurations, rateSun, ratingThresholds } from "@/engine/ratings.js"
+import { bodyDurations } from "@/engine/ratings.js"
+import { sunWhy } from "@/lib/explanations.js"
 import { formatDays } from "@/lib/format.js"
 import { useStore } from "@/state.js"
+import { Verdict } from "@/components/why/Why"
 import BodyCard from "./BodyCard"
 import { MetricRow } from "./MetricCard"
-import RatingBadge, { TipLive, TipNote, TipRule } from "./RatingBadge"
+import RatingBadge from "./RatingBadge"
 
 // Sun card: rated by continuous sunlight from the landing time, against the chosen mission length.
-function SunBadge({ r }) {
+function useSunWhy(r) {
   const missionH = useStore((s) => s.missionH)
-  const t = ratingThresholds(missionH)
-  const { onHours } = bodyDurations(r, missionH)
-  const stay = missionH === MISSION_STAY_H ? "Artemis III stay" : "mission"
-  return (
-    <RatingBadge rating={rateSun(r, missionH)} topic="Sun">
-      <TipLive>
-        {r.visibleNow ? `Continuous sunlight from landing: ${formatDays(onHours)}` : "Sun is down at landing: 0 d of sunlight"}
-      </TipLive>
-      <p>Rated by continuous sunlight from your landing time at this site.</p>
-      <TipRule label="Perfect">
-        {formatDays(t.sunPerfectMinH)} or more (the {formatDays(missionH)} {stay} plus about{" "}
-        {formatDays(t.sunPerfectMinH - missionH)} margin).
-      </TipRule>
-      <TipRule label="Good">
-        {formatDays(t.sunGoodMinH)} to {formatDays(t.sunPerfectMinH)} (covers the stay, little margin).
-      </TipRule>
-      <TipRule label="Not recommended">
-        under {formatDays(t.sunGoodMinH)}, including if the Sun is down at landing.
-      </TipRule>
-      <TipNote>The 6.5 d stay is NASA&apos;s; the margin is a project estimate. Sun seen from a fixed 2 m lander height.</TipNote>
-    </RatingBadge>
-  )
+  const sunMode = useStore((s) => s.sunMode)
+  const terrainSource = useStore((s) => s.results.terrainSource)
+  const resolutionM = useStore((s) => s.results.resolutionM)
+  return sunWhy(r, { missionH, sunMode, terrainSource, resolutionM })
+}
+
+function SunBadge({ r }) {
+  const why = useSunWhy(r)
+  return <RatingBadge rating={why.rating} topic="Sun" why={why} />
+}
+
+function SunVerdict({ r }) {
+  return <Verdict verdict={useSunWhy(r).verdict} />
 }
 
 function SunRows({ r }) {
@@ -50,6 +43,7 @@ export default function SunCard() {
       titleClassName="text-lspb-sun"
       horizonKey="horizonSun"
       renderBadge={(r) => <SunBadge r={r} />}
+      renderVerdict={(r) => <SunVerdict r={r} />}
       renderRows={(r) => <SunRows r={r} />}
     />
   )

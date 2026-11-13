@@ -8,10 +8,10 @@ import Sparkline from "./Sparkline"
 // Shared Sun / Earth card. Subscribes only to this body's slices of `results` (narrow re-renders).
 // Top: the elevation now (large), its sparkline over the mission window, and the set / rise countdown.
 //   body: "sun" | "earth";  horizonKey: "horizonSun" | "horizonEarth"
-//   renderBadge(r) -> RatingBadge;  renderRows(r) -> duration rows
+//   renderBadge(r) -> RatingBadge;  renderVerdict(r) -> the plain-words verdict;  renderRows(r) -> duration rows
 // While the horizon recalculates (pin or antenna change) the last values stay, dimmed (no layout jump);
 // the first calculation shows skeleton rows of the same height.
-export default function BodyCard({ body, title, titleClassName, horizonKey, renderBadge, renderRows }) {
+export default function BodyCard({ body, title, titleClassName, horizonKey, renderBadge, renderVerdict, renderRows }) {
   const outOfRange = useStore(selectOutOfRange)
   const range = useStore((s) => s.ephemerisRange)
   const error = useStore((s) => (s.results.status === "error" ? s.results.error : null))
@@ -43,6 +43,7 @@ export default function BodyCard({ body, title, titleClassName, horizonKey, rend
     footer = <HorizonStatus body={name} over={r.visibleNow} />
     content = (
       <>
+        {renderVerdict(r)}
         {/* continuous during Play: no tick animation */}
         <div className="flex items-end justify-between gap-3 pb-1">
           <div className="min-w-0">

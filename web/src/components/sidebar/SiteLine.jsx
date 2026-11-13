@@ -1,3 +1,5 @@
+import { Why, WhyPanel } from "@/components/why/Why"
+import { terrainWhy } from "@/lib/explanations.js"
 import { formatLatLon, formatTerrain } from "@/lib/format.js"
 import { useStore } from "@/state.js"
 
@@ -19,9 +21,15 @@ export default function SiteLine() {
       {site && !site.verified && <span className="rounded-sm border border-lspb-warn/70 px-1.5 text-xs text-lspb-warn">unverified</span>}
       <span className="font-mono tabular-nums">{formatLatLon(pin.lat, pin.lon)}</span>
       <span className="font-mono text-muted-foreground tabular-nums">ground {pin.groundM.toFixed(0)} m</span>
-      <span className="rounded-sm border px-1.5 text-xs text-muted-foreground" data-testid="terrain-badge">
-        {formatTerrain(pin.terrainSource, pin.resolutionM)}
-      </span>
+      <Why
+        variant="wrap"
+        label={`Terrain: ${formatTerrain(pin.terrainSource, pin.resolutionM)}`}
+        align="start"
+        content={<WhyPanel why={terrainWhy(pin.terrainSource, pin.resolutionM)} title="Terrain source" />}
+        className="border px-1.5 text-xs text-muted-foreground hover:text-foreground"
+      >
+        <span data-testid="terrain-badge">{formatTerrain(pin.terrainSource, pin.resolutionM)}</span>
+      </Why>
     </div>
   )
 }

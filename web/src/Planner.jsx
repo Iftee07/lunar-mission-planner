@@ -9,7 +9,6 @@ import MobileSummary from "@/components/MobileSummary"
 import Sidebar from "@/components/sidebar/Sidebar"
 import TimeBar from "@/components/TimeBar"
 import ViewToggle from "@/components/ViewToggle"
-import { TooltipProvider } from "@/components/ui/tooltip"
 import { VIEWS, useStore } from "@/state.js"
 
 // CesiumJS (globe) and three.js (surface view) live in their own chunks, fetched in parallel when the
@@ -52,40 +51,38 @@ export default function Planner() {
   }, [])
 
   return (
-    <TooltipProvider delayDuration={150}>
-      <div className="flex min-h-dvh flex-col lg:h-dvh lg:min-h-0">
-        <AppBar />
-        <div className="flex flex-col lg:min-h-0 lg:flex-1 lg:flex-row">
-          <main
-            aria-label={VIEW_LABELS[view]}
-            className="relative isolate h-(--lspb-main-h-stacked) min-h-(--lspb-main-min-h) overflow-hidden lg:h-auto lg:min-h-0 lg:min-w-0 lg:flex-1"
-          >
-            <ErrorBoundary label="3D globe" active={view === "globe"}>
-              <Suspense fallback={view === "globe" ? <GlobeLoading /> : null}>
-                <GlobePanel active={view === "globe"} />
-              </Suspense>
-            </ErrorBoundary>
-            <ErrorBoundary label="Polar HD map" active={view === "polar"}>
-              <PolarHdPanel active={view === "polar"} />
-            </ErrorBoundary>
-            <ErrorBoundary label="surface view" active={view === "surface"}>
-              <Suspense fallback={null}>
-                <SurfacePanel active={view === "surface"} />
-              </Suspense>
-            </ErrorBoundary>
-            <div className="absolute top-3 left-3 z-(--lspb-z-map-ui)">
-              <ViewToggle />
-            </div>
-            <MobileSummary />
-            <DataStatus />
-          </main>
-          <aside id="site-ratings" aria-label="Site ratings" className="w-full scroll-mt-2 border-t lg:w-(--lspb-sidebar-w) lg:shrink-0 lg:overflow-y-auto lg:border-t-0 lg:border-l">
-            <Sidebar />
-          </aside>
-        </div>
-        <CompareDrawer />
-        <TimeBar />
+    <div className="flex min-h-dvh flex-col lg:h-dvh lg:min-h-0">
+      <AppBar />
+      <div className="flex flex-col lg:min-h-0 lg:flex-1 lg:flex-row">
+        <main
+          aria-label={VIEW_LABELS[view]}
+          className="relative isolate h-(--lspb-main-h-stacked) min-h-(--lspb-main-min-h) overflow-hidden lg:h-auto lg:min-h-0 lg:min-w-0 lg:flex-1"
+        >
+          <ErrorBoundary label="3D globe" active={view === "globe"}>
+            <Suspense fallback={view === "globe" ? <GlobeLoading /> : null}>
+              <GlobePanel active={view === "globe"} />
+            </Suspense>
+          </ErrorBoundary>
+          <ErrorBoundary label="Polar HD map" active={view === "polar"}>
+            <PolarHdPanel active={view === "polar"} />
+          </ErrorBoundary>
+          <ErrorBoundary label="surface view" active={view === "surface"}>
+            <Suspense fallback={null}>
+              <SurfacePanel active={view === "surface"} />
+            </Suspense>
+          </ErrorBoundary>
+          <div className="absolute top-3 left-3 z-(--lspb-z-map-ui)">
+            <ViewToggle />
+          </div>
+          <MobileSummary />
+          <DataStatus />
+        </main>
+        <aside id="site-ratings" aria-label="Site ratings" className="w-full scroll-mt-2 border-t lg:w-(--lspb-sidebar-w) lg:shrink-0 lg:overflow-y-auto lg:border-t-0 lg:border-l">
+          <Sidebar />
+        </aside>
       </div>
-    </TooltipProvider>
+      <CompareDrawer />
+      <TimeBar />
+    </div>
   )
 }

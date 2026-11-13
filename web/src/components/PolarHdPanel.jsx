@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react"
-import { CircleDashed, CircleHelp, ExternalLink, Layers, LoaderCircle } from "lucide-react"
+import { CircleDashed, Layers, LoaderCircle } from "lucide-react"
 import CheckRow from "@/components/CheckRow"
 import DataStatus from "@/components/DataStatus"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Slider } from "@/components/ui/slider"
 import { Toggle } from "@/components/ui/toggle"
-import { SLOPE_NASA_LIMIT_DEG, SLOPE_POSSIBLE_MAX_DEG, SLOPE_TYPICAL_ERROR_DEG } from "@/engine/ratings.js"
+import { Why, WhyPanel } from "@/components/why/Why"
+import { layerWhy } from "@/lib/explanations.js"
+import { SLOPE_NASA_LIMIT_DEG, SLOPE_POSSIBLE_MAX_DEG } from "@/engine/ratings.js"
 import { POLAR_HD_LAT_LIMIT_DEG } from "@/engine/terrain.js"
 import { project } from "@/engine/projection.js"
 import { createPolarMap } from "@/view/polarMap.js"
@@ -24,84 +26,41 @@ function Swatch({ token, children }) {
   )
 }
 
-function SourceLink({ href, children }) {
-  return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 underline underline-offset-2">
-      {children} <ExternalLink className="size-3" aria-hidden="true" />
-    </a>
-  )
-}
-
-// Legend and "?" text per layer. Sources, time span and area come from the manifest (pipeline 04 and 13).
-function layerInfo(id, manifest) {
-  const il = manifest.illumination || {}
+// Legend per layer (the "?" text is lib/explanations.js layerWhy). The shadowed area comes from the manifest.
+function layerLegend(id, manifest) {
   if (id === "slope") {
-    return {
-      legend: (
-        <ul className="space-y-0.5">
-          <Swatch token="ok">under {SLOPE_POSSIBLE_MAX_DEG}°: landing possible</Swatch>
-          <Swatch token="warn">
-            {SLOPE_POSSIBLE_MAX_DEG}° to {SLOPE_NASA_LIMIT_DEG}°: within NASA&apos;s limit, inside the error margin
-          </Swatch>
-          <Swatch token="bad">over {SLOPE_NASA_LIMIT_DEG}°: beyond NASA&apos;s limit</Swatch>
-        </ul>
-      ),
-      explain: (
-        <>
-          The slope of a plane fitted to the terrain within {manifest.slope.radius_m} m of each 120 m pixel, from the LOLA 20 m
-          south-pole terrain: the same number as the Landing card. The colours follow the Landing rating: {SLOPE_POSSIBLE_MAX_DEG}° leaves
-          room for the typical {SLOPE_TYPICAL_ERROR_DEG}° terrain-model error under NASA&apos;s {SLOPE_NASA_LIMIT_DEG}° limit. Slope only:
-          boulders and small craters are not in this data.
-        </>
-      ),
-    }
+    return (
+      <ul className="space-y-0.5">
+        <Swatch token="ok">under {SLOPE_POSSIBLE_MAX_DEG}°: landing possible</Swatch>
+        <Swatch token="warn">
+          {SLOPE_POSSIBLE_MAX_DEG}° to {SLOPE_NASA_LIMIT_DEG}°: within NASA&apos;s limit, inside the error margin
+        </Swatch>
+        <Swatch token="bad">over {SLOPE_NASA_LIMIT_DEG}°: beyond NASA&apos;s limit</Swatch>
+      </ul>
+    )
   }
-  const spec = id === "psr" ? il.psr : il.illum_avg
-  if (!spec) return { legend: null, explain: "Not in this data build." }
-  const source = (
-    <>
-      {" "}
-      Source: <SourceLink href={spec.product_page}>{spec.source}</SourceLink>. Time span: {spec.time_span}.
-    </>
-  )
+  const psr = manifest.illumination?.psr
   if (id === "psr") {
-    return {
-      legend: (
-        <ul>
-          <Swatch token="psr">never sunlit ({Math.round(spec.area_km2_inside_84S).toLocaleString("en-US")} km² inside 84°S)</Swatch>
-        </ul>
-      ),
-      explain: (
-        <>
-          Permanently shadowed regions: ground the Sun never reaches, mostly crater floors. Cold traps where water ice may be kept,
-          but no solar power.{source}
-        </>
-      ),
-    }
+    return psr ? (
+      <ul>
+        <Swatch token="psr">never sunlit ({Math.round(psr.area_km2_inside_84S).toLocaleString("en-US")} km² inside 84°S)</Swatch>
+      </ul>
+    ) : null
   }
-  return {
-    legend: (
-      <div>
-        <div className="h-2.5 rounded-sm" style={{ background: "linear-gradient(to right, var(--lspb-layer-sun-low), var(--lspb-sun))" }} aria-hidden="true" />
-        <div className="flex justify-between font-mono text-xs text-muted-foreground">
-          <span>0%</span>
-          <span>50%</span>
-          <span>100% of the time sunlit</span>
-        </div>
+  return (
+    <div>
+      <div className="h-2.5 rounded-sm" style={{ background: "linear-gradient(to right, var(--lspb-layer-sun-low), var(--lspb-sun))" }} aria-hidden="true" />
+      <div className="flex justify-between font-mono text-xs text-muted-foreground">
+        <span>0%</span>
+        <span>50%</span>
+        <span>100% of the time sunlit</span>
       </div>
-    ),
-    explain: (
-      <>
-        The share of time any part of the Sun is above the local horizon, averaged over many years. It is a long-term average, not
-        your dates: the cards and the timeline give the sunlight for the date you pick.{source}
-      </>
-    ),
-  }
+    </div>
+  )
 }
 
-function LayerRow({ layer, state, status, info }) {
+function LayerRow({ layer, state, status, legend, why }) {
   const setLayer = useStore((s) => s.setLayer)
-  const [explain, setExplain] = useState(false)
   const labelId = `layer-${layer.id}-opacity`
   return (
     <section className="space-y-1.5 border-t pt-2.5 first:border-t-0 first:pt-0" aria-label={layer.label}>
@@ -112,21 +71,16 @@ function LayerRow({ layer, state, status, info }) {
             {status?.status === "loading" && <LoaderCircle className="size-3.5 animate-spin text-muted-foreground" aria-label="rendering" />}
           </CheckRow>
         </div>
-        <button
-          type="button"
-          onClick={() => setExplain((v) => !v)}
-          aria-expanded={explain}
-          aria-label={`About the ${layer.label} layer`}
-          className="rounded-full p-1 text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <CircleHelp className="size-4" aria-hidden="true" />
-        </button>
+        {why ? (
+          <Why label={`About the ${layer.label} layer`} side="left" align="start" content={<WhyPanel why={why} title={layer.label} />} />
+        ) : (
+          <span className="text-xs text-muted-foreground">Not in this data build</span>
+        )}
       </div>
       {status?.status === "error" && <p className="text-xs text-lspb-bad">Could not draw this layer: {status.error}</p>}
-      {explain && <p className="text-xs leading-snug text-muted-foreground">{info.explain}</p>}
       {state.on && (
         <>
-          {info.legend && <div className="text-xs">{info.legend}</div>}
+          {legend && <div className="text-xs">{legend}</div>}
           <div className="flex items-center gap-2">
             <span id={labelId} className="text-xs text-muted-foreground">
               Opacity
@@ -169,7 +123,7 @@ function LayersMenu({ manifest, statuses, sites }) {
           <p className="text-xs text-muted-foreground">Sites south of 84°S, coloured by group as on the globe. Hover for the name; click to pick it.</p>
         </section>
         {[...POLAR_LAYERS].reverse().map((layer) => (
-          <LayerRow key={layer.id} layer={layer} state={layers[layer.id]} status={statuses[layer.id]} info={layerInfo(layer.id, manifest)} />
+          <LayerRow key={layer.id} layer={layer} state={layers[layer.id]} status={statuses[layer.id]} legend={layerLegend(layer.id, manifest)} why={layerWhy(layer.id, manifest)} />
         ))}
         <p className="border-t pt-2 text-xs text-muted-foreground">Move the cursor over the map to read the values.</p>
       </PopoverContent>

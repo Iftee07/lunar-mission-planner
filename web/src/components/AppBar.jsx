@@ -3,11 +3,8 @@ import CopyLinkButton from "@/components/CopyLinkButton"
 import SearchDialog from "@/components/SearchDialog"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import {
-  SLOPE_NASA_LIMIT_DEG,
-  SLOPE_POSSIBLE_MAX_DEG,
-  ratingThresholds,
-} from "@/engine/ratings.js"
+import { Term } from "@/components/why/Why"
+import { ratingRules } from "@/lib/explanations.js"
 import { formatDays } from "@/lib/format.js"
 import { useStore } from "@/state.js"
 
@@ -21,6 +18,8 @@ const SOURCES = [
   ["NAIF SPICE kernels (Sun and Earth positions)", "https://naif.jpl.nasa.gov/naif/data.html"],
   ["IAU Gazetteer of Planetary Nomenclature (crater names)", "https://planetarynames.wr.usgs.gov"],
 ]
+
+const RULE_COLOR = { Sun: "text-lspb-sun", Earth: "text-lspb-earth" }
 
 function Section({ title, children }) {
   return (
@@ -37,8 +36,6 @@ function Kbd({ children }) {
 
 function About() {
   const missionH = useStore((s) => s.missionH)
-  const t = ratingThresholds(missionH)
-  const pct = `${Math.round(t.earthGoodMinFraction * 100)}%`
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -55,20 +52,17 @@ function About() {
         </p>
         <Section title="Ratings">
           <ul className="space-y-1">
-            <li>
-              <span className="font-semibold text-lspb-sun">Sun:</span> Perfect with {formatDays(t.sunPerfectMinH)}+ of continuous
-              sunlight from landing, Good with {formatDays(t.sunGoodMinH)}+.
-            </li>
-            <li>
-              <span className="font-semibold text-lspb-earth">Earth:</span> Perfect if in view for the whole stay, Good if in view
-              at least {pct} of it.
-            </li>
-            <li>
-              <span className="font-semibold">Landing:</span> Possible under {SLOPE_POSSIBLE_MAX_DEG}° fitted slope within 100 m
-              (NASA&apos;s limit is {SLOPE_NASA_LIMIT_DEG}°).
-            </li>
+            {ratingRules(missionH).map((r) => (
+              <li key={r.topic}>
+                <span className={`font-semibold ${RULE_COLOR[r.topic] ?? ""}`}>{r.topic}:</span> {r.text}
+              </li>
+            ))}
           </ul>
-          <p className="text-xs text-muted-foreground">Each badge&apos;s (?) explains its rule with live numbers.</p>
+          <p className="text-xs text-muted-foreground">
+            Each badge&apos;s (?) checks its rule against the live numbers. Terms: <Term id="horizon">horizon</Term>,{" "}
+            <Term id="terminator">terminator</Term>, <Term id="libration">libration</Term>, <Term id="dte">DTE</Term>,{" "}
+            <Term id="psr">PSR</Term>.
+          </p>
         </Section>
         <Section title="Units">
           <p>Durations in Earth days (d); countdowns under 2 days in hours (h). All times are UTC.</p>

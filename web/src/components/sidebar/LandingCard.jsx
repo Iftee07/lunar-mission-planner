@@ -1,13 +1,9 @@
-import {
-  SLOPE_NASA_LIMIT_DEG,
-  SLOPE_POSSIBLE_MAX_DEG,
-  SLOPE_TYPICAL_ERROR_DEG,
-  rateLanding,
-} from "@/engine/ratings.js"
 import { Map as MapIcon } from "lucide-react"
+import { Verdict, Why, WhyPanel } from "@/components/why/Why"
+import { landingCoarseWhy, landingWhy } from "@/lib/explanations.js"
 import { LANDING_RADIUS_M, showSlopeOnMap, useStore } from "@/state.js"
 import { MetricCard, MetricRow, SkeletonRows } from "./MetricCard"
-import RatingBadge, { TipLive, TipNote, TipRule } from "./RatingBadge"
+import RatingBadge from "./RatingBadge"
 
 const deg = (d) => `${d.toFixed(1)}°`
 
@@ -16,43 +12,27 @@ const deg = (d) => `${d.toFixed(1)}°`
 export default function LandingCard() {
   const slope = useStore((s) => s.results.slope)
   const coarse = useStore((s) => s.pin?.terrainSource === "global")
-  const known = slope && Number.isFinite(slope.planeDeg)
+  const resolutionM = useStore((s) => s.pin?.resolutionM)
   if (coarse) {
+    const why = landingCoarseWhy(resolutionM)
     return (
-      <MetricCard title="LANDING" data-testid="landing-card">
+      <MetricCard title="LANDING" badge={<Why label="Why the landing is not assessed here" content={<WhyPanel why={why} title="Landing: not assessed" />} />} data-testid="landing-card">
         <MetricRow label="Slope">Not assessed (coarse terrain)</MetricRow>
       </MetricCard>
     )
   }
 
-  const badge = slope && (
-    <RatingBadge rating={rateLanding(slope.planeDeg)} topic="Landing">
-      <TipLive>
-        {known
-          ? `Fitted slope within ${LANDING_RADIUS_M} m: ${deg(slope.planeDeg)} (steepest point ${deg(slope.maxDeg)})`
-          : "No slope data at this point"}
-      </TipLive>
-      <TipRule label="Possible">
-        fitted slope within {LANDING_RADIUS_M} m under {SLOPE_POSSIBLE_MAX_DEG}°.
-      </TipRule>
-      <TipRule label="Not possible">
-        {SLOPE_POSSIBLE_MAX_DEG}° or more.
-      </TipRule>
-      <p>
-        NASA&apos;s limit is {SLOPE_NASA_LIMIT_DEG}°; {SLOPE_POSSIBLE_MAX_DEG}° leaves room for the typical{" "}
-        {SLOPE_TYPICAL_ERROR_DEG}° terrain model error (project judgement).
-      </p>
-      <TipNote>Slope only: boulders and small craters are not checked.</TipNote>
-      <TipNote>See it on the map: "See slopes on the map" below opens the Polar HD map with the slope layer.</TipNote>
-    </RatingBadge>
-  )
-
+  const why = slope ? landingWhy(slope, LANDING_RADIUS_M) : null
+  const known = slope && Number.isFinite(slope.planeDeg)
   return (
-    <MetricCard title="LANDING" badge={badge} data-testid="landing-card">
+    <MetricCard title="LANDING" badge={why && <RatingBadge rating={why.rating} topic="Landing" why={why} />} data-testid="landing-card">
       {!slope ? (
         <SkeletonRows rows={1} />
       ) : (
-        <MetricRow label="Slope">{known ? deg(slope.planeDeg) : "no data"}</MetricRow>
+        <>
+          <Verdict verdict={why.verdict} />
+          <MetricRow label="Slope">{known ? deg(slope.planeDeg) : "no data"}</MetricRow>
+        </>
       )}
       <button
         type="button"
