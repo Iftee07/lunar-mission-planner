@@ -305,7 +305,7 @@ production build (`npm run preview`) unless marked "dev" (`npm run dev`, for the
 | 2026-11-13 | 7 | Resize handles report their size (`aria-valuenow`) | default read on focus: sidebar 336 = actual; drawer 306 (its body; section 351 incl. header); after Left / Up: 368 / 338 | = size | pass |
 | 2026-11-13 | 7 | 360 × 740 | page scrollWidth 360 on welcome and planner | no horizontal scroll | pass |
 | 2026-11-13 | 7 | Reduced motion emulated | welcome: no running animations; planner: only the 150 ms focus-ring colour transitions (no transform or opacity motion) | motion off | pass |
-| 2026-11-13 | 7 | Dead-code sweep (import graph over `src` and `test`; knip download blocked again) | removed `COMPARE_COLORS` and `--color-lspb-psr`; unexported `EARTH_GOOD_MIN_FRACTION`, `RING_DEFAULT_RADIUS_M`; no unreachable files, unused dependencies, data files or store fields | none left | pass |
+| 2026-11-13 | 7 | Dead-code sweep (import graph over `src` and `test`; knip download blocked again) | removed `COMPARE_COLORS` and `--color-lspb-psr`; unexported `EARTH_GOOD_MIN_FRACTION`, `RING_DEFAULT_RADIUS_M`; globe `benchmark` and surface `debugCheck` now dev-only (absent from `dist/`, SurfacePanel −0.84 kB, GlobePanel −0.33 kB); no unreachable files, unused dependencies, data files or store fields | none left | pass |
 | 2026-11-13 | 7 | Console errors during the browser checks | none | 0 | pass |
 | 2026-11-13 | 7 | `npm run lint` | 0 warnings, 0 errors | clean | pass |
 | 2026-11-13 | 7 | `npm test` | 18 files, 190 passed / 0 skipped / 0 failed (+4: `benchmark`) | 0 failed | pass |
