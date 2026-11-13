@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect } from "react"
 import { AnimatePresence, MotionConfig, motion } from "motion/react"
 import WelcomeFlow from "@/components/welcome/WelcomeFlow"
-import { initData, useStore } from "@/state.js"
+import { initData, preloadTerrain, useStore } from "@/state.js"
 
 // Code split: the welcome flow ships in the entry chunk; the planner (Leaflet, three.js) is its own
 // chunk, prefetched while the user reads the slides so it opens instantly.
@@ -15,9 +15,11 @@ const PLANNER_FONTS = ['400 1em "Inter Variable"', '600 1em "Inter Variable"', '
 export default function App() {
   const screen = useStore((s) => s.screen)
 
-  // Preload during the welcome flow: data files (no Leaflet/three.js is mounted), planner chunk, fonts.
+  // Preload during the welcome flow: data files (no Leaflet/three.js is mounted), in production both terrain
+  // tiers too, planner chunk, fonts.
   useEffect(() => {
     initData().catch(() => {}) // the error is shown on the sidebar
+    preloadTerrain()
     const id = setTimeout(() => {
       loadPlanner().catch(() => {})
       if (document.fonts) for (const f of PLANNER_FONTS) document.fonts.load(f).catch(() => {})

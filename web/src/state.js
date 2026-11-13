@@ -234,6 +234,15 @@ export function ensureTier(tier) {
   return tierPromises[tier]
 }
 
+// Production only: both terrain tiers start downloading as soon as the site opens (while the user reads the
+// welcome slides), and the planner's main view waits for them (components/DatasetGate.jsx), so no pin ever
+// waits for terrain. This trades BUILD_PLAN rule 11's lazy terrain for no waits after the welcome flow.
+// Dev and tests keep the lazy, on-demand tiers.
+export const PRELOAD_TIERS = import.meta.env.PROD ? ["polar", "global"] : []
+export function preloadTerrain() {
+  for (const tier of PRELOAD_TIERS) ensureTier(tier).catch(() => {}) // the error is shown by DatasetGate
+}
+
 // A pin at (lat, lon) on the given terrain; null where that terrain has no data.
 function makePin(latDeg, lonDeg, source, xy = null, site = null) {
   const terrain = engineData?.terrains[source]

@@ -3,6 +3,7 @@ import { LoaderCircle } from "lucide-react"
 import AppBar from "@/components/AppBar"
 import CompareDrawer from "@/components/compare/CompareDrawer"
 import DataStatus from "@/components/DataStatus"
+import DatasetGate from "@/components/DatasetGate"
 import ErrorBoundary from "@/components/ErrorBoundary"
 import ResizeHandle from "@/components/ResizeHandle"
 import PolarHdPanel from "@/components/PolarHdPanel"
@@ -14,7 +15,7 @@ import { VIEWS, useStore } from "@/state.js"
 import { useStoredSize } from "@/lib/useStoredSize.js"
 
 // CesiumJS (globe) and three.js (surface view) live in their own chunks, fetched in parallel when the
-// planner mounts.
+// main view mounts (in production, after DatasetGate has the terrain).
 const GlobePanel = lazy(() => import("@/components/GlobePanel"))
 const SurfacePanel = lazy(() => import("@/components/SurfacePanel"))
 
@@ -74,24 +75,26 @@ export default function Planner() {
           aria-label={VIEW_LABELS[view]}
           className="relative isolate h-(--lspb-main-h-stacked) min-h-(--lspb-main-min-h) overflow-hidden lg:h-auto lg:min-h-0 lg:min-w-0 lg:flex-1"
         >
-          <ErrorBoundary label="3D globe" active={view === "globe"}>
-            <Suspense fallback={view === "globe" ? <GlobeLoading /> : null}>
-              <GlobePanel active={view === "globe"} />
-            </Suspense>
-          </ErrorBoundary>
-          <ErrorBoundary label="Polar HD map" active={view === "polar"}>
-            <PolarHdPanel active={view === "polar"} />
-          </ErrorBoundary>
-          <ErrorBoundary label="surface view" active={view === "surface"}>
-            <Suspense fallback={null}>
-              <SurfacePanel active={view === "surface"} />
-            </Suspense>
-          </ErrorBoundary>
-          <div className="absolute top-3 left-3 z-(--lspb-z-map-ui)">
-            <ViewToggle />
-          </div>
-          <MobileSummary />
-          <DataStatus />
+          <DatasetGate>
+            <ErrorBoundary label="3D globe" active={view === "globe"}>
+              <Suspense fallback={view === "globe" ? <GlobeLoading /> : null}>
+                <GlobePanel active={view === "globe"} />
+              </Suspense>
+            </ErrorBoundary>
+            <ErrorBoundary label="Polar HD map" active={view === "polar"}>
+              <PolarHdPanel active={view === "polar"} />
+            </ErrorBoundary>
+            <ErrorBoundary label="surface view" active={view === "surface"}>
+              <Suspense fallback={null}>
+                <SurfacePanel active={view === "surface"} />
+              </Suspense>
+            </ErrorBoundary>
+            <div className="absolute top-3 left-3 z-(--lspb-z-map-ui)">
+              <ViewToggle />
+            </div>
+            <MobileSummary />
+            <DataStatus />
+          </DatasetGate>
         </main>
         <ResizeHandle
           orientation="vertical"

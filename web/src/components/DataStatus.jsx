@@ -11,7 +11,7 @@ const TIER_TEXT = {
 
 const mb = (bytes) => (bytes / 1e6).toFixed(1)
 
-function ProgressBar({ label, pct }) {
+export function ProgressBar({ label, pct }) {
   return (
     <div role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} className="h-1.5 overflow-hidden rounded-full bg-muted">
       <div className="h-full rounded-full bg-lspb-earth transition-[width] duration-300" style={{ width: `${pct}%` }} />
