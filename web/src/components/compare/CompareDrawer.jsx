@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { COMPARE_MAX, COMPARE_PRESETS, SYNODIC_MONTH_H, bestColumns, compareValues, monthShiftH } from "@/engine/compare.js"
 import { formatClock, formatDays, formatDeg, formatLatLon, formatPercent, formatTerrain } from "@/lib/format.js"
+import ResizeHandle from "@/components/ResizeHandle"
 import { cn } from "@/lib/utils"
+import { useStoredSize } from "@/lib/useStoredSize.js"
 import { HOUR_MS, duplicateCompare, loadComparePreset, removeFromCompare, selectEffectiveTimeMs, selectPlace, useStore } from "@/state.js"
 
 const TONE = { ok: "bg-lspb-ok text-background", warn: "bg-lspb-warn text-background", bad: "bg-lspb-bad text-background" }
@@ -179,81 +181,16 @@ function Presets({ className }) {
   )
 }
 
-// Drawer height: dragged by the handle on its top edge (or Up / Down on the focused handle; double-click resets).
-// Remembered per browser (localStorage, a convenience only). null = the default height.
+// Drawer height: dragged by the handle on its top edge (components/ResizeHandle.jsx), remembered per browser.
 const DRAWER_KEY = "lspb.compareDrawerPx"
 const DRAWER_MIN_PX = 96
-const DRAWER_KEY_STEP_PX = 32
 const MAIN_MIN_PX = 240 // the map or globe keeps at least this much height (desktop layout)
 const drawerMaxPx = () => Math.round(window.innerHeight * 0.7)
-function readDrawerPx() {
-  try {
-    const v = Number(localStorage.getItem(DRAWER_KEY))
-    return v > 0 ? v : null
-  } catch {
-    return null
-  }
-}
-function saveDrawerPx(v) {
-  try {
-    if (v === null) localStorage.removeItem(DRAWER_KEY)
-    else localStorage.setItem(DRAWER_KEY, String(Math.round(v)))
-  } catch {
-    // storage blocked: the height just is not remembered
-  }
-}
-
-function ResizeHandle({ bodyRef, heightPx, setHeightPx }) {
-  const drag = useRef(null)
-  const current = () => bodyRef.current?.getBoundingClientRect().height ?? DRAWER_MIN_PX
-  // On desktop the page does not scroll, so the drawer grows only as far as the main view can shrink.
-  const clamp = (h) => {
-    const main = window.innerWidth >= 1024 ? document.querySelector("main") : null
-    const max = main ? Math.min(drawerMaxPx(), current() + main.getBoundingClientRect().height - MAIN_MIN_PX) : drawerMaxPx()
-    return Math.max(DRAWER_MIN_PX, Math.min(max, h))
-  }
-  const set = (h) => {
-    setHeightPx(h)
-    saveDrawerPx(h)
-  }
-  return (
-    <div
-      role="separator"
-      aria-orientation="horizontal"
-      aria-label="Resize the compare drawer (drag, or Up and Down arrows)"
-      aria-valuemin={DRAWER_MIN_PX}
-      aria-valuemax={typeof window === "undefined" ? undefined : drawerMaxPx()}
-      aria-valuenow={heightPx ?? undefined}
-      tabIndex={0}
-      onPointerDown={(e) => {
-        if (e.button !== 0) return
-        e.currentTarget.setPointerCapture(e.pointerId)
-        drag.current = { y: e.clientY, h: current() }
-        e.preventDefault()
-      }}
-      onPointerMove={(e) => {
-        if (!drag.current) return
-        drag.current.last = clamp(drag.current.h + drag.current.y - e.clientY)
-        setHeightPx(drag.current.last)
-      }}
-      onPointerUp={(e) => {
-        if (!drag.current) return
-        if (drag.current.last) saveDrawerPx(drag.current.last)
-        drag.current = null
-        e.currentTarget.releasePointerCapture(e.pointerId)
-      }}
-      onDoubleClick={() => set(null)}
-      onKeyDown={(e) => {
-        const dir = e.key === "ArrowUp" ? 1 : e.key === "ArrowDown" ? -1 : 0
-        if (!dir) return
-        e.preventDefault()
-        set(clamp(current() + dir * DRAWER_KEY_STEP_PX))
-      }}
-      className="group absolute inset-x-0 -top-2 z-10 flex h-4 cursor-row-resize touch-none items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-ring"
-    >
-      <span className="h-1 w-12 rounded-full bg-muted-foreground/40 transition-colors group-hover:bg-muted-foreground group-focus-visible:bg-muted-foreground" />
-    </div>
-  )
+// On desktop the page does not scroll, so the drawer grows only as far as the main view can shrink.
+function clampDrawer(h, currentPx) {
+  const main = window.innerWidth >= 1024 ? document.querySelector("main") : null
+  const max = main ? Math.min(drawerMaxPx(), currentPx + main.getBoundingClientRect().height - MAIN_MIN_PX) : drawerMaxPx()
+  return Math.max(DRAWER_MIN_PX, Math.min(max, h))
 }
 
 // The scrolling body is position: relative so the cells' absolutely positioned sr-only labels stay inside it
@@ -268,8 +205,9 @@ export default function CompareDrawer() {
   const missionH = useStore((s) => s.missionH)
   const mainMs = useStore(selectEffectiveTimeMs)
   const [open, setOpen] = useState(true)
-  const [heightPx, setHeightPx] = useState(readDrawerPx)
+  const [heightPx, setHeightPx, saveHeightPx] = useStoredSize(DRAWER_KEY)
   const bodyRef = useRef(null)
+  const measureBody = () => bodyRef.current?.getBoundingClientRect().height ?? DRAWER_MIN_PX
   // A column added while collapsed opens the drawer again (state adjusted during render, not in an effect).
   const [seenCount, setSeenCount] = useState(compare.length)
   if (compare.length !== seenCount) {
@@ -289,7 +227,18 @@ export default function CompareDrawer() {
 
   return (
     <section aria-label="Compare sites" className="relative shrink-0 border-t bg-background" data-testid="compare-drawer">
-      {open && compare.length > 0 && <ResizeHandle bodyRef={bodyRef} heightPx={heightPx} setHeightPx={setHeightPx} />}
+      {open && compare.length > 0 && (
+        <ResizeHandle
+          orientation="horizontal"
+          label="Resize the compare drawer (drag, or Up and Down arrows; double-click resets)"
+          measure={measureBody}
+          clamp={(h) => clampDrawer(h, measureBody())}
+          value={heightPx}
+          onLive={setHeightPx}
+          onSave={saveHeightPx}
+          className="absolute inset-x-0 -top-2 h-4"
+        />
+      )}
       <div className="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1 px-4 py-1.5">
         <button
           type="button"
