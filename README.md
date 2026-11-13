@@ -181,7 +181,9 @@ The site is deployed on Vercel straight from git, as a static Vite build:
    alternative site or date as a link.
 
 The layout adapts from phones (360 px wide, portrait or landscape) to large desktops; on touch screens
-the `?` explanations open with a tap.
+the `?` explanations open with a tap. On a desktop the sidebar's width can be dragged from the handle on its
+left edge (280 to 640 px; Left and Right arrows on the focused handle; double-click resets), and is
+remembered in this browser, like the compare drawer's height.
 
 Durations are shown in Earth days (`d`), for example `6.5 d`; countdowns under 2 days are shown in hours
 (`h`). The engine works in hours; only `web/src/lib/format.js` converts.

@@ -155,7 +155,10 @@ The Local Lead confirmed that building before the event is allowed.
 - **Sharper globe labels:** the globe now renders at the screen's real pixel density (capped at 2x, like
   the surface view). Before, Cesium drew at CSS pixels and the browser stretched the picture, so crater names
   and other labels were blurry on scaled or high-DPI screens.
-- **Narrower sidebar** on desktop: 21rem (336 px) instead of 24rem, so the map gets more room.
+- **Narrower sidebar** on desktop: 21rem (336 px) instead of 24rem, so the map gets more room, and its width
+  is adjustable: drag the handle on its left edge (280 to 640 px, the map keeps at least 480 px; Left / Right
+  on the focused handle; double-click resets). Remembered in this browser. The drawer and the sidebar share
+  one handle component.
 - **Pin coordinates on the map:** the point you click shows its latitude and longitude just below the pin,
   on the globe and on the Polar HD map (hidden while the pin is dragged).
 - **Compared sites on the Polar HD map:** numbered badges in the column colours, joined in column order by
