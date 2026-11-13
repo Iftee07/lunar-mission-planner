@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useLayoutEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
 
 const KEY_STEP_PX = 32
@@ -7,18 +7,23 @@ const KEY_STEP_PX = 32
 // separator, dragged up and down) or the sidebar right of its left edge ("vertical", dragged left and right).
 // Dragging towards the rest of the page grows the panel. Keyboard: Up / Left grow, Down / Right shrink.
 // Double-click resets to the default size.
-//   measure() -> the panel's size now (px);  clamp(px) -> the allowed size
+//   measure() -> the panel's size now (px), a stable function (useCallback);  clamp(px) -> the allowed size
 //   value: the stored size or null;  onLive(px) while dragging;  onSave(px | null) when done
 export default function ResizeHandle({ orientation, label, measure, clamp, value, onLive, onSave, className }) {
   const drag = useRef(null)
   const vertical = orientation === "vertical"
   const pos = (e) => (vertical ? e.clientX : e.clientY)
+  // A focusable separator must report its value (aria-valuenow): the stored size, or the measured default.
+  const ref = useRef(null)
+  useLayoutEffect(() => {
+    ref.current?.setAttribute("aria-valuenow", String(Math.round(value ?? measure())))
+  }, [value, measure])
   return (
     <div
       role="separator"
       aria-orientation={orientation}
       aria-label={label}
-      aria-valuenow={value ?? undefined}
+      ref={ref}
       tabIndex={0}
       onPointerDown={(e) => {
         if (e.button !== 0) return

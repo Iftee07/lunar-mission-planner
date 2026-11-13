@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { CalendarPlus, ChevronDown, ChevronUp, GitCompareArrows, X } from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
 import { Badge } from "@/components/ui/badge"
@@ -207,7 +207,7 @@ export default function CompareDrawer() {
   const [open, setOpen] = useState(true)
   const [heightPx, setHeightPx, saveHeightPx] = useStoredSize(DRAWER_KEY)
   const bodyRef = useRef(null)
-  const measureBody = () => bodyRef.current?.getBoundingClientRect().height ?? DRAWER_MIN_PX
+  const measureBody = useCallback(() => bodyRef.current?.getBoundingClientRect().height ?? DRAWER_MIN_PX, [])
   // A column added while collapsed opens the drawer again (state adjusted during render, not in an effect).
   const [seenCount, setSeenCount] = useState(compare.length)
   if (compare.length !== seenCount) {

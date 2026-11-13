@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef } from "react"
+import { Suspense, lazy, useCallback, useEffect, useRef } from "react"
 import { LoaderCircle } from "lucide-react"
 import AppBar from "@/components/AppBar"
 import CompareDrawer from "@/components/compare/CompareDrawer"
@@ -49,6 +49,7 @@ export default function Planner() {
   const mainRef = useRef(null)
   const asideRef = useRef(null)
   const width = (ref) => ref.current?.getBoundingClientRect().width ?? 0
+  const measureSidebar = useCallback(() => asideRef.current?.getBoundingClientRect().width ?? 0, [])
 
   // Keyboard shortcut V cycles Globe -> Polar HD -> Surface (ignored while typing in a field).
   useEffect(() => {
@@ -95,7 +96,7 @@ export default function Planner() {
         <ResizeHandle
           orientation="vertical"
           label="Resize the sidebar (drag, or Left and Right arrows; double-click resets)"
-          measure={() => width(asideRef)}
+          measure={measureSidebar}
           clamp={(w) => clampSidebar(w, width(asideRef), width(mainRef))}
           value={sidebarPx}
           onLive={setSidebarPx}
