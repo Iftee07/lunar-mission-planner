@@ -288,7 +288,7 @@ production build (`npm run preview`) unless marked "dev" (`npm run dev`, for the
 | Date | Phase | Check | Value | Tolerance / budget | Result |
 |---|---|---|---|---|---|
 | 2026-11-13 | 7 | `05_validate_ephemeris.py` (60 records vs JPL Horizons) | max \|d az\|, \|d el\|: Sun 0.000005°, Earth 0.000044° | 0.1° | pass |
-| 2026-11-13 | 7 | `06_validate_terrain.py` | all 13 checks pass (e.g. closed form vs pyproj 2.4 × 10⁻¹³ px, height vs LOLA 6×6 mean 0.230 m, slope vs lstsq 0.102°) | as in the script | pass |
+| 2026-11-13 | 7 | `06_validate_terrain.py` | all 14 checks pass (e.g. closed form vs pyproj 2.4 × 10⁻¹³ px, height vs LOLA 6×6 mean 0.230 m, slope vs lstsq 0.102°) | as in the script | pass |
 | 2026-11-13 | 7 | `07_horizon_reference.py`, `08_hours_reference.py` | fixtures kept (validation evidence); their comparisons run in `npm test` | — | pass |
 | 2026-11-13 | 7 | `10_build_global.py`, `11_build_sites.py` re-run | outputs byte-identical to the committed data (only the manifest build date changed, restored); 25 sites, none unverified | identical | pass |
 | 2026-11-13 | 7 | **Published benchmark, Earth** (`14_published_benchmark.py` + `benchmark.test.js`): Earth above the flat horizon, hourly through 2027 (8760 h), vs JPL Horizons (altitude 0, AIRLESS), PGDA Site01 connecting ridge and Site04 Shackleton rim | shares 45.18% / 46.04%, identical to Horizons; max \|d el\| 2.7 × 10⁻⁵° | 0.1° and 0.1 percentage points | pass |

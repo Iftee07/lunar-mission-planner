@@ -704,7 +704,7 @@ export function createSurface(container, { engineData }) {
     start,
     stop,
     destroy,
-    debugCheck,
+    ...(import.meta.env.DEV && { debugCheck }), // dev-only validation aid, dropped from production builds
     getView: () => ({ ...view, cameraY: camera.position.y, running: raf !== 0, fps, ghost: sun.ghost.visible && earth.ghost.visible }),
   }
 }

@@ -808,25 +808,28 @@ export function createGlobe(container, opts) {
       widget.useDefaultRenderLoop = on
       if (on) scheduleViewUpdate()
     },
-    // Dev aid (lspb.globe.benchmark()): spin the globe for `seconds` and count rendered frames.
-    benchmark(seconds = 3) {
-      return new Promise((resolve) => {
-        let frames = 0
-        const count = () => frames++
-        scene.postRender.addEventListener(count)
-        const t0 = performance.now()
-        const spin = (now) => {
-          camera.rotateLeft(0.004)
-          scene.requestRender()
-          if (now - t0 < seconds * 1000) requestAnimationFrame(spin)
-          else {
-            scene.postRender.removeEventListener(count)
-            resolve({ fps: (frames * 1000) / (now - t0), frames, canvas: [scene.canvas.width, scene.canvas.height] })
+    // Dev aid (lspb.globe.benchmark()): spin the globe for `seconds` and count rendered frames. Dropped from
+    // production builds.
+    ...(import.meta.env.DEV && {
+      benchmark(seconds = 3) {
+        return new Promise((resolve) => {
+          let frames = 0
+          const count = () => frames++
+          scene.postRender.addEventListener(count)
+          const t0 = performance.now()
+          const spin = (now) => {
+            camera.rotateLeft(0.004)
+            scene.requestRender()
+            if (now - t0 < seconds * 1000) requestAnimationFrame(spin)
+            else {
+              scene.postRender.removeEventListener(count)
+              resolve({ fps: (frames * 1000) / (now - t0), frames, canvas: [scene.canvas.width, scene.canvas.height] })
+            }
           }
-        }
-        requestAnimationFrame(spin)
-      })
-    },
+          requestAnimationFrame(spin)
+        })
+      },
+    }),
     destroy() {
       cancelAnimationFrame(pinAnim)
       cancelAnimationFrame(arcAnim)
