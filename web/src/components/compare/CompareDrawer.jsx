@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { CalendarPlus, ChevronDown, ChevronUp, GitCompareArrows, X } from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
 import { Badge } from "@/components/ui/badge"
@@ -179,17 +179,97 @@ function Presets({ className }) {
   )
 }
 
+// Drawer height: dragged by the handle on its top edge (or Up / Down on the focused handle; double-click resets).
+// Remembered per browser (localStorage, a convenience only). null = the default height.
+const DRAWER_KEY = "lspb.compareDrawerPx"
+const DRAWER_MIN_PX = 96
+const DRAWER_KEY_STEP_PX = 32
+const MAIN_MIN_PX = 240 // the map or globe keeps at least this much height (desktop layout)
+const drawerMaxPx = () => Math.round(window.innerHeight * 0.7)
+function readDrawerPx() {
+  try {
+    const v = Number(localStorage.getItem(DRAWER_KEY))
+    return v > 0 ? v : null
+  } catch {
+    return null
+  }
+}
+function saveDrawerPx(v) {
+  try {
+    if (v === null) localStorage.removeItem(DRAWER_KEY)
+    else localStorage.setItem(DRAWER_KEY, String(Math.round(v)))
+  } catch {
+    // storage blocked: the height just is not remembered
+  }
+}
+
+function ResizeHandle({ bodyRef, heightPx, setHeightPx }) {
+  const drag = useRef(null)
+  const current = () => bodyRef.current?.getBoundingClientRect().height ?? DRAWER_MIN_PX
+  // On desktop the page does not scroll, so the drawer grows only as far as the main view can shrink.
+  const clamp = (h) => {
+    const main = window.innerWidth >= 1024 ? document.querySelector("main") : null
+    const max = main ? Math.min(drawerMaxPx(), current() + main.getBoundingClientRect().height - MAIN_MIN_PX) : drawerMaxPx()
+    return Math.max(DRAWER_MIN_PX, Math.min(max, h))
+  }
+  const set = (h) => {
+    setHeightPx(h)
+    saveDrawerPx(h)
+  }
+  return (
+    <div
+      role="separator"
+      aria-orientation="horizontal"
+      aria-label="Resize the compare drawer (drag, or Up and Down arrows)"
+      aria-valuemin={DRAWER_MIN_PX}
+      aria-valuemax={typeof window === "undefined" ? undefined : drawerMaxPx()}
+      aria-valuenow={heightPx ?? undefined}
+      tabIndex={0}
+      onPointerDown={(e) => {
+        if (e.button !== 0) return
+        e.currentTarget.setPointerCapture(e.pointerId)
+        drag.current = { y: e.clientY, h: current() }
+        e.preventDefault()
+      }}
+      onPointerMove={(e) => {
+        if (!drag.current) return
+        drag.current.last = clamp(drag.current.h + drag.current.y - e.clientY)
+        setHeightPx(drag.current.last)
+      }}
+      onPointerUp={(e) => {
+        if (!drag.current) return
+        if (drag.current.last) saveDrawerPx(drag.current.last)
+        drag.current = null
+        e.currentTarget.releasePointerCapture(e.pointerId)
+      }}
+      onDoubleClick={() => set(null)}
+      onKeyDown={(e) => {
+        const dir = e.key === "ArrowUp" ? 1 : e.key === "ArrowDown" ? -1 : 0
+        if (!dir) return
+        e.preventDefault()
+        set(clamp(current() + dir * DRAWER_KEY_STEP_PX))
+      }}
+      className="group absolute inset-x-0 -top-2 z-10 flex h-4 cursor-row-resize touch-none items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <span className="h-1 w-12 rounded-full bg-muted-foreground/40 transition-colors group-hover:bg-muted-foreground group-focus-visible:bg-muted-foreground" />
+    </div>
+  )
+}
+
 // The scrolling body is position: relative so the cells' absolutely positioned sr-only labels stay inside it
 // (otherwise they widen the page on a phone).
 // Compare drawer (below the planner, above the time bar): one column per compared site, the best value in
 // each row glows. Slides up when the first site is added; collapses to its header bar. On a phone the columns
-// are a horizontal swipe carousel (snap points), with the row labels pinned on the left.
+// are a horizontal swipe carousel (snap points), with the row labels pinned on the left. Its height can be
+// dragged from the handle on its top edge.
 export default function CompareDrawer() {
   const compare = useStore((s) => s.compare)
   const results = useStore((s) => s.compareResults)
   const missionH = useStore((s) => s.missionH)
   const mainMs = useStore(selectEffectiveTimeMs)
   const [open, setOpen] = useState(true)
+  const [heightPx, setHeightPx] = useState(readDrawerPx)
+  const bodyRef = useRef(null)
   // A column added while collapsed opens the drawer again (state adjusted during render, not in an effect).
   const [seenCount, setSeenCount] = useState(compare.length)
   if (compare.length !== seenCount) {
@@ -208,7 +288,8 @@ export default function CompareDrawer() {
   }
 
   return (
-    <section aria-label="Compare sites" className="shrink-0 border-t bg-background" data-testid="compare-drawer">
+    <section aria-label="Compare sites" className="relative shrink-0 border-t bg-background" data-testid="compare-drawer">
+      {open && compare.length > 0 && <ResizeHandle bodyRef={bodyRef} heightPx={heightPx} setHeightPx={setHeightPx} />}
       <div className="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1 px-4 py-1.5">
         <button
           type="button"
@@ -238,11 +319,13 @@ export default function CompareDrawer() {
           <motion.div
             id="compare-body"
             key="body"
+            ref={bodyRef}
+            style={heightPx ? { height: Math.min(heightPx, drawerMaxPx()) } : undefined}
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 24 }}
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            className="relative max-h-[min(24rem,40dvh)] overflow-auto border-t lg:max-h-[min(22rem,34dvh)]"
+            className={cn("relative overflow-auto border-t", !heightPx && "max-h-[min(24rem,40dvh)] lg:max-h-[min(22rem,34dvh)]")}
           >
             <div className="flex snap-x snap-mandatory">
               <div className="sticky left-0 z-10 w-28 shrink-0 bg-background sm:w-36" aria-hidden="true">

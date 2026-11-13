@@ -243,6 +243,13 @@ export function createPolarMap(container, opts) {
   setBounds()
   // Reported only while visible: a map created hidden (display: none) has no real view yet.
   map.on("moveend", () => container.clientWidth && onMapView({ ...fromLatLng(map.getCenter()), zoom: map.getZoom() }))
+  // Leaflet only listens to window resizes; the container also changes when the compare drawer moves.
+  let sizeFrame = 0
+  const sizeObserver = new ResizeObserver(() => {
+    cancelAnimationFrame(sizeFrame)
+    sizeFrame = requestAnimationFrame(() => container.clientWidth && map.invalidateSize({ animate: false }))
+  })
+  sizeObserver.observe(container)
   map.on("resize", () => {
     const untouched = fitted && map.getZoom() === fitted.zoom && map.getCenter().distanceTo(fitted.center) < 1
     if (untouched) setBounds()
@@ -402,6 +409,8 @@ export function createPolarMap(container, opts) {
       destroyed = true
       for (const st of Object.values(layers)) if (st.url) URL.revokeObjectURL(st.url)
       container.removeEventListener("keydown", onKey)
+      sizeObserver.disconnect()
+      cancelAnimationFrame(sizeFrame)
       map.remove()
       marker = null
     },
