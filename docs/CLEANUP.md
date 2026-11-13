@@ -75,7 +75,7 @@ files in `src/components/ui/` are imported, all 15 dependencies and 7 dev depend
 |---|---|
 | `pipeline/05`–`08`, `data/fixtures/*` | Validation evidence cited by the README (rule 15) |
 | `LICENSE`, `web/src/components/ATTRIBUTIONS.md` | Licence and attribution |
-| `web/public/data/*` (incl. `slope_max.bin`) | Listed in `manifest.json` and loaded by `data.js`; `slope_max` feeds the Landing card's "steepest point". In Git LFS so Vercel can build. Moves to the lazy polar tier in P1 |
+| `web/public/data/*` (incl. `slope_max.bin`) | Listed in `manifest.json` and loaded by `data.js`; `slope_max` feeds the Landing card's "steepest point". Committed as ordinary git files (Git LFS until 2026-11-13) so Vercel can build. Moves to the lazy polar tier in P1 |
 | `web/public/data/craters.json` | The plan keeps the polar crater file unchanged next to `craters_global.json` |
 | `vercel.json` (root) and `web/vercel.json` | Both are part of the Vercel deploy (see README "Deploy"); Phase 0 rule: don't change |
 | `proj4` (dev dependency) | The projection test checks the closed form against it |

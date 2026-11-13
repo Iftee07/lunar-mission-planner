@@ -148,7 +148,10 @@ The Local Lead confirmed that building before the event is allowed.
 - **Docs:** README gains a challenge-objectives table, the benchmark and performance rows and a "Use of
   AI" section; `docs/DEMO_SCRIPT.md` has the Video 2 (4 min) and Video 3 (30 s) click paths with the values
   shown on screen. 190 tests pass.
-- Not done yet: merge into `main`, deploy, the private-window walk on the live site and the `v1.0` tag
+- **New repository:** https://github.com/Iftee07/lunar-mission-planner (public). The generated data is
+  now stored as ordinary git files instead of Git LFS (the account's LFS budget was used up); the history
+  was converted, so commit IDs differ from the old `lunar-sp-browser` repository.
+- Not done yet: deploy from the new repository, the private-window walk on the live site and the `v1.0` tag
   wait for the team's go.
 
 ### Phase 6: explain it (2026-11-13)

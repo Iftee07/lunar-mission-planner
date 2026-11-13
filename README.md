@@ -102,17 +102,18 @@ https://svs.gsfc.nasa.gov/4720 (Download menu of the 2025 colour map), saved as
 
 ## Deploy
 
-Live site: https://lunar-mission-planner.vercel.app/ (deployed from `main`).
+Live site: https://lunar-mission-planner.vercel.app/ (deployed from `main`). Source:
+https://github.com/Iftee07/lunar-mission-planner.
 
 The site is deployed on Vercel straight from git, as a static Vite build:
 
 - `vercel.json` (repo root) declares one service, `web`, with root `web/` and framework `vite`, and
   rewrites every path (`/(.*)`) to that service.
 - `web/vercel.json` gives the build: `npm ci`, then `npm run build`, serving `web/dist/`.
-- The generated data in `web/public/data/` (`*.bin`, `*.png`) is committed through **Git LFS**
-  (`.gitattributes`), because the pipeline needs about 10 GB of raw downloads and can't run on
-  Vercel. The Vercel project must have Git LFS enabled, or the build ships ~130-byte pointer files
-  instead of the data. After re-running the pipeline, commit the new data files to deploy them.
+- The generated data in `web/public/data/` (`*.bin`, `*.png`, `*.jpg`, about 85 MB, largest file 19 MB) is
+  committed as ordinary git files (marked `binary` in `.gitattributes`), because the pipeline needs about
+  10 GB of raw downloads and can't run on Vercel. No Git LFS is needed (it was used until 2026-11-13).
+  After re-running the pipeline, commit the new data files to deploy them.
 
 ## Using the app
 
