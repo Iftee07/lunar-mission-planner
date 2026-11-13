@@ -384,8 +384,13 @@ All numbers below were measured on this repository's generated data.
 | Compare: 4 new sites, terrain already loaded (Polar HD / Global / mixed) | 0.74 / 0.19 / 0.48 s (budget 1.5 s) |
 | Timeline bar edges vs the cards' next windows (3 polar sites, two playhead positions) | within 0.01 h (in the browser: identical) |
 | Scrubbing the timeline / Play with 4 compared sites and the globe (desktop) | 59.5 / 58.0 fps (target ≥ 50) |
+| Move a little: ring points vs the requested radius (5 centres incl. 89.99°S and 180°E × 6 radii) | all within 1% |
+| Move a little shares vs the mission metrics (real data) | identical |
+| Why checklists vs the rating functions (Sun, Earth × 3 cases × 2 mission lengths; Landing × 3) | every ✓/✗ agrees with the rating |
+| Sun's declination seen from the Moon (ephemeris 2026-2035), used by the Sun-path explainer | max 1.588° (explainer uses 1.59°) |
+| Play with the ring, 4 compared sites and the globe (desktop) | 59.9 fps, no long tasks (target ≥ 50) |
 
-Run them yourself: `npm test` in `web/` (155 tests) and the `05` to `08` pipeline scripts. The full
+Run them yourself: `npm test` in `web/` (186 tests) and the `05` to `08` pipeline scripts. The full
 history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 ## Known limits
