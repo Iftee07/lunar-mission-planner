@@ -170,7 +170,8 @@ The site is deployed on Vercel straight from git, as a static Vite build:
    spell and when the Sun and Earth set. The best value in each row glows. The calendar button on a column
    adds the same site one lunar day (29.5 d) or one month later, or at a typed UTC time: the "schedule slipped"
    case. One-tap presets: "Equator vs pole" (Apollo 11 vs Shackleton rim) and "Two Artemis III regions". On
-   the globe, compared sites get numbered markers joined by arcs. Drag the handle on the drawer's top edge
+   the globe and the Polar HD map, compared sites get numbered markers joined by lines in column order
+   (the map shows the sites south of 84°S). Drag the handle on the drawer's top edge
    up or down to resize it (or focus it and use the Up and Down arrows; double-click resets); the size is
    remembered in this browser. On a phone the columns swipe sideways.
 10. **Share it.** The address bar always holds the current view: site or pin, time, antenna height,

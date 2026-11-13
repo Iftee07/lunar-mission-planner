@@ -148,6 +148,8 @@ The Local Lead confirmed that building before the event is allowed.
 - **Compare drawer resizes:** drag its top edge up or down (or Up / Down on the focused handle;
   double-click resets). The height is remembered in this browser, and the map or globe keeps at least
   240 px. The Polar HD map now re-measures whenever its area changes size.
+- **Compared sites on the Polar HD map:** numbered badges in the column colours, joined in column order by
+  a line that draws in, as on the globe. Sites north of 84°S are left off the map.
 - Fixed: a typed longitude of 360° pinned at 180°E instead of 0°.
 - Not built (cut under the freeze rule): the season heatmap, the site report export and live moving
   shadows. 186 tests pass.
