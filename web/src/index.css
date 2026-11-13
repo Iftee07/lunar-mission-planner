@@ -35,15 +35,9 @@
   --lspb-group-other: #56b4e9;
   --lspb-group-reference: #f0e442;
   /* welcome-slide art */
-  --lspb-art-moon: #d5dde6;
-  --lspb-art-moon-shade: #6b7c8f;
-  --lspb-art-crater: #a9b6c3;
   --lspb-art-ground: #2b3a4b;
   --lspb-art-ground-edge: #4a5d72;
   --lspb-art-hull: #e8eef5;
-  --lspb-art-foil: #d4a72c;
-  --lspb-art-flame: #fb923c;
-  --lspb-art-flame-core: #fff1c2;
   --lspb-font-mono: "JetBrains Mono", ui-monospace, monospace;
   --lspb-font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --lspb-font-heading: "Space Grotesk Variable", "Inter Variable", ui-sans-serif, sans-serif;
@@ -57,7 +51,6 @@
   /* map / surface height when the sidebar stacks below (< 1024 px): about the map disc's size on
      phones (width + room for the toggles and the ratings strip), never more than 62% of the screen */
   --lspb-main-h-stacked: min(62svh, calc(100vw + 7rem));
-  --lspb-welcome-art-max-h: 34svh; /* welcome art height cap on phones (text comes first) */
   --lspb-main-min-h: min(22rem, calc(100svh - var(--lspb-appbar-h))); /* fits a landscape phone */
   --lspb-z-map-ui: 1000; /* above Leaflet panes (max 700) and controls */
   --lspb-focus: var(--lspb-earth);
