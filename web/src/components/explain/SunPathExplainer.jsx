@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { motion, useReducedMotionConfig } from "motion/react"
+import { useEffect, useState } from "react"
+import { useReducedMotionConfig } from "motion/react"
 import { Slider } from "@/components/ui/slider"
 import { SUN_DECLINATION_MAX_DEG, sunDailyPath, sunMaxElevationDeg } from "@/engine/explain.js"
 
@@ -22,20 +22,37 @@ const pathD = (pts) => {
   })
   return d
 }
+const LOOP_MS = 6000
 const AXIS = [["S", 180], ["E", 90], ["N", 0], ["W", 270]]
 
 export default function SunPathExplainer({ initialLat = 30, compact = false }) {
   const [lat, setLat] = useState(initialLat) // degrees south
+  const [phase, setPhase] = useState(0) // 0..1 along one lunar day, LOOP_MS per loop
   const reduced = useReducedMotionConfig()
+  useEffect(() => {
+    if (reduced) return
+    let frame = requestAnimationFrame(function tick(now) {
+      setPhase((now % LOOP_MS) / LOOP_MS)
+      frame = requestAnimationFrame(tick)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [reduced])
   const path = sunDailyPath(-lat, 0)
   const hi = sunDailyPath(-lat, SUN_DECLINATION_MAX_DEG)
   const lo = sunDailyPath(-lat, -SUN_DECLINATION_MAX_DEG)
   const maxEl = sunMaxElevationDeg(-lat, 0)
   // the Sun travels east to west through the north; the ends (due south, at the chart's edges) are left out
   const visible = path.slice(1, -1).filter((p) => p.elDeg >= EL_MIN)
-  const xs = visible.map((p) => x(p.azDeg))
-  const ys = visible.map((p) => y(p.elDeg))
   const noon = path[(path.length - 1) / 2]
+  // the dot: noon under reduced motion, else glides along the visible path (screen space, no glide across a wrap)
+  let dot = [x(noon.azDeg), y(noon.elDeg)]
+  if (!reduced && visible.length > 1) {
+    const f = phase * (visible.length - 1)
+    const [a, b] = [visible[Math.floor(f)], visible[Math.min(visible.length - 1, Math.floor(f) + 1)]]
+    const [ax, bx] = [x(a.azDeg), x(b.azDeg)]
+    const t = Math.abs(bx - ax) > W / 2 ? 0 : f - Math.floor(f)
+    dot = [ax + (bx - ax) * t, y(a.elDeg) + (y(b.elDeg) - y(a.elDeg)) * t]
+  }
 
   return (
     <figure className="space-y-3">
@@ -46,16 +63,7 @@ export default function SunPathExplainer({ initialLat = 30, compact = false }) {
         ))}
         <path d={pathD(path)} fill="none" stroke="var(--lspb-sun)" strokeWidth={2} />
         <line x1={0} x2={W} y1={y(0)} y2={y(0)} stroke="var(--lspb-line)" strokeWidth={1.5} />
-        {visible.length > 1 && (
-          <motion.circle
-            r={6}
-            fill="var(--lspb-sun)"
-            stroke="var(--lspb-bg)"
-            initial={false}
-            animate={reduced ? { cx: x(noon.azDeg), cy: y(noon.elDeg) } : { cx: xs, cy: ys }}
-            transition={reduced ? { duration: 0 } : { duration: 6, ease: "linear", repeat: Infinity }}
-          />
-        )}
+        <circle cx={dot[0]} cy={dot[1]} r={6} fill="var(--lspb-sun)" stroke="var(--lspb-bg)" />
         {AXIS.map(([k, az]) => (
           <text key={k} x={x(az)} y={H + 14} textAnchor="middle" className="fill-muted-foreground font-mono text-[10px]">
             {k}
