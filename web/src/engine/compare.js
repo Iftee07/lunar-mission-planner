@@ -6,8 +6,7 @@ import { computeSiteHours } from "./hours.js"
 import { siteMetrics } from "./metrics.js"
 import { bodyDurations, rateEarth, rateLanding, rateSun } from "./ratings.js"
 
-export const COMPARE_MAX = 4
-export const COMPARE_COLORS = 4 // --lspb-cmp-1 .. --lspb-cmp-4 (src/index.css), colour-blind safe
+export const COMPARE_MAX = 4 // one colour each: --lspb-cmp-1 .. --lspb-cmp-4 (src/index.css), colour-blind safe
 export const SYNODIC_MONTH_H = 29.530589 * 24 // one lunar day: sunrise to sunrise at a site (mean synodic month)
 
 // Curated one-tap comparisons (sites.json ids). "IM-2: planned target vs where it ended up" is left out: no

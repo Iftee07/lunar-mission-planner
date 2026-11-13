@@ -12,7 +12,7 @@ import { LOOKAHEAD_H } from "./hours.js"
 
 export const MISSION_STAY_H = 156 // default mission: 6.5 d, NASA Artemis III surface stay
 const SUN_PERFECT_MARGIN_H = 36 // Sun "Perfect" = the stay + about 1.5 d operations margin (192 h at 156 h)
-export const EARTH_GOOD_MIN_FRACTION = 0.25 // NASA screening label, over the mission window
+const EARTH_GOOD_MIN_FRACTION = 0.25 // NASA screening label, over the mission window
 
 // Sun and Earth thresholds (hours) for a mission of missionH hours.
 //   sunPerfectMinH: stay + margin   sunGoodMinH: the full stay   earthPerfectMinH: the full stay

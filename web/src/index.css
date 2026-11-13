@@ -107,7 +107,6 @@
   --color-lspb-warn: var(--lspb-warn);
   --color-lspb-bad: var(--lspb-bad);
   --color-lspb-crater: var(--lspb-crater);
-  --color-lspb-psr: var(--lspb-psr);
 }
 
 @layer base {

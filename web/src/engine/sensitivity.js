@@ -11,7 +11,7 @@ export const DATE_SHIFT_H = 24 // the "land a day earlier / later" comparison
 // Ring radii per terrain source. Global terrain (~1.9 km pixels) cannot resolve a few hundred metres, so its
 // smallest ring is 5 km (labelled as the coarse-terrain minimum in the UI).
 export const RING_RADII_M = { "polar-hd": [250, 500, 1000], global: [5000, 10000, 20000] }
-export const RING_DEFAULT_RADIUS_M = { "polar-hd": 500, global: 5000 }
+const RING_DEFAULT_RADIUS_M = { "polar-hd": 500, global: 5000 }
 
 const D2R = Math.PI / 180
 const R2D = 180 / Math.PI
