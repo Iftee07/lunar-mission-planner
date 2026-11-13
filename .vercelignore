@@ -11,3 +11,4 @@ graphify-out/
 .claude/
 .vscode/
 .idea/
+.env*

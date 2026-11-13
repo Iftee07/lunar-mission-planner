@@ -30,3 +30,5 @@ Thumbs.db
 
 # graphify knowledge graph (local; rebuilt by the post-commit hook)
 graphify-out/
+.vercel
+.env*
