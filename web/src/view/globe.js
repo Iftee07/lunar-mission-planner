@@ -74,6 +74,32 @@ const FLY_SECONDS = 1.2
 // The South Pole HD layer fades in as the camera comes down: invisible above 4,000 km, full below 1,500 km.
 const POLAR_HD_FADE_M = [1.5e6, 4.0e6]
 const POLAR_HD_LOAD_LAT = -55 // load the overlay once the view centre is this far south (and low enough)
+// The overlay is a hillshade (fixed light, flat mid-grey) over a photo mosaic (deep shadows). So that it does not
+// look pasted on: its outer POLAR_HD_FEATHER_DEG fade in from transparent at its 84°S edge, and it is drawn
+// darker and with more contrast, closer to the mosaic around it.
+const POLAR_HD_FEATHER_DEG = 1.5
+const POLAR_HD_LOOK = { brightness: 0.8, contrast: 1.5 }
+
+// The overlay image with its outer band faded to transparent, made in a worker (view/overlayFeather.worker.js),
+// as a blob URL. Resolves null if that fails; the caller then uses the plain image, hard edge and all.
+function featheredOverlayUrl(url, spec) {
+  return new Promise((resolve) => {
+    let worker
+    try {
+      worker = new Worker(new URL("./overlayFeather.worker.js", import.meta.url), { type: "module" })
+    } catch {
+      return resolve(null)
+    }
+    const done = (blobUrl) => {
+      worker.terminate()
+      resolve(blobUrl)
+    }
+    worker.onmessage = (e) => done(e.data.blob ? URL.createObjectURL(e.data.blob) : null)
+    worker.onerror = () => done(null)
+    const [, south, , north] = spec.rectangle_deg
+    worker.postMessage({ url: new URL(url, location.href).href, featherFraction: POLAR_HD_FEATHER_DEG / (north - south) })
+  })
+}
 
 const toCartesian = (p) => new Cartesian3(p[0], p[1], p[2])
 const toArray = (c) => [c.x, c.y, c.z]
@@ -309,6 +335,8 @@ export function createGlobe(container, opts) {
   let trekLayer = null
   let fallbackLayer = null
   let polarLayer = null
+  let polarLoading = false
+  let polarBlobUrl = null
   let polarOpacity = 0.85
 
   function addFallbackLayer() {
@@ -337,17 +365,22 @@ export function createGlobe(container, opts) {
     trekLayer = layers.addImageryProvider(provider)
   }
 
-  function ensurePolarLayer() {
-    if (polarLayer || !urls.southPoleHdUrl) return
+  async function ensurePolarLayer() {
+    if (polarLayer || polarLoading || !urls.southPoleHdUrl) return
+    polarLoading = true
     const spec = manifest.globe.south_pole_hd
+    polarBlobUrl = await featheredOverlayUrl(urls.southPoleHdUrl, spec)
+    if (widget.isDestroyed()) return polarBlobUrl && URL.revokeObjectURL(polarBlobUrl)
     polarLayer = ImageryLayer.fromProviderAsync(
-      SingleTileImageryProvider.fromUrl(urls.southPoleHdUrl, {
+      SingleTileImageryProvider.fromUrl(polarBlobUrl ?? urls.southPoleHdUrl, {
         rectangle: Rectangle.fromDegrees(...spec.rectangle_deg),
         credit: new Credit(POLAR_HD_CREDIT, inlineCredits),
       }),
+      POLAR_HD_LOOK,
     )
     polarLayer.alpha = 0
     layers.add(polarLayer)
+    scheduleViewUpdate() // set its alpha for the current height
   }
 
   // --- Sun, Earth, sub-points ---
@@ -858,6 +891,7 @@ export function createGlobe(container, opts) {
       window.removeEventListener("pointerup", onPointerUp, true)
       handler.destroy()
       widget.destroy()
+      if (polarBlobUrl) URL.revokeObjectURL(polarBlobUrl)
     },
   }
 }
