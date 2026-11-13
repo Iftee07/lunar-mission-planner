@@ -252,10 +252,14 @@ export function createGlobe(container, opts) {
     skyBox: new SkyBox({ sources: starFaces(space, token("star")) }),
     skyAtmosphere: false,
     scene3DOnly: true,
+    // Render at the screen's real pixel density (Cesium's default draws at CSS pixels and lets the browser
+    // stretch the canvas, which blurs labels on high-DPI screens), capped at 2x like the surface view.
+    useBrowserRecommendedResolution: false,
     requestRenderMode: true,
     maximumRenderTimeChange: Infinity,
     shouldAnimate: false,
   })
+  widget.resolutionScale = Math.min(1, 2 / (window.devicePixelRatio || 1))
   const { scene } = widget
   const { camera, globe } = scene
   // Cesium adds an Earth-sky Sun (positioned for Earth); our light comes from the ephemeris instead.
