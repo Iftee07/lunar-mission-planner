@@ -127,6 +127,30 @@ The Local Lead confirmed that building before the event is allowed.
 - Faster: compared columns take turns while the time moves, then all update together, so scrubbing and Play
   with 4 compared sites and the globe run at 58 to 60 fps (target 50). 155 tests pass.
 
+### Phase 7: hardening and docs (2026-11-13)
+
+- **Published benchmark:** at two named south-pole points (PGDA's connecting ridge and Shackleton rim), Earth
+  above the flat horizon matches JPL Horizons hour by hour through 2027 (45.18% and 46.04%), and the share
+  of time in sunlight, with the observer on the ground, is within 1.3 points of NASA's average-illumination
+  map (78.9% vs 78.3%, 79.2% vs 80.5%). The stricter check set before the first run ("inside the
+  surrounding 3 × 3 pixels") misses by 0.6 points at the ridge; README "Validation" explains why.
+  New: `pipeline/14_published_benchmark.py`, `data/fixtures/published_benchmark.json`, `test/benchmark.test.js`.
+- **Performance budget met:** first load 4.64 MB (3.0 s on a throttled mid-laptop profile); pin to results
+  0.22-0.26 s (Polar HD) and 0.09-0.13 s (Global); 4-site compare 0.2-0.65 s; globe, scrubbing and Play
+  at about 60 fps.
+- **Accessibility:** axe-core finds no WCAG 2.1 A/AA issues on the welcome screen or the planner, at 1440
+  and 360 px, with and without reduced motion. Fixed on the way: sliders now announce their label (the
+  welcome latitude, the explainers, the layer opacity), and the sidebar and drawer handles announce their
+  size.
+- **Cleanup:** an unused constant and theme token removed; the globe benchmark and surface check now exist
+  only in the dev build; `ATTRIBUTIONS.md` reworded (adds CesiumJS). All pipeline validation scripts re-run
+  and pass; the global data and site list rebuild byte-identical.
+- **Docs:** README gains a challenge-objectives table, the benchmark and performance rows and a "Use of
+  AI" section; `docs/DEMO_SCRIPT.md` has the Video 2 (4 min) and Video 3 (30 s) click paths with the values
+  shown on screen. 190 tests pass.
+- Not done yet: merge into `main`, deploy, the private-window walk on the live site and the `v1.0` tag
+  wait for the team's go.
+
 ### Phase 6: explain it (2026-11-13)
 
 - **Move a little:** a new card shows how much the Sun and Earth shares of the stay change within 250 m,
