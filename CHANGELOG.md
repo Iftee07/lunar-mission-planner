@@ -152,6 +152,10 @@ The Local Lead confirmed that building before the event is allowed.
   pole sat on the photo mosaic as a lighter, blurrier disc, and softening its edge did not fix that. The globe
   now shows the photo mosaic everywhere; the 120 m polar terrain stays on the Polar HD map. Removed with it:
   the overlay's opacity slider, `south_pole_hd.jpg` (1.1 MB) and step 3 of `pipeline/10_build_global.py`.
+- **Sharper globe labels:** the globe now renders at the screen's real pixel density (capped at 2x, like
+  the surface view). Before, Cesium drew at CSS pixels and the browser stretched the picture, so crater names
+  and other labels were blurry on scaled or high-DPI screens.
+- **Narrower sidebar** on desktop: 21rem (336 px) instead of 24rem, so the map gets more room.
 - **Pin coordinates on the map:** the point you click shows its latitude and longitude just below the pin,
   on the globe and on the Polar HD map (hidden while the pin is dragged).
 - **Compared sites on the Polar HD map:** numbered badges in the column colours, joined in column order by
