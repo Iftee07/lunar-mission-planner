@@ -25,6 +25,7 @@ elsewhere is used. With the globe open and no pin, the first load is 6.0 MB (ima
 
 ## Contents
 
+- [Challenge objectives](#challenge-objectives)
 - [Quick start](#quick-start)
 - [Deploy](#deploy)
 - [Using the app](#using-the-app)
@@ -34,6 +35,25 @@ elsewhere is used. With the globe open and no pin, the first load is 6.0 MB (ima
 - [Known limits](#known-limits)
 - [Data sources and citations](#data-sources-and-citations)
 - [Licences](#licences)
+- [Use of AI](#use-of-ai)
+
+## Challenge objectives
+
+How each objective (O) and consideration (C) of the challenge statement maps to a feature you can see.
+
+| | Objective | Where in the app |
+|---|---|---|
+| O1 | Curated sites and custom coordinates; side-by-side compare | 25 sourced mission pins on the globe (Apollo, CLPS, Artemis III regions, other countries), search, typed coordinates (any point, both poles), compare up to 4 sites in the drawer |
+| O2 | Dates and times; changes across lunar days and seasons | Any time 2026-2035, the timeline, Play, the same site at another date side by side, the Earth-days calendar |
+| O3 | Sun and Earth vs the horizon; time left before sunset or Earthset | First-person surface view with the real skyline; countdown chips on the Sun and Earth cards |
+| O4 | Solar elevation (prominent), sunlight duration, Earth windows | Large Sun-elevation readout, sunlight and Earth durations, next windows in Details |
+| O5 | 2D maps, 3D surfaces, other views | 3D globe, 120 m Polar HD map with slope, sunlight and shadow layers, surface view |
+| O6 | Animations or timelines | Live day/night line on the globe, draggable timeline playhead, Play |
+| O7 | Experts and the public | Plain-word cards; every verdict, badge and layer has a "why" (checklist, then "Show the science"); three explainers |
+| C1 | Lunar vs terrestrial extremes | "Equator vs pole" compare preset (Apollo 11 vs Shackleton rim); the Sun-path explainer |
+| C2 | Why small changes in place or date matter | "Move a little" ring (250 m to 20 km) and the same spot 24 h earlier and later |
+| C3 | Real topography, no refraction, libration, slopes | LOLA horizons with the Moon's curvature, SPICE ephemeris (libration included), no atmosphere; slope from 20 m LOLA data |
+| C4 | Schedules slip | Shareable links for the whole scenario; the "Same site, different date" preset |
 
 ## Quick start
 
@@ -396,16 +416,33 @@ All numbers below were measured on this repository's generated data.
 | Why checklists vs the rating functions (Sun, Earth × 3 cases × 2 mission lengths; Landing × 3) | every ✓/✗ agrees with the rating |
 | Sun's declination seen from the Moon (ephemeris 2026-2035), used by the Sun-path explainer | max 1.588° (explainer uses 1.59°) |
 | Play with the ring, 4 compared sites and the globe (desktop) | 59.9 fps, no long tasks (target ≥ 50) |
+| **Published benchmark, Earth:** share of 2027 with Earth above the flat horizon vs JPL Horizons, hourly (PGDA Site01 and Site04) | 45.18% and 46.04%, identical; max elevation difference 0.00003° |
+| **Published benchmark, Sun:** share of time any part of the Sun is above the terrain horizon, observer on the ground, vs NASA PGDA average illumination (Mazarico et al. 2011) | connecting ridge 78.9% vs 78.3%; Shackleton rim 79.2% vs 80.5% (see below) |
+| First load (welcome screen, cache off) | 4.64 MB, network idle in 0.5 s locally and 3.0 s with 4× CPU slowdown and 20 Mbit/s (budget 10 MB, 6 s) |
+| Pin to results ready (horizons and metrics) | Polar HD 0.22-0.26 s (budget 0.3 s); Global 0.09-0.13 s (budget 0.5 s) |
+| Globe frame rate while rotating, imagery streaming | 60 fps (target ≥ 50) |
+| Accessibility: axe-core WCAG 2.1 A/AA, welcome and planner, 1440 px and 360 px, with and without reduced motion | no violations; every Tab stop shows a focus ring; no horizontal scroll at 360 px |
 
-Run them yourself: `npm test` in `web/` (186 tests) and the `05` to `08` pipeline scripts. The full
+**About the published benchmark.** The Earth check uses JPL Horizons, which has no terrain, so it tests
+the ephemeris and libration, not the skyline; with the terrain and a 10 m antenna our Earth shares are 53.9%
+and 49.5% over 2026-2035. The Sun check compares with NASA's average-illumination map (PGDA product 69),
+which gives one value per 120 m pixel averaged over an 18.6-year cycle; ours covers 2026-2035 and samples
+hourly. They agree within 1.3 percentage points. Before the first run we set a stricter check, "inside the
+range of the 3 × 3 pixels around the site"; the connecting ridge misses it by 0.6 points (78.9% vs at most
+78.3%: the site's pixel is the local top), Shackleton rim passes. Height matters a lot on a ridge: the app's
+Sun observer stands at 2 m, which gives 87.2% and 82.8% at the same points. `pipeline/14_published_benchmark.py`
+records the published values; `web/test/benchmark.test.js` computes ours.
+
+Run them yourself: `npm test` in `web/` (190 tests) and the `05` to `08` and `14` pipeline scripts. The full
 history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 ## Known limits
 
 - **Terrain resolution.** Horizons use 120 m and 240 m grids, so features smaller than a few hundred metres
   are not in the skyline. Near the pin (first ~100 m) the surface view's ground is a flat plane.
-- **Sun as a point.** The Sun counts as up when its centre clears the horizon; the first and last ~0.27°
-  of a partly hidden Sun are not modelled as partial light.
+- **Sun as a point.** By default the Sun counts as up when its centre clears the horizon ("Count partial
+  Sun" in Details counts any part of the disc instead). A partly hidden Sun is never modelled as partial
+  light: it is either up or down.
 - **Sun "(blocked)" label in the surface view.** The drawn skyline is the Earth skyline at the selected
   antenna height. The Sun is always evaluated from a fixed 2 m lander height against its own horizon, so
   the Sun's "(blocked)" label can occasionally differ slightly from what the drawn skyline suggests.
@@ -422,6 +459,8 @@ history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.m
 - **The globe is for looking, not measuring.** It is a smooth sphere (no relief); its imagery is a photo
   mosaic with its own baked-in shadows, under our real-time lighting. At the pole much of the mosaic is in
   shadow; use the Polar HD map for the terrain there.
+- **Every curated site is verified.** All 25 sites carry the source they were copied from; none is marked
+  unverified.
 - **Globe imagery needs the network.** Moon Trek tiles stream from trek.nasa.gov; offline, the bundled
   4096 × 2048 texture (about 2.7 km per pixel) is much less sharp.
 
@@ -510,3 +549,36 @@ Pipeline dependencies (`pipeline/requirements.txt`):
 | pillow | 12.3.0 | MIT-CMU |
 | requests | 2.34.2 | Apache-2.0 |
 | scipy | 1.18.1 | BSD-3-Clause |
+
+## Use of AI
+
+The team wrote the plan ([docs/BUILD_PLAN.md](docs/BUILD_PLAN.md)): the product, the ground rules (no
+invented numbers, every site sourced, never loosen a tolerance, calculations offline) and the phases. The
+code, tests, pipeline scripts and most of the documentation were written by **Claude** (Anthropic) through
+**Claude Code**, one phase per session, and each phase ended with a gate: lint, tests, build, browser
+checks and a written report that the team read before the next phase.
+
+Representative prompts (section 9 of the plan):
+
+- "Read `docs/BUILD_PLAN.md` sections 1-6 fully, then the README. Execute **Phase 0** only, following the
+  ground rules. Finish with the gate (section 6) and the phase report, then stop."
+- "Read `docs/BUILD_PLAN.md` (sections 1-6 and Phase N) and `docs/VALIDATION.md`. Execute **Phase N** only.
+  First list the files you will create or change and the tests you will add, then proceed without waiting.
+  Commit after each task. Finish with the gate and the phase report, then stop."
+- "The Phase N gate failed: (paste). Fix the root cause without loosening any tolerance, re-run the full
+  gate, and update the report."
+
+What the team decided (each is recorded in [CHANGELOG.md](CHANGELOG.md) or
+[docs/VALIDATION.md](docs/VALIDATION.md)):
+
+- No Cesium ion and no terrain provider: the globe is a smooth sphere; the real terrain is in the engine
+  and the Polar HD map.
+- Ratings follow the mission length (6.5 d default, 14 d option), with the published thresholds at 6.5 d.
+- Phone frame rate was not measured; desktop performance was checked by the team on their own PC.
+- The welcome's last button opens an empty planner, not a preset comparison.
+- The globe's South Pole HD overlay was removed: it looked blurrier and brighter than the photo mosaic.
+- Cut under the feature-freeze rule: the season heatmap, the site report export and live moving shadows.
+
+AI is not part of the app: there is no chatbot and no AI service at run time.
+
+The change history is in [CHANGELOG.md](CHANGELOG.md).
