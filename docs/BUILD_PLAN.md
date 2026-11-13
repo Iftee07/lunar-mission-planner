@@ -261,7 +261,7 @@ New `src/view/globe.js` (CesiumJS) and `components/GlobePanel.jsx`, lazy-loaded 
 1. **Viewer:** turn off Cesium's default widgets (timeline, animation, geocoder, base layer picker, home, navigation help). Keep the credit display. Black space background with a light star field.
 2. **Imagery layers:**
    - The LRO WAC global mosaic (Moon Trek) as the base.
-   - The **South Pole HD** overlay from Phase 1 (our 120 m LOLA hillshade) for 80°S–90°S, with an opacity slider.
+   - The **South Pole HD** overlay from Phase 1 (our 120 m LOLA hillshade) for 80°S–90°S, with an opacity slider. *(Removed 2026-11-13, team decision: it looked blurrier and brighter than the mosaic; the Polar HD map carries the polar terrain.)*
    - The bundled offline texture as a fallback. Switch to it automatically if tiles fail or when `?offline=1` is set, and show an "Offline imagery" badge.
 3. **No 3D terrain on the globe (team decision, Nov 10).** The globe is a smooth Moon ellipsoid with sharp imagery. Do **not** add Cesium ion or any terrain provider. Terrain detail for a site is shown in the first-person surface view (three.js, real LOLA skyline), and every number comes from our LOLA engine.
 4. **Real Sun lighting:** set `scene.light` to a `DirectionalLight` whose direction is the **Sun vector from our ephemeris at the current time**, and turn on `globe.enableLighting`. Cesium's Moon fixed frame and our `MOON_ME` both have x toward 0° longitude and z toward the north pole; **prove it with a test** (the sub-solar point from the light direction matches the ephemeris at 3 times). The day/night line then sweeps across the Moon when time changes.

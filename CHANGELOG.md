@@ -148,9 +148,10 @@ The Local Lead confirmed that building before the event is allowed.
 - **Compare drawer resizes:** drag its top edge up or down (or Up / Down on the focused handle;
   double-click resets). The height is remembered in this browser, and the map or globe keeps at least
   240 px. The Polar HD map now re-measures whenever its area changes size.
-- **Globe, South Pole HD overlay blends in:** it used to sit on the globe as a lighter disc with a hard edge
-  at 84°S. Its outer 1.5° now fades in from transparent, and it is drawn darker and with more contrast to
-  match the photo mosaic. The fade is made once, in a worker, when the overlay first loads.
+- **Globe: no South Pole HD overlay** (team decision): the 120 m hillshade the globe draped over 84°S to the
+  pole sat on the photo mosaic as a lighter, blurrier disc, and softening its edge did not fix that. The globe
+  now shows the photo mosaic everywhere; the 120 m polar terrain stays on the Polar HD map. Removed with it:
+  the overlay's opacity slider, `south_pole_hd.jpg` (1.1 MB) and step 3 of `pipeline/10_build_global.py`.
 - **Pin coordinates on the map:** the point you click shows its latitude and longitude just below the pin,
   on the globe and on the Polar HD map (hidden while the pin is dragged).
 - **Compared sites on the Polar HD map:** numbered badges in the column colours, joined in column order by

@@ -54,7 +54,7 @@ venv\Scripts\python pipeline\06_validate_terrain.py
 venv\Scripts\python pipeline\07_horizon_reference.py # slow Python reference horizons (test fixtures)
 venv\Scripts\python pipeline\08_hours_reference.py   # Python reference light/Earth hours (test fixtures)
 venv\Scripts\python pipeline\09_build_features.py    # named craters (IAU gazetteer, ~24 MB download)
-venv\Scripts\python pipeline\10_build_global.py      # global DEM (~33 MB download), offline globe texture, South Pole HD overlay
+venv\Scripts\python pipeline\10_build_global.py      # global DEM (~33 MB download), offline globe texture
 venv\Scripts\python pipeline\11_build_sites.py       # validate the curated site list -> sites.json (globe mission pins)
 venv\Scripts\python pipeline\13_build_illumination.py # NASA average-sunlight and PSR layers (~84 MB download)
 
@@ -110,8 +110,8 @@ The site is deployed on Vercel straight from git, as a static Vite build:
    to place the pin (its latitude and longitude show just below it, on the globe and the Polar HD map), or click a mission pin (hover, or tap once on a phone, to see its name) to fly there
    and pick it. Keyboard: focus the globe, arrows rotate, `+`/`-` zoom, Enter places the pin at the centre.
    Mission pins are coloured by group (Apollo, CLPS, Artemis III regions, other countries, south-pole
-   reference points); the Layers menu toggles groups, IAU crater and feature names, a lat/lon grid and the
-   South Pole HD overlay's opacity. Double-click a feature name to fly to it. On a phone, a strip at the
+   reference points); the Layers menu toggles groups, IAU crater and feature names and a lat/lon grid.
+   Double-click a feature name to fly to it. On a phone, a strip at the
    bottom shows the three ratings and the Sun and Earth countdowns, and tapping it scrolls to the full cards.
    **Search** (the app-bar button, or `Ctrl`+`K` / `⌘K`) lists every mission site by group with its
    status (landed, planned, reference point, point in an Artemis III candidate region). It also takes
@@ -309,10 +309,10 @@ comes from the LOLA engine). Its fixed frame is the ephemeris frame `MOON_ME`: x
 - **Imagery:** the LRO WAC global mosaic from NASA Moon Trek's WMTS service, about 83 m per pixel at the
   finest level (the tile grid is copied from the service's capabilities document and tested). Under any
   tile that fails, the bundled CGI Moon Kit texture shows; after six failed tiles in a row (or with
-  `?offline=1`) the globe uses only the bundled texture and says "Offline imagery". South of 84°S our
-  120 m LOLA hillshade ("South Pole HD") fades in below 4,000 km altitude. Its outer 1.5° (84°S to 85.5°S)
-  fades from transparent to solid (done once, in a worker) and it is drawn darker and with more contrast, so
-  it blends into the photo mosaic instead of sitting on it as a disc.
+  `?offline=1`) the globe uses only the bundled texture and says "Offline imagery". The globe shows the
+  photo mosaic at the pole too; the 120 m polar terrain is on the Polar HD map ("Open Polar HD map" appears
+  when the globe looks at the south pole). An earlier 120 m hillshade overlay on the globe was removed (team
+  decision, 2026-11-13): it was blurrier and brighter than the mosaic around it.
 - **Light:** a directional light along the ephemeris Sun vector at the selected time, so the terminator is
   the real one and sweeps across the Moon during Play. A small dot marks the sub-solar point.
 - **Earth:** a marker just beyond the limb in the true Earth direction (direction only, not to scale) and
@@ -418,9 +418,8 @@ history, with dates and tolerances, is in [docs/VALIDATION.md](docs/VALIDATION.m
 - **Move a little is a spread, not a rating.** It shows how much the shares change within the radius;
   the ring's 8 points sample it and can miss a narrow ridge or pit between them.
 - **The globe is for looking, not measuring.** It is a smooth sphere (no relief); its imagery is a photo
-  mosaic with its own baked-in shadows, under our real-time lighting. The South Pole HD overlay is a
-  hillshade with a fixed light direction (not the selected time); its edge is faded but its shading still
-  differs a little from the mosaic around it.
+  mosaic with its own baked-in shadows, under our real-time lighting. At the pole much of the mosaic is in
+  shadow; use the Polar HD map for the terrain there.
 - **Globe imagery needs the network.** Moon Trek tiles stream from trek.nasa.gov; offline, the bundled
   4096 × 2048 texture (about 2.7 km per pixel) is much less sharp.
 
