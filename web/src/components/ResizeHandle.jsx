@@ -14,7 +14,9 @@ export default function ResizeHandle({ orientation, label, measure, clamp, value
   const vertical = orientation === "vertical"
   const pos = (e) => (vertical ? e.clientX : e.clientY)
   // A focusable separator must report its value (aria-valuenow): the stored size, or the measured default.
+  // The default is measured again on focus, since the panel may have changed size since mount.
   const ref = useRef(null)
+  const report = () => ref.current?.setAttribute("aria-valuenow", String(Math.round(value ?? measure())))
   useLayoutEffect(() => {
     ref.current?.setAttribute("aria-valuenow", String(Math.round(value ?? measure())))
   }, [value, measure])
@@ -25,6 +27,7 @@ export default function ResizeHandle({ orientation, label, measure, clamp, value
       aria-label={label}
       ref={ref}
       tabIndex={0}
+      onFocus={report}
       onPointerDown={(e) => {
         if (e.button !== 0) return
         e.currentTarget.setPointerCapture(e.pointerId)
